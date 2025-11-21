@@ -42,36 +42,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
           password,
           displayName: username,
         });
+        console.log("User created in Firebase Auth:", userRecord.uid);
 
-        // Store user in PostgreSQL database
-        const dbUser = await storage.createUser({
+        // Store user in Firestore FIRST (this is the source of truth)
+        const db = getFirestore();
+        await db.collection("users").doc(userRecord.uid).set({
+          id: userRecord.uid,
+          firebaseUid: userRecord.uid,
+          email,
+          username,
+          createdAt: new Date().toISOString(),
+        });
+        console.log("User saved to Firestore:", userRecord.uid);
+
+        // Store user in PostgreSQL database as backup
+        let dbUser: any = null;
+        try {
+          dbUser = await storage.createUser({
+            firebaseUid: userRecord.uid,
+            email,
+            username,
+          });
+          console.log("User saved to PostgreSQL:", dbUser.id);
+        } catch (dbError) {
+          console.warn("Failed to save user to PostgreSQL (non-critical):", dbError);
+          // Continue - PostgreSQL is just a backup
+        }
+
+        res.status(201).json({
+          id: userRecord.uid,
           firebaseUid: userRecord.uid,
           email,
           username,
         });
-
-        // Store user in Firestore
-        try {
-          const db = getFirestore();
-          await db.collection("users").doc(userRecord.uid).set({
-            id: dbUser.id,
-            firebaseUid: userRecord.uid,
-            email,
-            username,
-            createdAt: new Date().toISOString(),
-          });
-        } catch (firestoreError) {
-          console.warn("Failed to save user to Firestore:", firestoreError);
-          // Continue even if Firestore save fails
-        }
-
-        res.status(201).json({
-          id: dbUser.id,
-          firebaseUid: dbUser.firebaseUid,
-          email: dbUser.email,
-          username: dbUser.username,
-        });
       } catch (authError: any) {
+        console.error("Signup auth error:", authError);
         if (authError.code === "auth/email-already-exists") {
           return res.status(400).json({ message: "Email already exists" });
         }
