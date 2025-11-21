@@ -16,7 +16,7 @@ export default function ProfilePage() {
 
   return (
     <MobileWrapper>
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="w-full flex-1 flex flex-col overflow-hidden">
         {/* Header */}
         <div className="px-6 pb-4 pt-2 flex items-center justify-between gap-4 border-b border-gray-100 flex-shrink-0">
           <h1 className="text-xl font-bold">Profile</h1>

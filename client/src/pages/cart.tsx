@@ -41,7 +41,7 @@ export default function CartPage() {
 
   return (
     <MobileWrapper>
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="w-full flex-1 flex flex-col overflow-hidden">
         {/* Header */}
         <div className="px-6 pb-4 pt-2 flex items-center gap-4 border-b border-gray-100 flex-shrink-0">
           <button
