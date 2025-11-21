@@ -25,8 +25,8 @@ export function MobileWrapper({ children, className }: MobileWrapperProps) {
         {/* Dynamic Island (Visual Only) */}
         <div className="absolute top-3 left-1/2 -translate-x-1/2 w-[120px] h-[35px] bg-black rounded-full z-50 pointer-events-none" />
 
-        {/* Content */}
-        <div className={cn("flex-1 flex flex-col h-full overflow-hidden pt-12", className)}>
+        {/* Content - with padding for nav */}
+        <div className={cn("flex-1 flex flex-col h-full overflow-hidden pt-12 pb-20", className)}>
           {children}
         </div>
 
