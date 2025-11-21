@@ -122,31 +122,35 @@ export default function Home() {
         )}
 
         {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto no-scrollbar px-6 py-4 pb-24">
-          <PromoBanner />
-          
-          <div className="mb-2 mt-4">
-            <h2 className="text-lg font-bold">Categories</h2>
+        <div className="flex-1 overflow-y-auto no-scrollbar pb-24">
+          <div className="px-6 py-4">
+            <PromoBanner />
+            
+            <div className="mb-2 mt-4">
+              <h2 className="text-lg font-bold">Categories</h2>
+            </div>
+            <CategoryFilter active={activeCategory} onChange={setActiveCategory} />
           </div>
-          <CategoryFilter active={activeCategory} onChange={setActiveCategory} />
 
-          {isLoading ? (
-            <div className="grid grid-cols-2 gap-4 mt-4">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="bg-white rounded-3xl p-3 shadow-sm border border-gray-100">
-                  <div className="aspect-square rounded-2xl bg-gray-200 animate-pulse mb-3" />
-                  <div className="h-3 bg-gray-200 rounded animate-pulse mb-2" />
-                  <div className="h-4 bg-gray-200 rounded animate-pulse w-2/3" />
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 gap-4 mt-4">
-              {filteredProducts.map((product, index) => (
-                <ProductCard key={product.id} product={product} index={index} />
-              ))}
-            </div>
-          )}
+          <div className="px-6">
+            {isLoading ? (
+              <div className="grid grid-cols-2 gap-4 mt-4">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="bg-white rounded-3xl p-3 shadow-sm border border-gray-100">
+                    <div className="aspect-square rounded-2xl bg-gray-200 animate-pulse mb-3" />
+                    <div className="h-3 bg-gray-200 rounded animate-pulse mb-2" />
+                    <div className="h-4 bg-gray-200 rounded animate-pulse w-2/3" />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-4 mt-4">
+                {filteredProducts.map((product, index) => (
+                  <ProductCard key={product.id} product={product} index={index} />
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
       <div className="absolute bottom-0 left-0 right-0">
