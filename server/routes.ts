@@ -160,46 +160,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log("Fetching user for Firebase UID:", firebaseUid);
       
-      // Always check Firestore first as source of truth
-      if (isFirebaseConfigured()) {
-        try {
-          const db = getFirestore();
-          const userDoc = await db.collection("users").doc(firebaseUid).get();
-          if (userDoc.exists) {
-            const userData = userDoc.data();
-            if (userData && userData.email && userData.username) {
-              console.log("User found in Firestore:", firebaseUid);
-              // Return user data from Firestore
-              return res.json({
-                id: userData.id || firebaseUid,
-                firebaseUid: firebaseUid,
-                email: userData.email,
-                username: userData.username,
-              });
-            }
-          }
-        } catch (firestoreError) {
-          console.warn("Error fetching from Firestore:", firestoreError);
-        }
+      // Firestore is the source of truth for user data
+      if (!isFirebaseConfigured()) {
+        return res.status(503).json({ message: "Firebase not configured" });
       }
 
-      // Fallback to PostgreSQL if Firestore fails
-      try {
-        const user = await queryUser(firebaseUid);
-        if (user) {
-          console.log("User found in PostgreSQL:", user.id);
+      const db = getFirestore();
+      const userDoc = await db.collection("users").doc(firebaseUid).get();
+      
+      if (userDoc.exists) {
+        const userData = userDoc.data();
+        console.log("User found in Firestore:", firebaseUid);
+        if (userData && userData.email && userData.username) {
           return res.json({
-            id: user.id,
-            firebaseUid: user.firebaseUid,
-            email: user.email,
-            username: user.username,
+            id: userData.id || firebaseUid,
+            firebaseUid: firebaseUid,
+            email: userData.email,
+            username: userData.username,
           });
         }
-      } catch (dbError) {
-        console.warn("Error querying PostgreSQL:", dbError);
       }
 
-      console.log("User not found for Firebase UID:", firebaseUid);
+      console.log("User not found in Firestore:", firebaseUid);
       return res.status(404).json({ message: "User not found" });
     } catch (error: any) {
       console.error("Get user error:", error);
