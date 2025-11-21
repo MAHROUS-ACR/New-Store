@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { initializeFirebase, getFirestore, isFirebaseConfigured } from "./firebase";
+import { queryUser } from "./db-utils";
 import * as admin from "firebase-admin";
 import { type UserRecord } from "firebase-admin/auth";
 
@@ -157,7 +158,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       console.log("Fetching user for Firebase UID:", firebaseUid);
-      let user = await storage.getUserByFirebaseUid(firebaseUid);
+      let user = await queryUser(firebaseUid);
 
       // If not found in PostgreSQL, try Firestore
       if (!user && isFirebaseConfigured()) {
@@ -166,13 +167,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const userDoc = await db.collection("users").doc(firebaseUid).get();
           if (userDoc.exists) {
             const userData = userDoc.data();
-            console.log("User found in Firestore, syncing to PostgreSQL");
-            // Sync user to PostgreSQL
-            user = await storage.createUser({
-              firebaseUid: firebaseUid,
-              email: userData.email,
-              username: userData.username,
-            });
+            if (userData && userData.email && userData.username) {
+              console.log("User found in Firestore, syncing to PostgreSQL");
+              // Sync user to PostgreSQL
+              user = await storage.createUser({
+                firebaseUid: firebaseUid,
+                email: userData.email,
+                username: userData.username,
+              });
+            }
           }
         } catch (firestoreError) {
           console.warn("Error checking Firestore:", firestoreError);
