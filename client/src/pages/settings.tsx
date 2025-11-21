@@ -25,9 +25,9 @@ export default function SettingsPage() {
   useEffect(() => {
     const config = getFirebaseConfig();
     if (config) {
-      setFirebaseApiKey(config.apiKey);
-      setFirebaseProjectId(config.projectId);
-      setFirebaseAppId(config.appId);
+      setFirebaseApiKey(config.apiKey || "");
+      setFirebaseProjectId(config.projectId || "");
+      setFirebaseAppId(config.appId || "");
     }
   }, []);
 

@@ -17,12 +17,13 @@ export function saveFirebaseConfig(config: FirebaseClientConfig): void {
 
 export function getFirebaseConfig(): FirebaseClientConfig | null {
   try {
+    // First check localStorage for user-saved config
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
       return JSON.parse(stored);
     }
     
-    // Try to get from environment variables (fallback)
+    // Try to get from environment variables (default config)
     const apiKey = import.meta.env.VITE_FIREBASE_API_KEY;
     const projectId = import.meta.env.VITE_FIREBASE_PROJECT_ID;
     const appId = import.meta.env.VITE_FIREBASE_APP_ID;
