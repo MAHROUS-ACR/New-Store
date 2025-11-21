@@ -122,21 +122,28 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const login = async (email: string, password: string) => {
     if (!firebaseAuth) throw new Error("Firebase not configured");
 
-    await signInWithEmailAndPassword(firebaseAuth, email, password);
-
-    // Fetch user data from server
-    const firebaseUser = firebaseAuth.currentUser;
+    const userCredential = await signInWithEmailAndPassword(firebaseAuth, email, password);
+    const firebaseUser = userCredential.user;
+    
     if (firebaseUser) {
-      const response = await fetch("/api/auth/me", {
-        headers: {
-          "x-firebase-uid": firebaseUser.uid,
-        },
-      });
+      try {
+        const response = await fetch("/api/auth/me", {
+          headers: {
+            "x-firebase-uid": firebaseUser.uid,
+          },
+        });
 
-      if (response.ok) {
-        const userData = await response.json();
-        setUser(userData);
-        localStorage.setItem("user", JSON.stringify(userData));
+        if (response.ok) {
+          const userData = await response.json();
+          setUser(userData);
+          localStorage.setItem("user", JSON.stringify(userData));
+        } else {
+          console.error("Failed to fetch user data:", response.status);
+          throw new Error(`Failed to fetch user data: ${response.status}`);
+        }
+      } catch (error) {
+        console.error("Login fetch error:", error);
+        throw error;
       }
     }
   };

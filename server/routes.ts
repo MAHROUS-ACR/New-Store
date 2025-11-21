@@ -156,12 +156,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Not authenticated" });
       }
 
+      console.log("Fetching user for Firebase UID:", firebaseUid);
       const user = await storage.getUserByFirebaseUid(firebaseUid);
 
       if (!user) {
+        console.log("User not found for Firebase UID:", firebaseUid);
         return res.status(404).json({ message: "User not found" });
       }
 
+      console.log("User found:", user.id);
       res.json({
         id: user.id,
         firebaseUid: user.firebaseUid,

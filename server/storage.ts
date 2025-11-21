@@ -26,33 +26,48 @@ export interface IStorage {
 
 export class DbStorage implements IStorage {
   async getUser(id: string): Promise<User | undefined> {
-    const db = await getDb();
-    const result = await db
-      .select()
-      .from(users)
-      .where(eq(users.id, id))
-      .limit(1);
-    return result[0];
+    try {
+      const db = await getDb();
+      const result = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, id))
+        .limit(1);
+      return result && result.length > 0 ? result[0] : undefined;
+    } catch (error) {
+      console.error("Error in getUser:", error);
+      return undefined;
+    }
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
-    const db = await getDb();
-    const result = await db
-      .select()
-      .from(users)
-      .where(eq(users.email, email))
-      .limit(1);
-    return result[0];
+    try {
+      const db = await getDb();
+      const result = await db
+        .select()
+        .from(users)
+        .where(eq(users.email, email))
+        .limit(1);
+      return result && result.length > 0 ? result[0] : undefined;
+    } catch (error) {
+      console.error("Error in getUserByEmail:", error);
+      return undefined;
+    }
   }
 
   async getUserByFirebaseUid(firebaseUid: string): Promise<User | undefined> {
-    const db = await getDb();
-    const result = await db
-      .select()
-      .from(users)
-      .where(eq(users.firebaseUid, firebaseUid))
-      .limit(1);
-    return result[0];
+    try {
+      const db = await getDb();
+      const result = await db
+        .select()
+        .from(users)
+        .where(eq(users.firebaseUid, firebaseUid))
+        .limit(1);
+      return result && result.length > 0 ? result[0] : undefined;
+    } catch (error) {
+      console.error("Error in getUserByFirebaseUid:", error);
+      return undefined;
+    }
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
