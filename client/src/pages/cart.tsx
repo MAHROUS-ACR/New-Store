@@ -9,7 +9,6 @@ import { toast } from "sonner";
 export default function CartPage() {
   const [, setLocation] = useLocation();
   const { items, removeItem, updateQuantity, total, clearCart } = useCart();
-  const [isCheckingOut, setIsCheckingOut] = useState(false);
 
   const handleCheckout = async () => {
     if (items.length === 0) {
@@ -17,32 +16,7 @@ export default function CartPage() {
       return;
     }
 
-    setIsCheckingOut(true);
-    try {
-      const response = await fetch("/api/orders", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          items,
-          total,
-          status: "pending",
-          createdAt: new Date().toISOString(),
-        }),
-      });
-
-      if (response.ok) {
-        const order = await response.json();
-        toast.success("Order placed successfully!");
-        clearCart();
-        setLocation("/orders");
-      } else {
-        toast.error("Failed to place order");
-      }
-    } catch (error) {
-      toast.error("Error placing order");
-    } finally {
-      setIsCheckingOut(false);
-    }
+    setLocation("/checkout");
   };
 
   return (
@@ -144,11 +118,10 @@ export default function CartPage() {
               </div>
               <button
                 onClick={handleCheckout}
-                disabled={isCheckingOut}
-                className="w-full bg-black text-white py-4 rounded-2xl font-semibold hover:bg-neutral-800 disabled:opacity-50"
+                className="w-full bg-black text-white py-4 rounded-2xl font-semibold hover:bg-neutral-800"
                 data-testid="button-checkout"
               >
-                {isCheckingOut ? "Processing..." : "Place Order"}
+                Proceed to Payment
               </button>
             </div>
           </>
