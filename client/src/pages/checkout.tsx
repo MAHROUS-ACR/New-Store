@@ -1,14 +1,22 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MobileWrapper } from "@/components/mobile-wrapper";
 import { BottomNav } from "@/components/bottom-nav";
 import { ArrowLeft, Lock, CreditCard, Truck } from "lucide-react";
 import { useLocation } from "wouter";
 import { useCart } from "@/lib/cartContext";
+import { useUser } from "@/lib/userContext";
 import { toast } from "sonner";
 
 export default function CheckoutPage() {
   const [, setLocation] = useLocation();
   const { items, total, clearCart } = useCart();
+  const { user, isLoggedIn } = useUser();
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      setLocation("/login");
+    }
+  }, [isLoggedIn, setLocation]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<"card" | "delivery" | null>(null);
 
