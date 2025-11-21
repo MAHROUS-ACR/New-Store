@@ -55,8 +55,9 @@ export default function ProfilePage() {
         </div>
 
         {/* Menu Items */}
-        <div className="flex-1 overflow-y-auto no-scrollbar px-6 pb-24 space-y-3">
-          {menuItems.map((item) => (
+        <div className="flex-1 overflow-y-auto no-scrollbar pb-24">
+          <div className="px-6 py-4 space-y-3">
+            {menuItems.map((item) => (
             <button
               key={item.label}
               onClick={() => setLocation(item.path)}
@@ -85,6 +86,7 @@ export default function ProfilePage() {
             </div>
             <ChevronRight className="w-5 h-5 text-red-400 group-hover:text-red-600 transition-colors" />
           </button>
+          </div>
         </div>
       </div>
 

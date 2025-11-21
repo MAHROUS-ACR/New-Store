@@ -132,8 +132,8 @@ export default function OrdersPage() {
             </button>
           </div>
         ) : (
-          <div className="flex-1 overflow-y-auto no-scrollbar px-6 py-4 pb-24">
-            <div className="space-y-3">
+          <div className="flex-1 overflow-y-auto no-scrollbar pb-24">
+            <div className="px-6 py-4 space-y-3">
               {orders.map((order) => (
                 <div
                   key={order.id}
