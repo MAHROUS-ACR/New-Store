@@ -241,202 +241,204 @@ export default function CheckoutPage() {
   return (
     <>
       <MobileWrapper>
-        {/* Header */}
-        <div className="px-6 pb-4 pt-2 flex items-center gap-4 border-b border-gray-100 flex-shrink-0">
-          <button
-            onClick={() => setLocation("/cart")}
-            className="w-10 h-10 rounded-full bg-white border border-gray-100 flex items-center justify-center"
-            data-testid="button-back"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </button>
-          <h1 className="text-xl font-bold">Payment</h1>
-        </div>
-
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto no-scrollbar px-6 py-4 pb-24">
-          {/* Order Summary */}
-          <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-6">
-            <h3 className="font-semibold text-sm mb-3">Order Summary</h3>
-            <div className="space-y-2 text-sm">
-              {items.map(item => (
-                <div key={item.id} className="flex justify-between">
-                  <span>{item.quantity}x {item.title}</span>
-                  <span>${(item.price * item.quantity).toFixed(2)}</span>
-                </div>
-              ))}
-              <div className="border-t border-blue-200 pt-2 font-bold flex justify-between">
-                <span>Total:</span>
-                <span>${total.toFixed(2)}</span>
-              </div>
-            </div>
+        <div className="flex-1 flex flex-col overflow-hidden">
+          {/* Header */}
+          <div className="px-6 pb-4 pt-2 flex items-center gap-4 border-b border-gray-100 flex-shrink-0">
+            <button
+              onClick={() => setLocation("/cart")}
+              className="w-10 h-10 rounded-full bg-white border border-gray-100 flex items-center justify-center"
+              data-testid="button-back"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+            <h1 className="text-xl font-bold">Payment</h1>
           </div>
 
-          {/* Payment Method Selection */}
-          {!paymentMethod ? (
-            <div className="space-y-3">
-              <h3 className="font-semibold text-sm mb-4">Select Payment Method</h3>
-              
-              <button
-                onClick={() => setPaymentMethod("card")}
-                className="w-full p-4 border-2 border-gray-200 rounded-2xl hover:border-primary hover:bg-primary/5 transition-colors text-left"
-                data-testid="button-payment-card"
-              >
-                <div className="flex items-center gap-3">
-                  <CreditCard className="w-6 h-6 text-primary" />
-                  <div>
-                    <p className="font-semibold">Pay with Card</p>
-                    <p className="text-xs text-muted-foreground">Instant payment with debit/credit card</p>
+          {/* Content */}
+          <div className="flex-1 overflow-y-auto no-scrollbar px-6 py-4">
+            {/* Order Summary */}
+            <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-6">
+              <h3 className="font-semibold text-sm mb-3">Order Summary</h3>
+              <div className="space-y-2 text-sm">
+                {items.map(item => (
+                  <div key={item.id} className="flex justify-between">
+                    <span>{item.quantity}x {item.title}</span>
+                    <span>${(item.price * item.quantity).toFixed(2)}</span>
                   </div>
+                ))}
+                <div className="border-t border-blue-200 pt-2 font-bold flex justify-between">
+                  <span>Total:</span>
+                  <span>${total.toFixed(2)}</span>
                 </div>
-              </button>
-
-              <button
-                onClick={() => setPaymentMethod("delivery")}
-                className="w-full p-4 border-2 border-gray-200 rounded-2xl hover:border-primary hover:bg-primary/5 transition-colors text-left"
-                data-testid="button-payment-delivery"
-              >
-                <div className="flex items-center gap-3">
-                  <Truck className="w-6 h-6 text-primary" />
-                  <div>
-                    <p className="font-semibold">Pay on Delivery</p>
-                    <p className="text-xs text-muted-foreground">Pay when your order arrives</p>
-                  </div>
-                </div>
-              </button>
+              </div>
             </div>
-          ) : (
-            <form onSubmit={handlePaymentSubmit} className="space-y-4">
-              <div className="flex items-center gap-2 mb-6">
+
+            {/* Payment Method Selection */}
+            {!paymentMethod ? (
+              <div className="space-y-3">
+                <h3 className="font-semibold text-sm mb-4">Select Payment Method</h3>
+                
                 <button
-                  type="button"
-                  onClick={() => setPaymentMethod(null)}
-                  className="text-primary text-sm font-semibold"
+                  onClick={() => setPaymentMethod("card")}
+                  className="w-full p-4 border-2 border-gray-200 rounded-2xl hover:border-primary hover:bg-primary/5 transition-colors text-left"
+                  data-testid="button-payment-card"
                 >
-                  ← Change Method
+                  <div className="flex items-center gap-3">
+                    <CreditCard className="w-6 h-6 text-primary" />
+                    <div>
+                      <p className="font-semibold">Pay with Card</p>
+                      <p className="text-xs text-muted-foreground">Instant payment with debit/credit card</p>
+                    </div>
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => setPaymentMethod("delivery")}
+                  className="w-full p-4 border-2 border-gray-200 rounded-2xl hover:border-primary hover:bg-primary/5 transition-colors text-left"
+                  data-testid="button-payment-delivery"
+                >
+                  <div className="flex items-center gap-3">
+                    <Truck className="w-6 h-6 text-primary" />
+                    <div>
+                      <p className="font-semibold">Pay on Delivery</p>
+                      <p className="text-xs text-muted-foreground">Pay when your order arrives</p>
+                    </div>
+                  </div>
                 </button>
               </div>
-
-              {paymentMethod === "card" && (
-                <>
-                  <div>
-                    <label className="block text-sm font-semibold mb-2">Card Number</label>
-                    <input
-                      type="text"
-                      placeholder="4532 1234 5678 9010"
-                      value={formData.cardNumber}
-                      onChange={(e) => handleCardNumberChange(e.target.value)}
-                      className="w-full px-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
-                      data-testid="input-card-number"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-semibold mb-2">Cardholder Name</label>
-                    <input
-                      type="text"
-                      placeholder="John Doe"
-                      value={formData.cardHolder}
-                      onChange={(e) => setFormData(prev => ({ ...prev, cardHolder: e.target.value }))}
-                      className="w-full px-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
-                      data-testid="input-cardholder"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-semibold mb-2">Expiry</label>
-                      <input
-                        type="text"
-                        placeholder="MM/YY"
-                        value={formData.expiryDate}
-                        onChange={(e) => handleExpiryChange(e.target.value)}
-                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
-                        data-testid="input-expiry"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-semibold mb-2">CVV</label>
-                      <input
-                        type="text"
-                        placeholder="123"
-                        value={formData.cvv}
-                        onChange={(e) => handleCVVChange(e.target.value)}
-                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
-                        data-testid="input-cvv"
-                      />
-                    </div>
-                  </div>
-                </>
-              )}
-
-              <div>
-                <label className="block text-sm font-semibold mb-2">Email</label>
-                <input
-                  type="email"
-                  placeholder="john@example.com"
-                  value={formData.email}
-                  onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                  className="w-full px-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
-                  data-testid="input-email"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold mb-2">Address</label>
-                <input
-                  type="text"
-                  placeholder="123 Main Street"
-                  value={formData.address}
-                  onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
-                  className="w-full px-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
-                  data-testid="input-address"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <input
-                  type="text"
-                  placeholder="City"
-                  value={formData.city}
-                  onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
-                  className="px-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
-                  data-testid="input-city"
-                />
-                <input
-                  type="text"
-                  placeholder="Zip Code"
-                  value={formData.zipCode}
-                  onChange={(e) => setFormData(prev => ({ ...prev, zipCode: e.target.value }))}
-                  className="px-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
-                  data-testid="input-zip"
-                />
-              </div>
-
-              {paymentMethod === "card" && (
-                <div className="bg-green-50 border border-green-200 rounded-2xl p-3 flex items-start gap-2">
-                  <Lock className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                  <p className="text-xs text-green-800">Your payment is secure and encrypted</p>
+            ) : (
+              <form onSubmit={handlePaymentSubmit} className="space-y-4">
+                <div className="flex items-center gap-2 mb-6">
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod(null)}
+                    className="text-primary text-sm font-semibold"
+                  >
+                    ← Change Method
+                  </button>
                 </div>
-              )}
 
-              <button
-                type="submit"
-                disabled={isProcessing}
-                className="w-full bg-black text-white py-4 rounded-2xl font-semibold hover:bg-neutral-800 disabled:opacity-50 flex items-center justify-center gap-2"
-                data-testid="button-pay"
-              >
-                {isProcessing ? (
+                {paymentMethod === "card" && (
                   <>
-                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Processing...
+                    <div>
+                      <label className="block text-sm font-semibold mb-2">Card Number</label>
+                      <input
+                        type="text"
+                        placeholder="4532 1234 5678 9010"
+                        value={formData.cardNumber}
+                        onChange={(e) => handleCardNumberChange(e.target.value)}
+                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                        data-testid="input-card-number"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold mb-2">Cardholder Name</label>
+                      <input
+                        type="text"
+                        placeholder="John Doe"
+                        value={formData.cardHolder}
+                        onChange={(e) => setFormData(prev => ({ ...prev, cardHolder: e.target.value }))}
+                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                        data-testid="input-cardholder"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-semibold mb-2">Expiry</label>
+                        <input
+                          type="text"
+                          placeholder="MM/YY"
+                          value={formData.expiryDate}
+                          onChange={(e) => handleExpiryChange(e.target.value)}
+                          className="w-full px-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                          data-testid="input-expiry"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold mb-2">CVV</label>
+                        <input
+                          type="text"
+                          placeholder="123"
+                          value={formData.cvv}
+                          onChange={(e) => handleCVVChange(e.target.value)}
+                          className="w-full px-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                          data-testid="input-cvv"
+                        />
+                      </div>
+                    </div>
                   </>
-                ) : (
-                  `${paymentMethod === "card" ? "Pay" : "Place Order"} $${total.toFixed(2)}`
                 )}
-              </button>
-            </form>
-          )}
+
+                <div>
+                  <label className="block text-sm font-semibold mb-2">Email</label>
+                  <input
+                    type="email"
+                    placeholder="john@example.com"
+                    value={formData.email}
+                    onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                    data-testid="input-email"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold mb-2">Address</label>
+                  <input
+                    type="text"
+                    placeholder="123 Main Street"
+                    value={formData.address}
+                    onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
+                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                    data-testid="input-address"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <input
+                    type="text"
+                    placeholder="City"
+                    value={formData.city}
+                    onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
+                    className="px-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                    data-testid="input-city"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Zip Code"
+                    value={formData.zipCode}
+                    onChange={(e) => setFormData(prev => ({ ...prev, zipCode: e.target.value }))}
+                    className="px-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                    data-testid="input-zip"
+                  />
+                </div>
+
+                {paymentMethod === "card" && (
+                  <div className="bg-green-50 border border-green-200 rounded-2xl p-3 flex items-start gap-2">
+                    <Lock className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    <p className="text-xs text-green-800">Your payment is secure and encrypted</p>
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={isProcessing}
+                  className="w-full bg-black text-white py-4 rounded-2xl font-semibold hover:bg-neutral-800 disabled:opacity-50 flex items-center justify-center gap-2"
+                  data-testid="button-pay"
+                >
+                  {isProcessing ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    `${paymentMethod === "card" ? "Pay" : "Place Order"} $${total.toFixed(2)}`
+                  )}
+                </button>
+              </form>
+            )}
+          </div>
         </div>
       </MobileWrapper>
       <BottomNav />
