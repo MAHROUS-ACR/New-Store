@@ -103,7 +103,7 @@ export default function SettingsPage() {
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <div className="flex-1">
+          <div>
             <h1 className="text-xl font-bold">Firebase Settings</h1>
             <p className="text-xs text-muted-foreground">Configure your data store</p>
           </div>
