@@ -6,15 +6,21 @@ import { toast } from "sonner";
 
 interface ProductProps {
   id: string | number;
-  title: string;
-  category: string;
+  title?: string;
+  name?: string;
+  category?: string;
   price: number;
-  image: string;
+  image?: string;
 }
 
 export function ProductCard({ product, index }: { product: ProductProps; index: number }) {
   const { addItem } = useCart();
   const [isAdding, setIsAdding] = useState(false);
+
+  // Handle both 'title' (fallback) and 'name' (Firebase) fields
+  const productTitle = product.title || product.name || "Product";
+  const productCategory = product.category || "Uncategorized";
+  const productImage = product.image || "";
 
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -22,12 +28,12 @@ export function ProductCard({ product, index }: { product: ProductProps; index: 
     try {
       addItem({
         id: String(product.id),
-        title: product.title,
+        title: productTitle,
         price: product.price,
         quantity: 1,
-        image: product.image,
+        image: productImage,
       });
-      toast.success(`${product.title} added to cart`);
+      toast.success(`${productTitle} added to cart`);
     } catch (error) {
       toast.error("Failed to add to cart");
     } finally {
@@ -44,8 +50,8 @@ export function ProductCard({ product, index }: { product: ProductProps; index: 
     >
       <div className="relative aspect-square rounded-2xl overflow-hidden bg-gray-50 mb-3">
         <img 
-          src={product.image} 
-          alt={product.title}
+          src={productImage} 
+          alt={productTitle}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
         />
         <button
@@ -63,9 +69,9 @@ export function ProductCard({ product, index }: { product: ProductProps; index: 
       </div>
       
       <div className="px-1">
-        <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">{product.category}</p>
-        <h3 className="font-semibold text-sm leading-tight mb-1 line-clamp-1">{product.title}</h3>
-        <p className="font-bold text-lg">${product.price.toFixed(2)}</p>
+        <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1" data-testid={`text-category-${product.id}`}>{productCategory}</p>
+        <h3 className="font-semibold text-sm leading-tight mb-1 line-clamp-1" data-testid={`text-title-${product.id}`}>{productTitle}</h3>
+        <p className="font-bold text-lg" data-testid={`text-price-${product.id}`}>${product.price.toFixed(2)}</p>
       </div>
     </motion.div>
   );
