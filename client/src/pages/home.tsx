@@ -5,6 +5,8 @@ import { Search, ShoppingCart, AlertCircle } from "lucide-react";
 import { PromoBanner } from "@/components/store/promo-banner";
 import { CategoryFilter } from "@/components/store/category-filter";
 import { ProductCard } from "@/components/store/product-card";
+import { useLocation } from "wouter";
+import { useCart } from "@/lib/cartContext";
 import imgHeadphones from "@assets/generated_images/wireless_headphones_product_shot.png";
 import imgWatch from "@assets/generated_images/smart_watch_product_shot.png";
 import imgShoes from "@assets/generated_images/designer_running_shoes_product_shot.png";
@@ -42,7 +44,10 @@ const fallbackProducts = [
 ];
 
 export default function Home() {
+  const [, setLocation] = useLocation();
+  const { items } = useCart();
   const [activeCategory, setActiveCategory] = useState("All");
+  const [searchQuery, setSearchQuery] = useState("");
   const [products, setProducts] = useState(fallbackProducts);
   const [isLoading, setIsLoading] = useState(true);
   const [firebaseConfigured, setFirebaseConfigured] = useState(false);
@@ -79,9 +84,11 @@ export default function Home() {
     checkFirebaseAndFetchProducts();
   }, []);
 
-  const filteredProducts = activeCategory === "All" 
-    ? products 
-    : products.filter(p => p.category === activeCategory);
+  const filteredProducts = products.filter(p => {
+    const matchesCategory = activeCategory === "All" || p.category === activeCategory;
+    const matchesSearch = p.title.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
 
   return (
     <MobileWrapper>
@@ -93,16 +100,23 @@ export default function Home() {
             <input 
               type="text" 
               placeholder="Search products..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-3 bg-white border border-gray-100 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
               data-testid="input-search"
             />
           </div>
           <button 
+            onClick={() => setLocation("/cart")}
             className="w-11 h-11 bg-black text-white rounded-2xl flex items-center justify-center relative hover:bg-neutral-800 transition-colors"
             data-testid="button-cart"
           >
             <ShoppingCart className="w-5 h-5" />
-            <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full border-2 border-white flex items-center justify-center text-[10px] font-bold">2</div>
+            {items.length > 0 && (
+              <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full border-2 border-white flex items-center justify-center text-[10px] font-bold text-white">
+                {items.length}
+              </div>
+            )}
           </button>
         </div>
 
