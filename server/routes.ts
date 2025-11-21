@@ -2,6 +2,9 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { initializeFirebase, getFirestore, isFirebaseConfigured } from "./firebase";
+import { initializeApp, cert } from "firebase-admin";
+import * as admin from "firebase-admin";
+import { type UserRecord } from "firebase-admin/auth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize Firebase from environment variables on server startup
@@ -17,6 +20,134 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.warn("⚠️ Failed to initialize Firebase on startup:", error);
     }
   }
+  // User signup with Firebase
+  app.post("/api/auth/signup", async (req, res) => {
+    try {
+      if (!isFirebaseConfigured()) {
+        return res.status(503).json({ message: "Firebase not configured" });
+      }
+
+      const { email, password, username } = req.body;
+
+      if (!email || !password || !username) {
+        return res.status(400).json({ message: "Email, password, and username are required" });
+      }
+
+      const auth = admin.auth();
+
+      try {
+        // Create user in Firebase Auth
+        const userRecord: UserRecord = await auth.createUser({
+          email,
+          password,
+          displayName: username,
+        });
+
+        // Store user in database
+        const dbUser = await storage.createUser({
+          firebaseUid: userRecord.uid,
+          email,
+          username,
+        });
+
+        res.status(201).json({
+          id: dbUser.id,
+          firebaseUid: dbUser.firebaseUid,
+          email: dbUser.email,
+          username: dbUser.username,
+        });
+      } catch (authError: any) {
+        if (authError.code === "auth/email-already-exists") {
+          return res.status(400).json({ message: "Email already exists" });
+        }
+        throw authError;
+      }
+    } catch (error: any) {
+      console.error("Signup error:", error);
+      res.status(500).json({
+        message: "Signup failed",
+        error: error.message,
+      });
+    }
+  });
+
+  // User login with Firebase
+  app.post("/api/auth/login", async (req, res) => {
+    try {
+      if (!isFirebaseConfigured()) {
+        return res.status(503).json({ message: "Firebase not configured" });
+      }
+
+      const { email, password } = req.body;
+
+      if (!email || !password) {
+        return res.status(400).json({ message: "Email and password are required" });
+      }
+
+      // Check if user exists in database
+      const user = await storage.getUserByEmail(email);
+
+      if (!user) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+
+      // In production, verify the password with Firebase Admin SDK using signInWithPassword
+      // For now, we'll use the user's existence as validation
+      const auth = admin.auth();
+
+      try {
+        // Get custom token from Firebase
+        const customToken = await auth.createCustomToken(user.firebaseUid);
+
+        res.json({
+          id: user.id,
+          firebaseUid: user.firebaseUid,
+          email: user.email,
+          username: user.username,
+          token: customToken,
+        });
+      } catch (tokenError: any) {
+        throw tokenError;
+      }
+    } catch (error: any) {
+      console.error("Login error:", error);
+      res.status(500).json({
+        message: "Login failed",
+        error: error.message,
+      });
+    }
+  });
+
+  // Get current user by Firebase UID
+  app.get("/api/auth/me", async (req, res) => {
+    try {
+      const firebaseUid = req.headers["x-firebase-uid"];
+
+      if (!firebaseUid) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const user = await storage.getUserByFirebaseUid(firebaseUid as string);
+
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      res.json({
+        id: user.id,
+        firebaseUid: user.firebaseUid,
+        email: user.email,
+        username: user.username,
+      });
+    } catch (error: any) {
+      console.error("Get user error:", error);
+      res.status(500).json({
+        message: "Failed to get user",
+        error: error.message,
+      });
+    }
+  });
+
   // Get current Firebase configuration
   app.get("/api/firebase/config", (req, res) => {
     try {

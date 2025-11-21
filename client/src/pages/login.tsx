@@ -6,73 +6,158 @@ import { toast } from "sonner";
 
 export default function LoginPage() {
   const [, setLocation] = useLocation();
-  const { login } = useUser();
+  const { login, signup, isLoading } = useUser();
+  const [isSignup, setIsSignup] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [formLoading, setFormLoading] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!username.trim()) {
-      toast.error("Please enter your name");
-      return;
-    }
+    setFormLoading(true);
 
-    setIsLoading(true);
     try {
-      login(username);
-      toast.success(`Welcome ${username}!`);
+      if (isSignup) {
+        if (!email.trim() || !password.trim() || !username.trim()) {
+          toast.error("Please fill in all fields");
+          setFormLoading(false);
+          return;
+        }
+        if (password.length < 6) {
+          toast.error("Password must be at least 6 characters");
+          setFormLoading(false);
+          return;
+        }
+        await signup(email, password, username);
+        toast.success("Account created successfully!");
+      } else {
+        if (!email.trim() || !password.trim()) {
+          toast.error("Please fill in all fields");
+          setFormLoading(false);
+          return;
+        }
+        await login(email, password);
+        toast.success("Welcome back!");
+      }
       setTimeout(() => setLocation("/"), 500);
-    } catch (error) {
-      toast.error("Login failed");
+    } catch (error: any) {
+      console.error("Auth error:", error);
+      if (error.code === "auth/email-already-in-use") {
+        toast.error("Email already exists");
+      } else if (error.code === "auth/weak-password") {
+        toast.error("Password is too weak");
+      } else if (error.code === "auth/user-not-found" || error.code === "auth/wrong-password") {
+        toast.error("Invalid email or password");
+      } else {
+        toast.error(error.message || "Authentication failed");
+      }
     } finally {
-      setIsLoading(false);
+      setFormLoading(false);
     }
   };
+
+  if (isLoading) {
+    return (
+      <MobileWrapper>
+        <div className="w-full flex-1 flex items-center justify-center">
+          <div className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+        </div>
+      </MobileWrapper>
+    );
+  }
 
   return (
     <MobileWrapper>
       <div className="w-full flex-1 flex flex-col items-center justify-center px-6 pb-20">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold mb-2">Flux Wallet</h1>
-          <p className="text-muted-foreground">Welcome back</p>
+          <p className="text-muted-foreground">
+            {isSignup ? "Create an account" : "Welcome back"}
+          </p>
         </div>
 
-        <form onSubmit={handleLogin} className="w-full space-y-4">
+        <form onSubmit={handleSubmit} className="w-full space-y-4">
+          {isSignup && (
+            <div>
+              <label className="block text-sm font-semibold mb-2" htmlFor="username">
+                Username
+              </label>
+              <input
+                id="username"
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="Enter your name"
+                className="w-full px-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                data-testid="input-username"
+              />
+            </div>
+          )}
+
           <div>
-            <label className="block text-sm font-semibold mb-2" htmlFor="username">
-              Your Name
+            <label className="block text-sm font-semibold mb-2" htmlFor="email">
+              Email
             </label>
             <input
-              id="username"
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="Enter your name"
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your email"
               className="w-full px-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-              data-testid="input-username"
+              data-testid="input-email"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold mb-2" htmlFor="password">
+              Password
+            </label>
+            <input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter your password"
+              className="w-full px-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              data-testid="input-password"
             />
           </div>
 
           <button
             type="submit"
-            disabled={isLoading}
+            disabled={formLoading}
             className="w-full bg-black text-white py-4 rounded-2xl font-semibold flex items-center justify-center gap-2 hover:bg-neutral-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            data-testid="button-login"
+            data-testid={`button-${isSignup ? "signup" : "login"}`}
           >
-            {isLoading ? (
+            {formLoading ? (
               <>
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                Signing in...
+                {isSignup ? "Creating account..." : "Signing in..."}
               </>
+            ) : isSignup ? (
+              "Sign Up"
             ) : (
               "Sign In"
             )}
           </button>
         </form>
 
-        <p className="text-xs text-muted-foreground text-center mt-6">
-          Sign in to place orders and view your order history
-        </p>
+        <button
+          onClick={() => {
+            setIsSignup(!isSignup);
+            setEmail("");
+            setPassword("");
+            setUsername("");
+          }}
+          className="text-sm text-muted-foreground hover:text-foreground transition-colors mt-6"
+          data-testid="button-toggle-auth"
+        >
+          {isSignup
+            ? "Already have an account? Sign in"
+            : "Don't have an account? Sign up"}
+        </button>
       </div>
     </MobileWrapper>
   );
