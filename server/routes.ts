@@ -4,6 +4,19 @@ import { storage } from "./storage";
 import { initializeFirebase, getFirestore, isFirebaseConfigured } from "./firebase";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Initialize Firebase from environment variables on server startup
+  if (process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_PRIVATE_KEY && process.env.FIREBASE_CLIENT_EMAIL) {
+    try {
+      initializeFirebase(
+        process.env.FIREBASE_PROJECT_ID,
+        process.env.FIREBASE_PRIVATE_KEY,
+        process.env.FIREBASE_CLIENT_EMAIL
+      );
+      console.log("✅ Firebase initialized from environment variables");
+    } catch (error) {
+      console.warn("⚠️ Failed to initialize Firebase on startup:", error);
+    }
+  }
   // Get current Firebase configuration
   app.get("/api/firebase/config", (req, res) => {
     try {
