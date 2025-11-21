@@ -132,6 +132,8 @@ export default function SettingsPage() {
     setFirebaseMessagingSenderId("");
     setFirebaseMeasurementId("");
     toast.success("Firebase Authentication settings cleared!");
+    // Redirect to home to reload with demo data
+    setTimeout(() => setLocation("/"), 500);
   };
 
   return (
