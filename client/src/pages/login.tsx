@@ -40,7 +40,8 @@ export default function LoginPage() {
         await login(email, password);
         toast.success("Welcome back!");
       }
-      setTimeout(() => setLocation("/"), 500);
+      // Wait for user data to be set before redirecting
+      setTimeout(() => setLocation("/"), 1000);
     } catch (error: any) {
       console.error("Auth error:", error);
       if (error.code === "auth/email-already-in-use") {

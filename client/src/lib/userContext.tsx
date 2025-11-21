@@ -44,6 +44,17 @@ export function UserProvider({ children }: { children: ReactNode }) {
         const auth = getAuth(app);
         setFirebaseAuth(auth);
 
+        // Try to restore user from localStorage first
+        const savedUser = localStorage.getItem("user");
+        if (savedUser) {
+          try {
+            setUser(JSON.parse(savedUser));
+            setIsLoading(false);
+          } catch (error) {
+            console.error("Failed to parse saved user:", error);
+          }
+        }
+
         // Listen to auth state changes
         const unsubscribe = onAuthStateChanged(auth, async (firebaseUser: FirebaseUser | null) => {
           if (firebaseUser) {
@@ -58,9 +69,16 @@ export function UserProvider({ children }: { children: ReactNode }) {
                 const userData = await response.json();
                 setUser(userData);
                 localStorage.setItem("user", JSON.stringify(userData));
+              } else if (!savedUser) {
+                // If fetch fails and no saved user, clear state
+                setUser(null);
               }
             } catch (error) {
               console.error("Failed to fetch user:", error);
+              // Keep saved user if fetch fails
+              if (!savedUser) {
+                setUser(null);
+              }
             }
           } else {
             setUser(null);
