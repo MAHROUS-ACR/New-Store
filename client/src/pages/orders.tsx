@@ -95,116 +95,116 @@ export default function OrdersPage() {
   };
 
   return (
-    <>
-      <MobileWrapper>
-        <div className="flex-1 flex flex-col overflow-hidden">
-          {/* Header */}
-          <div className="px-6 pb-4 pt-2 flex items-center gap-4 border-b border-gray-100 flex-shrink-0">
+    <MobileWrapper>
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Header */}
+        <div className="px-6 pb-4 pt-2 flex items-center gap-4 border-b border-gray-100 flex-shrink-0">
+          <button
+            onClick={() => setLocation("/")}
+            className="w-10 h-10 rounded-full bg-white border border-gray-100 flex items-center justify-center"
+            data-testid="button-back"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <h1 className="text-xl font-bold">My Orders</h1>
+        </div>
+
+        {/* Content */}
+        {isLoading ? (
+          <div className="flex-1 flex items-center justify-center">
+            <div className="w-8 h-8 border-4 border-gray-200 border-t-primary rounded-full animate-spin" />
+          </div>
+        ) : orders.length === 0 ? (
+          <div className="flex-1 flex flex-col items-center justify-center px-6">
+            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+              <span className="text-2xl">📦</span>
+            </div>
+            <h2 className="text-lg font-bold mb-2">No orders yet</h2>
+            <p className="text-sm text-muted-foreground mb-6 text-center">
+              Your orders will appear here once you place one
+            </p>
             <button
               onClick={() => setLocation("/")}
-              className="w-10 h-10 rounded-full bg-white border border-gray-100 flex items-center justify-center"
-              data-testid="button-back"
+              className="px-6 py-2 bg-black text-white rounded-full text-sm font-semibold"
+              data-testid="button-start-shopping"
             >
-              <ArrowLeft className="w-5 h-5" />
+              Start Shopping
             </button>
-            <h1 className="text-xl font-bold">My Orders</h1>
           </div>
-
-          {/* Content */}
-          {isLoading ? (
-            <div className="flex-1 flex items-center justify-center">
-              <div className="w-8 h-8 border-4 border-gray-200 border-t-primary rounded-full animate-spin" />
-            </div>
-          ) : orders.length === 0 ? (
-            <div className="flex-1 flex flex-col items-center justify-center px-6">
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                <span className="text-2xl">📦</span>
-              </div>
-              <h2 className="text-lg font-bold mb-2">No orders yet</h2>
-              <p className="text-sm text-muted-foreground mb-6 text-center">
-                Your orders will appear here once you place one
-              </p>
-              <button
-                onClick={() => setLocation("/")}
-                className="px-6 py-2 bg-black text-white rounded-full text-sm font-semibold"
-                data-testid="button-start-shopping"
-              >
-                Start Shopping
-              </button>
-            </div>
-          ) : (
-            <div className="flex-1 overflow-y-auto no-scrollbar px-6 py-4 pb-24">
-              <div className="space-y-3">
-                {orders.map((order) => (
-                  <div
-                    key={order.id}
-                    className="p-4 bg-white rounded-2xl border border-gray-100"
-                    data-testid={`order-${order.id}`}
-                  >
-                    <div className="flex items-start justify-between mb-3">
-                      <div>
-                        <p className="text-sm text-muted-foreground">Order ID</p>
-                        <p className="font-semibold text-sm font-mono">{order.id.slice(0, 12)}</p>
-                      </div>
-                      <div className="flex flex-col items-end gap-2">
-                        <span
-                          className={`text-xs font-semibold px-3 py-1 rounded-full border ${getStatusColor(
-                            order.status
-                          )}`}
-                          data-testid={`status-${order.id}`}
-                        >
-                          {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                        </span>
-                        {order.paymentMethod && (
-                          <p className="text-xs text-muted-foreground">
-                            {order.paymentMethod === "card" ? "💳 Card" : "🚚 On Delivery"}
-                          </p>
-                        )}
-                      </div>
+        ) : (
+          <div className="flex-1 overflow-y-auto no-scrollbar px-6 py-4 pb-24">
+            <div className="space-y-3">
+              {orders.map((order) => (
+                <div
+                  key={order.id}
+                  className="p-4 bg-white rounded-2xl border border-gray-100"
+                  data-testid={`order-${order.id}`}
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Order ID</p>
+                      <p className="font-semibold text-sm font-mono">{order.id.slice(0, 12)}</p>
                     </div>
-
-                    {/* Items List */}
-                    {order.items && order.items.length > 0 ? (
-                      <div className="space-y-2 mb-3 pb-3 border-b border-gray-100">
-                        {order.items.slice(0, 2).map((item, i) => (
-                          <div key={i} data-testid={`item-${order.id}-${i}`}>
-                            <p className="text-xs font-medium">{item.quantity}x {item.title}</p>
-                            <p className="text-xs text-muted-foreground">
-                              ${(item.price * item.quantity).toFixed(2)}
-                            </p>
-                          </div>
-                        ))}
-                        {order.items.length > 2 && (
-                          <p className="text-xs text-muted-foreground font-medium">
-                            +{order.items.length - 2} more items
-                          </p>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="mb-3 pb-3 border-b border-gray-100">
-                        <p className="text-xs text-muted-foreground">No items</p>
-                      </div>
-                    )}
-
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm text-muted-foreground">
-                          {new Date(order.createdAt).toLocaleDateString()}
+                    <div className="flex flex-col items-end gap-2">
+                      <span
+                        className={`text-xs font-semibold px-3 py-1 rounded-full border ${getStatusColor(
+                          order.status
+                        )}`}
+                        data-testid={`status-${order.id}`}
+                      >
+                        {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                      </span>
+                      {order.paymentMethod && (
+                        <p className="text-xs text-muted-foreground">
+                          {order.paymentMethod === "card" ? "💳 Card" : "🚚 On Delivery"}
                         </p>
-                        <p className="font-bold text-lg" data-testid={`total-${order.id}`}>
-                          ${order.total.toFixed(2)}
-                        </p>
-                      </div>
-                      <ChevronRight className="w-5 h-5 text-gray-400" />
+                      )}
                     </div>
                   </div>
-                ))}
-              </div>
+
+                  {/* Items List */}
+                  {order.items && order.items.length > 0 ? (
+                    <div className="space-y-2 mb-3 pb-3 border-b border-gray-100">
+                      {order.items.slice(0, 2).map((item, i) => (
+                        <div key={i} data-testid={`item-${order.id}-${i}`}>
+                          <p className="text-xs font-medium">{item.quantity}x {item.title}</p>
+                          <p className="text-xs text-muted-foreground">
+                            ${(item.price * item.quantity).toFixed(2)}
+                          </p>
+                        </div>
+                      ))}
+                      {order.items.length > 2 && (
+                        <p className="text-xs text-muted-foreground font-medium">
+                          +{order.items.length - 2} more items
+                        </p>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="mb-3 pb-3 border-b border-gray-100">
+                      <p className="text-xs text-muted-foreground">No items</p>
+                    </div>
+                  )}
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground">
+                        {new Date(order.createdAt).toLocaleDateString()}
+                      </p>
+                      <p className="font-bold text-lg" data-testid={`total-${order.id}`}>
+                        ${order.total.toFixed(2)}
+                      </p>
+                    </div>
+                    <ChevronRight className="w-5 h-5 text-gray-400" />
+                  </div>
+                </div>
+              ))}
             </div>
-          )}
-        </div>
-      </MobileWrapper>
-      <BottomNav />
-    </>
+          </div>
+        )}
+      </div>
+      <div className="absolute bottom-0 left-0 right-0">
+        <BottomNav />
+      </div>
+    </MobileWrapper>
   );
 }
