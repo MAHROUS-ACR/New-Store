@@ -18,6 +18,10 @@ export default function SettingsPage() {
   const [firebaseApiKey, setFirebaseApiKey] = useState("");
   const [firebaseProjectId, setFirebaseProjectId] = useState("");
   const [firebaseAppId, setFirebaseAppId] = useState("");
+  const [firebaseAuthDomain, setFirebaseAuthDomain] = useState("");
+  const [firebaseStorageBucket, setFirebaseStorageBucket] = useState("");
+  const [firebaseMessagingSenderId, setFirebaseMessagingSenderId] = useState("");
+  const [firebaseMeasurementId, setFirebaseMeasurementId] = useState("");
   
   const [isLoading, setIsLoading] = useState(false);
 
@@ -28,6 +32,10 @@ export default function SettingsPage() {
       setFirebaseApiKey(config.apiKey || "");
       setFirebaseProjectId(config.projectId || "");
       setFirebaseAppId(config.appId || "");
+      setFirebaseAuthDomain(config.authDomain || "");
+      setFirebaseStorageBucket(config.storageBucket || "");
+      setFirebaseMessagingSenderId(config.messagingSenderId || "");
+      setFirebaseMeasurementId(config.measurementId || "");
     }
   }, []);
 
@@ -76,6 +84,10 @@ export default function SettingsPage() {
         apiKey: firebaseApiKey,
         projectId: firebaseProjectId,
         appId: firebaseAppId,
+        authDomain: firebaseAuthDomain,
+        storageBucket: firebaseStorageBucket,
+        messagingSenderId: firebaseMessagingSenderId,
+        measurementId: firebaseMeasurementId,
       });
       toast.success("Firebase Authentication settings saved!");
     } catch (error) {
@@ -88,6 +100,10 @@ export default function SettingsPage() {
     setFirebaseApiKey("");
     setFirebaseProjectId("");
     setFirebaseAppId("");
+    setFirebaseAuthDomain("");
+    setFirebaseStorageBucket("");
+    setFirebaseMessagingSenderId("");
+    setFirebaseMeasurementId("");
     toast.success("Firebase Authentication settings cleared!");
   };
 
@@ -250,6 +266,66 @@ export default function SettingsPage() {
                     placeholder="1:123456789:web:abcd1234efgh5678ijkl"
                     className="w-full px-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                     data-testid="input-firebase-app-id"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold mb-2" htmlFor="firebaseAuthDomain">
+                    Auth Domain
+                  </label>
+                  <input
+                    id="firebaseAuthDomain"
+                    type="text"
+                    value={firebaseAuthDomain}
+                    onChange={(e) => setFirebaseAuthDomain(e.target.value)}
+                    placeholder="your-project.firebaseapp.com"
+                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    data-testid="input-firebase-auth-domain"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold mb-2" htmlFor="firebaseStorageBucket">
+                    Storage Bucket
+                  </label>
+                  <input
+                    id="firebaseStorageBucket"
+                    type="text"
+                    value={firebaseStorageBucket}
+                    onChange={(e) => setFirebaseStorageBucket(e.target.value)}
+                    placeholder="your-project.appspot.com"
+                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    data-testid="input-firebase-storage-bucket"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold mb-2" htmlFor="firebaseMessagingSenderId">
+                    Messaging Sender ID
+                  </label>
+                  <input
+                    id="firebaseMessagingSenderId"
+                    type="text"
+                    value={firebaseMessagingSenderId}
+                    onChange={(e) => setFirebaseMessagingSenderId(e.target.value)}
+                    placeholder="123456789012"
+                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    data-testid="input-firebase-messaging-sender-id"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold mb-2" htmlFor="firebaseMeasurementId">
+                    Measurement ID
+                  </label>
+                  <input
+                    id="firebaseMeasurementId"
+                    type="text"
+                    value={firebaseMeasurementId}
+                    onChange={(e) => setFirebaseMeasurementId(e.target.value)}
+                    placeholder="G-XXXXXXXXXX"
+                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    data-testid="input-firebase-measurement-id"
                   />
                 </div>
 

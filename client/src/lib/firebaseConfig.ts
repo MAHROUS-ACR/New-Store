@@ -2,6 +2,10 @@ export interface FirebaseClientConfig {
   apiKey: string;
   projectId: string;
   appId: string;
+  authDomain?: string;
+  storageBucket?: string;
+  messagingSenderId?: string;
+  measurementId?: string;
 }
 
 const STORAGE_KEY = "firebase_client_config";
@@ -27,9 +31,21 @@ export function getFirebaseConfig(): FirebaseClientConfig | null {
     const apiKey = import.meta.env.VITE_FIREBASE_API_KEY;
     const projectId = import.meta.env.VITE_FIREBASE_PROJECT_ID;
     const appId = import.meta.env.VITE_FIREBASE_APP_ID;
+    const authDomain = import.meta.env.VITE_FIREBASE_AUTH_DOMAIN;
+    const storageBucket = import.meta.env.VITE_FIREBASE_STORAGE_BUCKET;
+    const messagingSenderId = import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID;
+    const measurementId = import.meta.env.VITE_FIREBASE_MEASUREMENT_ID;
     
     if (apiKey && projectId && appId) {
-      return { apiKey, projectId, appId };
+      return { 
+        apiKey, 
+        projectId, 
+        appId,
+        authDomain,
+        storageBucket,
+        messagingSenderId,
+        measurementId
+      };
     }
     
     return null;
