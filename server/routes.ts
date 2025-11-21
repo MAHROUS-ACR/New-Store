@@ -157,7 +157,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       console.log("Fetching user for Firebase UID:", firebaseUid);
-      const user = await storage.getUserByFirebaseUid(firebaseUid);
+      let user = await storage.getUserByFirebaseUid(firebaseUid);
+
+      // If not found in PostgreSQL, try Firestore
+      if (!user && isFirebaseConfigured()) {
+        try {
+          const db = getFirestore();
+          const userDoc = await db.collection("users").doc(firebaseUid).get();
+          if (userDoc.exists) {
+            const userData = userDoc.data();
+            console.log("User found in Firestore, syncing to PostgreSQL");
+            // Sync user to PostgreSQL
+            user = await storage.createUser({
+              firebaseUid: firebaseUid,
+              email: userData.email,
+              username: userData.username,
+            });
+          }
+        } catch (firestoreError) {
+          console.warn("Error checking Firestore:", firestoreError);
+        }
+      }
 
       if (!user) {
         console.log("User not found for Firebase UID:", firebaseUid);
