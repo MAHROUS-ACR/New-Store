@@ -55,36 +55,15 @@ export function UserProvider({ children }: { children: ReactNode }) {
           }
         }
 
-        // Listen to auth state changes
+        // Restore user from localStorage if available
+        setIsLoading(false);
+        
+        // Listen to auth state changes as backup
         const unsubscribe = onAuthStateChanged(auth, async (firebaseUser: FirebaseUser | null) => {
-          if (firebaseUser) {
-            try {
-              // Fetch user data from server
-              const response = await fetch("/api/auth/me", {
-                headers: {
-                  "x-firebase-uid": firebaseUser.uid,
-                },
-              });
-              if (response.ok) {
-                const userData = await response.json();
-                setUser(userData);
-                localStorage.setItem("user", JSON.stringify(userData));
-              } else if (!savedUser) {
-                // If fetch fails and no saved user, clear state
-                setUser(null);
-              }
-            } catch (error) {
-              console.error("Failed to fetch user:", error);
-              // Keep saved user if fetch fails
-              if (!savedUser) {
-                setUser(null);
-              }
-            }
-          } else {
+          // Just track auth state, don't fetch user (already in localStorage)
+          if (!firebaseUser && !savedUser) {
             setUser(null);
-            localStorage.removeItem("user");
           }
-          setIsLoading(false);
         });
 
         return () => unsubscribe();
@@ -134,6 +113,15 @@ export function UserProvider({ children }: { children: ReactNode }) {
     const userData = await response.json();
     setUser(userData);
     localStorage.setItem("user", JSON.stringify(userData));
+    
+    // Also log in with Firebase to set authentication state
+    if (firebaseAuth) {
+      try {
+        await signInWithEmailAndPassword(firebaseAuth, email, password);
+      } catch (error) {
+        console.warn("Firebase signin skipped (server-only auth):", error);
+      }
+    }
   };
 
   const logout = async () => {
