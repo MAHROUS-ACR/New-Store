@@ -25,18 +25,42 @@ export default function SettingsPage() {
   
   const [isLoading, setIsLoading] = useState(false);
 
-  // Load saved Firebase client config on mount
+  // Load Firebase config from server and localStorage on mount
   useEffect(() => {
-    const config = getFirebaseConfig();
-    if (config) {
-      setFirebaseApiKey(config.apiKey || "");
-      setFirebaseProjectId(config.projectId || "");
-      setFirebaseAppId(config.appId || "");
-      setFirebaseAuthDomain(config.authDomain || "");
-      setFirebaseStorageBucket(config.storageBucket || "");
-      setFirebaseMessagingSenderId(config.messagingSenderId || "");
-      setFirebaseMeasurementId(config.measurementId || "");
-    }
+    const loadConfig = async () => {
+      try {
+        // First, try to fetch from server (environment variables)
+        const response = await fetch("/api/firebase/config");
+        if (response.ok) {
+          const serverConfig = await response.json();
+          setProjectId(serverConfig.projectId || "");
+          setClientEmail(serverConfig.clientEmail || "");
+          setFirebaseApiKey(serverConfig.firebaseApiKey || "");
+          setFirebaseProjectId(serverConfig.firebaseProjectId || "");
+          setFirebaseAppId(serverConfig.firebaseAppId || "");
+          setFirebaseAuthDomain(serverConfig.firebaseAuthDomain || "");
+          setFirebaseStorageBucket(serverConfig.firebaseStorageBucket || "");
+          setFirebaseMessagingSenderId(serverConfig.firebaseMessagingSenderId || "");
+          setFirebaseMeasurementId(serverConfig.firebaseMeasurementId || "");
+        }
+      } catch (error) {
+        console.error("Failed to load Firebase config from server:", error);
+      }
+
+      // Also check localStorage for any locally saved config
+      const localConfig = getFirebaseConfig();
+      if (localConfig) {
+        setFirebaseApiKey(localConfig.apiKey || "");
+        setFirebaseProjectId(localConfig.projectId || "");
+        setFirebaseAppId(localConfig.appId || "");
+        setFirebaseAuthDomain(localConfig.authDomain || "");
+        setFirebaseStorageBucket(localConfig.storageBucket || "");
+        setFirebaseMessagingSenderId(localConfig.messagingSenderId || "");
+        setFirebaseMeasurementId(localConfig.measurementId || "");
+      }
+    };
+
+    loadConfig();
   }, []);
 
   const handleSaveServerConfig = async () => {

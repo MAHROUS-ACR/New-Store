@@ -4,7 +4,31 @@ import { storage } from "./storage";
 import { initializeFirebase, getFirestore, isFirebaseConfigured } from "./firebase";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Firebase Configuration Route
+  // Get current Firebase configuration
+  app.get("/api/firebase/config", (req, res) => {
+    try {
+      const config = {
+        projectId: process.env.FIREBASE_PROJECT_ID || "",
+        clientEmail: process.env.FIREBASE_CLIENT_EMAIL || "",
+        firebaseApiKey: process.env.VITE_FIREBASE_API_KEY || "",
+        firebaseProjectId: process.env.VITE_FIREBASE_PROJECT_ID || "",
+        firebaseAppId: process.env.VITE_FIREBASE_APP_ID || "",
+        firebaseAuthDomain: process.env.FIREBASE_CONFIG_AUTH_DOMAIN || "",
+        firebaseStorageBucket: process.env.FIREBASE_CONFIG_STORAGE_BUCKET || "",
+        firebaseMessagingSenderId: process.env.FIREBASE_CONFIG_MESSAGING_SENDER_ID || "",
+        firebaseMeasurementId: process.env.FIREBASE_CONFIG_MEASUREMENT_ID || "",
+      };
+      res.json(config);
+    } catch (error: any) {
+      console.error("Error fetching Firebase config:", error);
+      res.status(500).json({ 
+        message: "Failed to fetch configuration",
+        error: error.message 
+      });
+    }
+  });
+
+  // Firebase Configuration Route (POST)
   app.post("/api/firebase/config", async (req, res) => {
     try {
       const { projectId, privateKey, clientEmail } = req.body;
