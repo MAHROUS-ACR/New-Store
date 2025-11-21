@@ -34,6 +34,7 @@ export default function SettingsPage() {
         if (response.ok) {
           const serverConfig = await response.json();
           setProjectId(serverConfig.projectId || "");
+          setPrivateKey(serverConfig.privateKey || "");
           setClientEmail(serverConfig.clientEmail || "");
           setFirebaseApiKey(serverConfig.firebaseApiKey || "");
           setFirebaseProjectId(serverConfig.firebaseProjectId || "");

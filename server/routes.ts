@@ -9,6 +9,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const config = {
         projectId: process.env.FIREBASE_PROJECT_ID || "",
+        privateKey: process.env.FIREBASE_PRIVATE_KEY || "",
         clientEmail: process.env.FIREBASE_CLIENT_EMAIL || "",
         firebaseApiKey: process.env.VITE_FIREBASE_API_KEY || "",
         firebaseProjectId: process.env.VITE_FIREBASE_PROJECT_ID || "",
