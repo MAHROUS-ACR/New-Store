@@ -1,6 +1,21 @@
 import { type User, type InsertUser, users } from "@shared/schema";
-import { db } from "./db";
 import { eq } from "drizzle-orm";
+import type { NeonHttpDatabase } from "drizzle-orm/neon-http";
+
+let dbInstance: NeonHttpDatabase | null = null;
+
+async function getDb(): Promise<NeonHttpDatabase> {
+  if (!dbInstance) {
+    if (!process.env.DATABASE_URL) {
+      throw new Error("DATABASE_URL environment variable is not set");
+    }
+    const { drizzle } = await import("drizzle-orm/neon-http");
+    const { neon } = await import("@neondatabase/serverless");
+    const sql = neon(process.env.DATABASE_URL);
+    dbInstance = drizzle(sql);
+  }
+  return dbInstance;
+}
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
@@ -11,6 +26,7 @@ export interface IStorage {
 
 export class DbStorage implements IStorage {
   async getUser(id: string): Promise<User | undefined> {
+    const db = await getDb();
     const result = await db
       .select()
       .from(users)
@@ -20,6 +36,7 @@ export class DbStorage implements IStorage {
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
+    const db = await getDb();
     const result = await db
       .select()
       .from(users)
@@ -29,6 +46,7 @@ export class DbStorage implements IStorage {
   }
 
   async getUserByFirebaseUid(firebaseUid: string): Promise<User | undefined> {
+    const db = await getDb();
     const result = await db
       .select()
       .from(users)
@@ -38,6 +56,7 @@ export class DbStorage implements IStorage {
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
+    const db = await getDb();
     const [user] = await db.insert(users).values(insertUser).returning();
     return user;
   }
