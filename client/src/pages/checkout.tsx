@@ -165,9 +165,9 @@ export default function CheckoutPage() {
         console.warn("Failed to save to server:", error);
       }
 
-      toast.success("Payment successful! Order confirmed.");
+      toast.success("✅ Order saved to Firestore! Redirecting...");
       clearCart();
-      setLocation("/orders");
+      setTimeout(() => setLocation("/orders"), 1500);
     } catch (error) {
       console.error("Payment error:", error);
       toast.error("Payment processing failed");
@@ -216,9 +216,9 @@ export default function CheckoutPage() {
         console.warn("Failed to save to server:", error);
       }
 
-      toast.success("Order placed! Pay on delivery.");
+      toast.success("✅ Order saved to Firestore! Redirecting...");
       clearCart();
-      setLocation("/orders");
+      setTimeout(() => setLocation("/orders"), 1500);
     } catch (error) {
       console.error("Order error:", error);
       toast.error("Failed to place order");
