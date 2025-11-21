@@ -97,6 +97,12 @@ export default function Home() {
     fetchProductsData();
   }, [location]);
 
+  // Extract unique categories from products
+  const categories = ["All", ...Array.from(new Set(products
+    .map(p => p.category)
+    .filter(Boolean)
+    .sort()))];
+
   const filteredProducts = products.filter(p => {
     if (!p) return false;
     const category = p.category || "";
@@ -160,7 +166,7 @@ export default function Home() {
             <div className="mb-2 mt-4">
               <h2 className="text-lg font-bold">Categories</h2>
             </div>
-            <CategoryFilter active={activeCategory} onChange={setActiveCategory} />
+            <CategoryFilter active={activeCategory} onChange={setActiveCategory} categories={categories} />
 
             {isLoading ? (
               <div className="grid grid-cols-2 gap-4 mt-4">

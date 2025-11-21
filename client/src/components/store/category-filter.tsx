@@ -1,8 +1,6 @@
 import { motion } from "framer-motion";
 
-const categories = ["All", "Shoes", "Electronics", "Fashion", "Accessories", "Sale"];
-
-export function CategoryFilter({ active, onChange }: { active: string; onChange: (c: string) => void }) {
+export function CategoryFilter({ active, onChange, categories = ["All"] }: { active: string; onChange: (c: string) => void; categories?: string[] }) {
   return (
     <div className="flex overflow-x-auto no-scrollbar gap-2 px-6 pb-4">
       {categories.map((category) => (
