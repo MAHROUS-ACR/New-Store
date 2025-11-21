@@ -3,6 +3,7 @@ import { BottomNav } from "@/components/bottom-nav";
 import { ArrowLeft, ChevronRight } from "lucide-react";
 import { useLocation } from "wouter";
 import { useEffect, useState } from "react";
+import { useUser } from "@/lib/userContext";
 import { toast } from "sonner";
 
 interface CartItem {
@@ -24,9 +25,16 @@ interface Order {
 
 export default function OrdersPage() {
   const [location, setLocation] = useLocation();
+  const { user, isLoggedIn } = useUser();
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [firebaseConfigured, setFirebaseConfigured] = useState(false);
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      setLocation("/login");
+    }
+  }, [isLoggedIn, setLocation]);
 
   useEffect(() => {
     async function fetchOrders() {
@@ -151,7 +159,7 @@ export default function OrdersPage() {
         ) : (
           <div className="flex-1 overflow-y-auto no-scrollbar pb-24 w-full">
             <div className="w-full px-6 py-4 space-y-3">
-              {orders.map((order) => (
+              {orders.filter(order => !user || !(order as any).userId || (order as any).userId === user.id).map((order) => (
                 <div
                   key={order.id}
                   className="p-4 bg-white rounded-2xl border border-gray-100"

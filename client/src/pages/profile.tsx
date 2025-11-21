@@ -1,7 +1,10 @@
+import { useEffect } from "react";
 import { MobileWrapper } from "@/components/mobile-wrapper";
 import { BottomNav } from "@/components/bottom-nav";
 import { Settings, Database, Package, Bell, HelpCircle, LogOut, ChevronRight } from "lucide-react";
 import { useLocation } from "wouter";
+import { useUser } from "@/lib/userContext";
+import { toast } from "sonner";
 import avatarImage from "@assets/generated_images/professional_user_avatar_portrait.png";
 
 const menuItems = [
@@ -13,6 +16,19 @@ const menuItems = [
 
 export default function ProfilePage() {
   const [, setLocation] = useLocation();
+  const { user, isLoggedIn, logout } = useUser();
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      setLocation("/login");
+    }
+  }, [isLoggedIn, setLocation]);
+
+  const handleLogout = () => {
+    logout();
+    toast.success("You have been logged out");
+    setLocation("/");
+  };
 
   return (
     <MobileWrapper>
@@ -26,33 +42,21 @@ export default function ProfilePage() {
         </div>
 
         {/* User Info Card */}
-        <div className="px-6 py-4 flex-shrink-0">
-          <div className="bg-gradient-to-br from-primary to-purple-600 rounded-3xl p-4 text-white shadow-lg">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-12 h-12 rounded-full overflow-hidden border-3 border-white/20">
-                <img src={avatarImage} alt="User" className="w-full h-full object-cover" />
-              </div>
-              <div>
-                <h2 className="text-sm font-bold">Alex Morgan</h2>
-                <p className="text-xs opacity-90">alex.morgan@email.com</p>
-              </div>
-            </div>
-            <div className="grid grid-cols-3 gap-2 pt-3 border-t border-white/20 text-center">
-              <div>
-                <p className="text-lg font-bold">12</p>
-                <p className="text-xs opacity-80">Orders</p>
-              </div>
-              <div>
-                <p className="text-lg font-bold">$2.4k</p>
-                <p className="text-xs opacity-80">Spent</p>
-              </div>
-              <div>
-                <p className="text-lg font-bold">5</p>
-                <p className="text-xs opacity-80">Reviews</p>
+        {user && (
+          <div className="px-6 py-4 flex-shrink-0">
+            <div className="bg-gradient-to-br from-primary to-purple-600 rounded-3xl p-4 text-white shadow-lg">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-12 h-12 rounded-full overflow-hidden border-3 border-white/20">
+                  <img src={avatarImage} alt="User" className="w-full h-full object-cover" />
+                </div>
+                <div>
+                  <h2 className="text-sm font-bold" data-testid="text-username">{user.username}</h2>
+                  <p className="text-xs opacity-90">{user.id}</p>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Menu Items */}
         <div className="flex-1 overflow-y-auto no-scrollbar pb-24 w-full">
@@ -75,6 +79,7 @@ export default function ProfilePage() {
             ))}
 
             <button
+              onClick={handleLogout}
               className="w-full flex items-center justify-between p-4 bg-red-50 rounded-2xl border border-red-100 hover:border-red-200 transition-colors group mt-6"
               data-testid="button-logout"
             >

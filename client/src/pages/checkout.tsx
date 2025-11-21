@@ -144,11 +144,13 @@ export default function CheckoutPage() {
         createdAt: new Date().toISOString(),
       };
 
+      const orderWithUser = { ...orderData, userId: user?.id };
+
       try {
         const existingOrders = localStorage.getItem("orders");
-        const orders = existingOrders ? JSON.parse(existingOrders) : [];
-        orders.unshift(orderData);
-        localStorage.setItem("orders", JSON.stringify(orders));
+        const savedOrders = existingOrders ? JSON.parse(existingOrders) : [];
+        savedOrders.unshift(orderWithUser);
+        localStorage.setItem("orders", JSON.stringify(savedOrders));
       } catch (e) {
         console.warn("Failed to save to localStorage:", e);
       }
@@ -157,7 +159,7 @@ export default function CheckoutPage() {
         await fetch("/api/orders", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(orderData),
+          body: JSON.stringify(orderWithUser),
         });
       } catch (error) {
         console.warn("Failed to save to server:", error);
@@ -193,11 +195,13 @@ export default function CheckoutPage() {
         createdAt: new Date().toISOString(),
       };
 
+      const orderWithUser = { ...orderData, userId: user?.id };
+
       try {
         const existingOrders = localStorage.getItem("orders");
-        const orders = existingOrders ? JSON.parse(existingOrders) : [];
-        orders.unshift(orderData);
-        localStorage.setItem("orders", JSON.stringify(orders));
+        const savedOrders = existingOrders ? JSON.parse(existingOrders) : [];
+        savedOrders.unshift(orderWithUser);
+        localStorage.setItem("orders", JSON.stringify(savedOrders));
       } catch (e) {
         console.warn("Failed to save to localStorage:", e);
       }
@@ -206,7 +210,7 @@ export default function CheckoutPage() {
         await fetch("/api/orders", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(orderData),
+          body: JSON.stringify(orderWithUser),
         });
       } catch (error) {
         console.warn("Failed to save to server:", error);
