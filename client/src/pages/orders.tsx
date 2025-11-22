@@ -1,6 +1,6 @@
 import { MobileWrapper } from "@/components/mobile-wrapper";
 import { BottomNav } from "@/components/bottom-nav";
-import { ArrowLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft, ChevronRight, X } from "lucide-react";
 import { useLocation } from "wouter";
 import { useEffect, useState } from "react";
 import { useUser } from "@/lib/userContext";
@@ -19,6 +19,8 @@ interface CartItem {
 
 interface Order {
   id: string;
+  orderNumber?: number;
+  userId?: string;
   items: CartItem[];
   total: number;
   status: string;
@@ -37,6 +39,7 @@ export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [firebaseConfigured, setFirebaseConfigured] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
   useEffect(() => {
     if (!authLoading && !isLoggedIn) {
@@ -172,34 +175,146 @@ export default function OrdersPage() {
           <div className="flex-1 overflow-y-auto no-scrollbar pb-24 w-full">
             <div className="w-full px-6 py-4 space-y-3">
               {orders.filter(order => !user || !(order as any).userId || (order as any).userId === user.id).map((order) => (
-                <button
-                  key={order.id}
-                  onClick={() => setLocation(`/order/${order.id}`)}
-                  className="w-full p-4 bg-white rounded-2xl border border-gray-100 hover:border-primary hover:shadow-sm transition-all text-left"
-                  data-testid={`order-${order.id}`}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <p className="text-sm text-muted-foreground">Order #{(order as any).orderNumber || "N/A"}</p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {new Date(order.createdAt).toLocaleDateString()}
-                      </p>
+                <div key={order.id}>
+                  <button
+                    onClick={() => setSelectedOrder(selectedOrder?.id === order.id ? null : order)}
+                    className="w-full p-4 bg-white rounded-2xl border border-gray-100 hover:border-primary hover:shadow-sm transition-all text-left"
+                    data-testid={`order-${order.id}`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <p className="text-sm text-muted-foreground">Order #{(order as any).orderNumber || "N/A"}</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {new Date(order.createdAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <div className="flex flex-col items-end gap-2">
+                        <p className="font-bold text-lg" data-testid={`total-${order.id}`}>
+                          ${order.total.toFixed(2)}
+                        </p>
+                        <span
+                          className={`text-xs font-semibold px-2 py-1 rounded-full border ${getStatusColor(
+                            order.status
+                          )}`}
+                          data-testid={`status-${order.id}`}
+                        >
+                          {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex flex-col items-end gap-2">
-                      <p className="font-bold text-lg" data-testid={`total-${order.id}`}>
-                        ${order.total.toFixed(2)}
-                      </p>
-                      <span
-                        className={`text-xs font-semibold px-2 py-1 rounded-full border ${getStatusColor(
-                          order.status
-                        )}`}
-                        data-testid={`status-${order.id}`}
-                      >
-                        {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                      </span>
+                  </button>
+
+                  {selectedOrder?.id === order.id && (
+                    <div className="mt-3 bg-white rounded-2xl border border-gray-100 p-4">
+                      <div className="flex items-start justify-between mb-3 pb-3 border-b border-gray-100">
+                        <div>
+                          <p className="text-xs font-semibold text-gray-500">Order Details</p>
+                          <p className="text-sm font-bold text-gray-900">#{selectedOrder.orderNumber || "N/A"}</p>
+                        </div>
+                        <button
+                          onClick={() => setSelectedOrder(null)}
+                          className="text-gray-400 hover:text-gray-600"
+                          data-testid="button-close-details"
+                        >
+                          <X className="w-5 h-5" />
+                        </button>
+                      </div>
+
+                      {/* Items Details */}
+                      <div className="mt-3 pt-3 border-t border-gray-100">
+                        <p className="text-xs font-semibold text-gray-500 mb-2">Items</p>
+                        <div className="space-y-2">
+                          {selectedOrder.items.map((item, idx) => (
+                            <div key={`${item.id}-${idx}`} className="flex flex-col gap-1">
+                              <div className="flex justify-between text-sm">
+                                <span className="text-gray-700">
+                                  {item.quantity}x {item.title}
+                                </span>
+                                <span className="font-semibold text-gray-900">
+                                  ${(item.quantity * item.price).toFixed(2)}
+                                </span>
+                              </div>
+                              {(item.selectedColor || item.selectedSize || item.selectedUnit) && (
+                                <div className="flex flex-wrap gap-1 ml-2">
+                                  {item.selectedUnit && <span className="inline-block px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded text-[8px] font-semibold">{item.selectedUnit}</span>}
+                                  {item.selectedSize && <span className="inline-block px-1.5 py-0.5 bg-green-100 text-green-700 rounded text-[8px] font-semibold">{item.selectedSize}</span>}
+                                  {item.selectedColor && (() => {
+                                    const [colorName, colorHex] = typeof item.selectedColor === 'string' ? item.selectedColor.split('|') : [item.selectedColor, '#000000'];
+                                    return (
+                                      <span className="inline-block px-1.5 py-0.5 rounded text-[8px] font-semibold" style={{backgroundColor: colorHex || '#000000', color: ['#ffffff', '#f0f0f0', '#e0e0e0'].includes((colorHex || '#000000').toLowerCase()) ? '#000000' : '#ffffff'}}>
+                                        {colorName}
+                                      </span>
+                                    );
+                                  })()}
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Shipping Information */}
+                      {(selectedOrder.shippingAddress || selectedOrder.shippingPhone || selectedOrder.shippingZone) && (
+                        <div className="mt-3 pt-3 border-t border-gray-100">
+                          <p className="text-xs font-semibold text-gray-500 mb-2">Delivery Information</p>
+                          <div className="space-y-1.5">
+                            {selectedOrder.shippingAddress && (
+                              <div>
+                                <p className="text-xs text-gray-500">Address</p>
+                                <p className="text-xs font-medium text-gray-900">{selectedOrder.shippingAddress}</p>
+                              </div>
+                            )}
+                            {selectedOrder.shippingPhone && (
+                              <div>
+                                <p className="text-xs text-gray-500">Phone</p>
+                                <p className="text-xs font-medium text-gray-900">{selectedOrder.shippingPhone}</p>
+                              </div>
+                            )}
+                            {selectedOrder.shippingZone && (
+                              <div>
+                                <p className="text-xs text-gray-500">Zone</p>
+                                <p className="text-xs font-medium text-gray-900">{selectedOrder.shippingZone}</p>
+                              </div>
+                            )}
+                            {selectedOrder.shippingCost !== undefined && selectedOrder.shippingCost > 0 && (
+                              <div>
+                                <p className="text-xs text-gray-500">Shipping Cost</p>
+                                <p className="text-xs font-medium text-gray-900">${selectedOrder.shippingCost.toFixed(2)}</p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Order Summary */}
+                      <div className="mt-3 pt-3 border-t border-gray-100">
+                        <p className="text-xs font-semibold text-gray-500 mb-2">Summary</p>
+                        <div className="space-y-1 text-xs">
+                          {selectedOrder.subtotal !== undefined && (
+                            <div className="flex justify-between">
+                              <span className="text-gray-500">Subtotal</span>
+                              <span className="font-medium text-gray-900">${selectedOrder.subtotal.toFixed(2)}</span>
+                            </div>
+                          )}
+                          {selectedOrder.shippingCost !== undefined && selectedOrder.shippingCost > 0 && (
+                            <div className="flex justify-between">
+                              <span className="text-gray-500">Shipping</span>
+                              <span className="font-medium text-gray-900">${selectedOrder.shippingCost.toFixed(2)}</span>
+                            </div>
+                          )}
+                          <div className="flex justify-between font-semibold text-gray-900 pt-2 border-t border-gray-100">
+                            <span>Total</span>
+                            <span>${selectedOrder.total.toFixed(2)}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="mt-3 text-xs text-gray-500">
+                        <p>Placed: {new Date(selectedOrder.createdAt).toLocaleString()}</p>
+                      </div>
                     </div>
-                  </div>
-                </button>
+                  )}
+                </div>
               ))}
             </div>
           </div>
