@@ -425,7 +425,7 @@ export default function SettingsPage() {
             </div>
 
             {/* Save Button - One Button to Save All */}
-            <div className="pt-8 border-t border-gray-200 space-y-3">
+            <div className="pt-8 border-t border-gray-200">
               <button
                 onClick={handleSaveAllSettings}
                 disabled={isLoading}
@@ -444,17 +444,6 @@ export default function SettingsPage() {
                   </>
                 )}
               </button>
-
-              {firebaseApiKey && (
-                <button
-                  onClick={handleClearAuthConfig}
-                  className="w-full bg-red-50 text-red-600 py-3 rounded-2xl font-semibold flex items-center justify-center gap-2 border border-red-200 hover:bg-red-100 transition-colors"
-                  data-testid="button-clear-auth-config"
-                >
-                  <LogOut className="w-5 h-5" />
-                  Clear Settings
-                </button>
-              )}
             </div>
           </div>
         </div>
