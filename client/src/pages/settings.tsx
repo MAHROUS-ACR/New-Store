@@ -23,13 +23,19 @@ export default function SettingsPage() {
   const [firebaseMessagingSenderId, setFirebaseMessagingSenderId] = useState("");
   const [firebaseMeasurementId, setFirebaseMeasurementId] = useState("");
   
+  // Store settings
+  const [storeName, setStoreName] = useState("");
+  const [storeAddress, setStoreAddress] = useState("");
+  const [storePhone, setStorePhone] = useState("");
+  const [storeEmail, setStoreEmail] = useState("");
+  
   const [isLoading, setIsLoading] = useState(false);
 
-  // Load Firebase config from server and localStorage on mount
+  // Load Firebase config and Store settings from server on mount
   useEffect(() => {
     const loadConfig = async () => {
       try {
-        // First, try to fetch from server (environment variables)
+        // Fetch Firebase config from server
         const response = await fetch("/api/firebase/config");
         if (response.ok) {
           const serverConfig = await response.json();
@@ -44,8 +50,18 @@ export default function SettingsPage() {
           setFirebaseMessagingSenderId(serverConfig.firebaseMessagingSenderId || "");
           setFirebaseMeasurementId(serverConfig.firebaseMeasurementId || "");
         }
+
+        // Fetch Store settings from server
+        const storeResponse = await fetch("/api/store-settings");
+        if (storeResponse.ok) {
+          const storeData = await storeResponse.json();
+          setStoreName(storeData.name || "");
+          setStoreAddress(storeData.address || "");
+          setStorePhone(storeData.phone || "");
+          setStoreEmail(storeData.email || "");
+        }
       } catch (error) {
-        console.error("Failed to load Firebase config from server:", error);
+        console.error("Failed to load config from server:", error);
       }
 
       // Also check localStorage for any locally saved config
@@ -64,10 +80,11 @@ export default function SettingsPage() {
     loadConfig();
   }, []);
 
-  const handleSaveServerConfig = async () => {
+  const handleSaveAllSettings = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch("/api/firebase/config", {
+      // Save Firebase config
+      const firebaseResponse = await fetch("/api/firebase/config", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -84,62 +101,41 @@ export default function SettingsPage() {
         }),
       });
 
-      if (response.ok) {
-        toast.success("Firebase configuration saved successfully!");
-      } else {
-        const error = await response.json();
-        toast.error(error.message || "Failed to save configuration");
-      }
-    } catch (error) {
-      toast.error("Failed to connect to server");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleSaveAuthConfig = async () => {
-    // Save to server together with server config
-    setIsLoading(true);
-    try {
-      const response = await fetch("/api/firebase/config", {
+      // Save Store settings
+      const storeResponse = await fetch("/api/store-settings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          projectId,
-          privateKey,
-          clientEmail,
-          firebaseApiKey,
-          firebaseProjectId,
-          firebaseAppId,
-          firebaseAuthDomain,
-          firebaseStorageBucket,
-          firebaseMessagingSenderId,
-          firebaseMeasurementId,
+          name: storeName,
+          address: storeAddress,
+          phone: storePhone,
+          email: storeEmail,
         }),
       });
 
-      if (response.ok) {
-        // Also save to localStorage for client-side use
-        saveFirebaseConfig({
-          apiKey: firebaseApiKey,
-          projectId: firebaseProjectId,
-          appId: firebaseAppId,
-          authDomain: firebaseAuthDomain,
-          storageBucket: firebaseStorageBucket,
-          messagingSenderId: firebaseMessagingSenderId,
-          measurementId: firebaseMeasurementId,
-        });
-        toast.success("Firebase Authentication settings saved!");
+      // Also save to localStorage for client-side use
+      saveFirebaseConfig({
+        apiKey: firebaseApiKey,
+        projectId: firebaseProjectId,
+        appId: firebaseAppId,
+        authDomain: firebaseAuthDomain,
+        storageBucket: firebaseStorageBucket,
+        messagingSenderId: firebaseMessagingSenderId,
+        measurementId: firebaseMeasurementId,
+      });
+
+      if (firebaseResponse.ok && storeResponse.ok) {
+        toast.success("All settings saved successfully!");
       } else {
-        const error = await response.json();
-        toast.error(error.message || "Failed to save authentication settings");
+        toast.error("Failed to save some settings");
       }
     } catch (error) {
-      toast.error("Failed to connect to server");
+      toast.error("Failed to save settings");
     } finally {
       setIsLoading(false);
     }
   };
+
 
   const handleClearAuthConfig = () => {
     clearFirebaseConfig();
@@ -243,24 +239,76 @@ export default function SettingsPage() {
                   </p>
                 </div>
 
-                <button
-                  onClick={handleSaveServerConfig}
-                  disabled={isLoading}
-                  className="w-full bg-black text-white py-4 rounded-2xl font-semibold flex items-center justify-center gap-2 hover:bg-neutral-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  data-testid="button-save-config"
-                >
-                  {isLoading ? (
-                    <>
-                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      Saving...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="w-5 h-5" />
-                      Save Configuration
-                    </>
-                  )}
-                </button>
+              </div>
+            </div>
+
+            {/* Store Settings Section */}
+            <div className="mt-8 pt-8 border-t border-gray-200">
+              <h2 className="text-lg font-bold mb-4">Store Information</h2>
+              <p className="text-sm text-muted-foreground mb-6">
+                Configure your store details
+              </p>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-semibold mb-2" htmlFor="storeName">
+                    Store Name
+                  </label>
+                  <input
+                    id="storeName"
+                    type="text"
+                    value={storeName}
+                    onChange={(e) => setStoreName(e.target.value)}
+                    placeholder="Your Store Name"
+                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    data-testid="input-store-name"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold mb-2" htmlFor="storeAddress">
+                    Address
+                  </label>
+                  <input
+                    id="storeAddress"
+                    type="text"
+                    value={storeAddress}
+                    onChange={(e) => setStoreAddress(e.target.value)}
+                    placeholder="Store Address"
+                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    data-testid="input-store-address"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold mb-2" htmlFor="storePhone">
+                    Phone Number
+                  </label>
+                  <input
+                    id="storePhone"
+                    type="tel"
+                    value={storePhone}
+                    onChange={(e) => setStorePhone(e.target.value)}
+                    placeholder="+1 234 567 8900"
+                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    data-testid="input-store-phone"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold mb-2" htmlFor="storeEmail">
+                    Email
+                  </label>
+                  <input
+                    id="storeEmail"
+                    type="email"
+                    value={storeEmail}
+                    onChange={(e) => setStoreEmail(e.target.value)}
+                    placeholder="info@store.com"
+                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    data-testid="input-store-email"
+                  />
+                </div>
               </div>
             </div>
 
@@ -378,12 +426,22 @@ export default function SettingsPage() {
                 </div>
 
                 <button
-                  onClick={handleSaveAuthConfig}
-                  className="w-full bg-primary text-white py-4 rounded-2xl font-semibold flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors"
-                  data-testid="button-save-auth-config"
+                  onClick={handleSaveAllSettings}
+                  disabled={isLoading}
+                  className="w-full bg-emerald-600 text-white py-4 rounded-2xl font-semibold flex items-center justify-center gap-2 hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  data-testid="button-save-all-settings"
                 >
-                  <Save className="w-5 h-5" />
-                  Save Authentication Settings
+                  {isLoading ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-5 h-5" />
+                      Save All Settings
+                    </>
+                  )}
                 </button>
 
                 {firebaseApiKey && (
