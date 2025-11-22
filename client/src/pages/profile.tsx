@@ -63,6 +63,7 @@ export default function ProfilePage() {
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
   const [newItemForm, setNewItemForm] = useState({ 
     title: "", 
+    description: "",
     price: "", 
     category: "",
     image: "",
@@ -1531,6 +1532,14 @@ export default function ProfilePage() {
                         className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                         data-testid="input-item-title"
                       />
+                      <textarea
+                        placeholder="Product Description (اختياري)"
+                        value={newItemForm.description || ""}
+                        onChange={(e) => setNewItemForm({ ...newItemForm, description: e.target.value })}
+                        className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"
+                        rows={3}
+                        data-testid="textarea-item-description"
+                      />
                       <input
                         type="number"
                         placeholder="Price"
@@ -1696,6 +1705,7 @@ export default function ProfilePage() {
                                   body: JSON.stringify({
                                     id: editingItemId || undefined,
                                     title: newItemForm.title,
+                                    description: newItemForm.description || null,
                                     price: parseFloat(newItemForm.price),
                                     category: newItemForm.category,
                                     image: newItemForm.image || null,
@@ -1715,7 +1725,7 @@ export default function ProfilePage() {
                                     setItems([...items, { ...data }]);
                                     toast.success("Product added!");
                                   }
-                                  setNewItemForm({ title: "", price: "", category: "", image: "", units: [], sizes: [], colors: [], available: true });
+                                  setNewItemForm({ title: "", description: "", price: "", category: "", image: "", units: [], sizes: [], colors: [], available: true });
                                   setUnitInput("");
                                   setSizeInput("");
                                   setColorInput("");
@@ -1740,7 +1750,7 @@ export default function ProfilePage() {
                           <button
                             onClick={() => {
                               setEditingItemId(null);
-                              setNewItemForm({ title: "", price: "", category: "", image: "", units: [], sizes: [], colors: [], available: true });
+                              setNewItemForm({ title: "", description: "", price: "", category: "", image: "", units: [], sizes: [], colors: [], available: true });
                               setUnitInput("");
                               setSizeInput("");
                               setColorInput("");
@@ -1806,6 +1816,7 @@ export default function ProfilePage() {
                                 setEditingItemId(item.id);
                                 setNewItemForm({
                                   title: item.title,
+                                  description: item.description || "",
                                   price: item.price.toString(),
                                   category: item.category,
                                   image: item.image || "",
@@ -1835,7 +1846,7 @@ export default function ProfilePage() {
                                     setItems(items.filter(i => i.id !== item.id));
                                     if (editingItemId === item.id) {
                                       setEditingItemId(null);
-                                      setNewItemForm({ title: "", price: "", category: "", image: "", units: [], sizes: [], colors: [], available: true });
+                                      setNewItemForm({ title: "", description: "", price: "", category: "", image: "", units: [], sizes: [], colors: [], available: true });
                                       setUnitInput("");
                                       setSizeInput("");
                                       setColorInput("");
