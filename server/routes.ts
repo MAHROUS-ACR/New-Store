@@ -260,18 +260,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           address: "",
           phone: "",
           email: "",
-          firebase: {
-            projectId: "",
-            privateKey: "",
-            clientEmail: "",
-            firebaseApiKey: "",
-            firebaseProjectId: "",
-            firebaseAppId: "",
-            firebaseAuthDomain: "",
-            firebaseStorageBucket: "",
-            firebaseMessagingSenderId: "",
-            firebaseMeasurementId: "",
-          }
         });
       }
 
@@ -285,62 +273,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Save store settings with Firebase configuration
+  // Save store settings
   app.post("/api/store-settings", async (req, res) => {
     try {
       if (!isFirebaseConfigured()) {
-        console.error("Firebase not configured when saving store settings");
         return res.status(503).json({ message: "Firebase not configured" });
       }
 
-      const { 
-        name, 
-        address, 
-        phone, 
-        email,
-        firebase 
-      } = req.body;
-
-      console.log("Received store settings save request:", {
-        name,
-        address,
-        phone,
-        email,
-        hasFirebase: !!firebase
-      });
+      const { name, address, phone, email } = req.body;
 
       if (!name || !address || !phone || !email) {
-        console.error("Missing required fields for store settings");
         return res.status(400).json({ message: "All fields are required" });
       }
 
       const db = getFirestore();
-      const settingsData = {
+      await db.collection("settings").doc("store").set({
         name,
         address,
         phone,
         email,
-        firebase: firebase || {
-          projectId: "",
-          privateKey: "",
-          clientEmail: "",
-          firebaseApiKey: "",
-          firebaseProjectId: "",
-          firebaseAppId: "",
-          firebaseAuthDomain: "",
-          firebaseStorageBucket: "",
-          firebaseMessagingSenderId: "",
-          firebaseMeasurementId: "",
-        },
         updatedAt: new Date().toISOString(),
-      };
+      });
 
-      console.log("Saving to Firestore:", JSON.stringify(settingsData, null, 2));
-      
-      await db.collection("settings").doc("store").set(settingsData, { merge: true });
-
-      console.log("✅ Store settings and Firebase config saved successfully to Firestore");
-      res.json({ message: "Store settings and Firebase config saved successfully" });
+      console.log("✅ Store settings saved successfully to Firestore");
+      res.json({ message: "Store settings saved successfully" });
     } catch (error: any) {
       console.error("❌ Error saving store settings:", error);
       res.status(500).json({
