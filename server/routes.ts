@@ -591,6 +591,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           title: data.title || "",
           price: data.price || 0,
           category: data.category || "",
+          unit: data.unit || null,
+          size: data.size || null,
+          color: data.color || null,
+          available: data.available !== false,
         });
       });
 
@@ -609,7 +613,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(503).json({ message: "Firebase not configured" });
       }
 
-      const { id, title, price, category } = req.body;
+      const { id, title, price, category, unit, size, color, available } = req.body;
 
       if (!title || !price || !category) {
         return res.status(400).json({ message: "All fields are required" });
@@ -622,11 +626,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         title: title,
         price: parseFloat(price),
         category: category,
+        unit: unit || null,
+        size: size || null,
+        color: color || null,
+        available: available !== false,
         updatedAt: new Date().toISOString(),
       }, { merge: true });
 
       console.log(`✅ Product ${docId} saved to Firestore`);
-      res.json({ id: docId, title, price, category, message: "Product saved successfully" });
+      res.json({ 
+        id: docId, 
+        title, 
+        price, 
+        category,
+        unit,
+        size,
+        color,
+        available,
+        message: "Product saved successfully" 
+      });
     } catch (error: any) {
       console.error("❌ Error saving product:", error);
       res.status(500).json({ message: "Failed to save product" });

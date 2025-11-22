@@ -70,6 +70,13 @@ export default function CartPage() {
                 />
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-sm line-clamp-1">{item.title}</p>
+                  {(item.selectedColor || item.selectedSize || item.selectedUnit) && (
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {item.selectedUnit && <span className="inline-block px-1.5 py-0.5 bg-gray-100 rounded text-[9px]">{item.selectedUnit}</span>}
+                      {item.selectedSize && <span className="inline-block px-1.5 py-0.5 bg-gray-100 rounded text-[9px]">{item.selectedSize}</span>}
+                      {item.selectedColor && <span className="inline-block px-1.5 py-0.5 bg-gray-100 rounded text-[9px]">{item.selectedColor}</span>}
+                    </div>
+                  )}
                   <p className="text-lg font-bold mt-1">${item.price.toFixed(2)}</p>
                   <div className="flex items-center gap-2 mt-2">
                     <button

@@ -50,7 +50,15 @@ export default function ProfilePage() {
   const [selectedStatusFilter, setSelectedStatusFilter] = useState<string | null>(null);
   const [items, setItems] = useState<any[]>([]);
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
-  const [newItemForm, setNewItemForm] = useState({ title: "", price: "", category: "" });
+  const [newItemForm, setNewItemForm] = useState({ 
+    title: "", 
+    price: "", 
+    category: "",
+    unit: "",
+    size: "",
+    color: "",
+    available: true,
+  });
   const [users, setUsers] = useState<any[]>([]);
   const [usersLoading, setUsersLoading] = useState(false);
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
@@ -1063,6 +1071,40 @@ export default function ProfilePage() {
                           <option key={cat.id} value={cat.name}>{cat.name}</option>
                         ))}
                       </select>
+                      <input
+                        type="text"
+                        placeholder="Unit (وحدة) - اختياري"
+                        value={newItemForm.unit}
+                        onChange={(e) => setNewItemForm({ ...newItemForm, unit: e.target.value })}
+                        className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                        data-testid="input-item-unit"
+                      />
+                      <input
+                        type="text"
+                        placeholder="Size (مقاس) - اختياري"
+                        value={newItemForm.size}
+                        onChange={(e) => setNewItemForm({ ...newItemForm, size: e.target.value })}
+                        className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                        data-testid="input-item-size"
+                      />
+                      <input
+                        type="text"
+                        placeholder="Color (لون) - اختياري"
+                        value={newItemForm.color}
+                        onChange={(e) => setNewItemForm({ ...newItemForm, color: e.target.value })}
+                        className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                        data-testid="input-item-color"
+                      />
+                      <label className="flex items-center gap-2 px-3 py-2">
+                        <input
+                          type="checkbox"
+                          checked={newItemForm.available}
+                          onChange={(e) => setNewItemForm({ ...newItemForm, available: e.target.checked })}
+                          className="w-4 h-4 rounded border-gray-200"
+                          data-testid="checkbox-item-available"
+                        />
+                        <span className="text-sm">متاح (Available)</span>
+                      </label>
                       <div className="flex gap-2">
                         <button
                           onClick={async () => {
@@ -1076,6 +1118,10 @@ export default function ProfilePage() {
                                     title: newItemForm.title,
                                     price: parseFloat(newItemForm.price),
                                     category: newItemForm.category,
+                                    unit: newItemForm.unit || null,
+                                    size: newItemForm.size || null,
+                                    color: newItemForm.color || null,
+                                    available: newItemForm.available,
                                   }),
                                 });
                                 if (response.ok) {
@@ -1086,6 +1132,10 @@ export default function ProfilePage() {
                                       title: data.title,
                                       price: data.price,
                                       category: data.category,
+                                      unit: data.unit,
+                                      size: data.size,
+                                      color: data.color,
+                                      available: data.available,
                                     } : i));
                                     toast.success("Product updated!");
                                     setEditingItemId(null);
@@ -1095,10 +1145,14 @@ export default function ProfilePage() {
                                       title: data.title,
                                       price: data.price,
                                       category: data.category,
+                                      unit: data.unit,
+                                      size: data.size,
+                                      color: data.color,
+                                      available: data.available,
                                     }]);
                                     toast.success("Product added!");
                                   }
-                                  setNewItemForm({ title: "", price: "", category: "" });
+                                  setNewItemForm({ title: "", price: "", category: "", unit: "", size: "", color: "", available: true });
                                 } else {
                                   toast.error("Failed to save product");
                                 }
@@ -1119,7 +1173,7 @@ export default function ProfilePage() {
                           <button
                             onClick={() => {
                               setEditingItemId(null);
-                              setNewItemForm({ title: "", price: "", category: "" });
+                              setNewItemForm({ title: "", price: "", category: "", unit: "", size: "", color: "", available: true });
                             }}
                             className="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-gray-300 transition-colors text-sm"
                             data-testid="button-cancel-item"
@@ -1146,6 +1200,12 @@ export default function ProfilePage() {
                             <div className="flex-1">
                               <p className="text-sm font-bold text-gray-900">{item.title}</p>
                               <p className="text-xs text-gray-500">{item.category}</p>
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                {item.unit && <span className="inline-block px-2 py-1 bg-gray-100 rounded text-xs">{item.unit}</span>}
+                                {item.size && <span className="inline-block px-2 py-1 bg-gray-100 rounded text-xs">{item.size}</span>}
+                                {item.color && <span className="inline-block px-2 py-1 bg-gray-100 rounded text-xs">{item.color}</span>}
+                                {!item.available && <span className="inline-block px-2 py-1 bg-red-100 text-red-700 rounded text-xs">غير متاح</span>}
+                              </div>
                             </div>
                             <p className="text-sm font-semibold text-gray-900">${item.price.toFixed(2)}</p>
                           </div>
@@ -1153,7 +1213,15 @@ export default function ProfilePage() {
                             <button
                               onClick={() => {
                                 setEditingItemId(item.id);
-                                setNewItemForm(item);
+                                setNewItemForm({
+                                  title: item.title,
+                                  price: item.price.toString(),
+                                  category: item.category,
+                                  unit: item.unit || "",
+                                  size: item.size || "",
+                                  color: item.color || "",
+                                  available: item.available !== false,
+                                });
                               }}
                               className="flex-1 px-3 py-2 bg-amber-100 text-amber-700 rounded-lg flex items-center justify-center gap-1 hover:bg-amber-200 transition-colors text-xs font-semibold"
                               data-testid={`button-edit-item-${item.id}`}
@@ -1171,7 +1239,7 @@ export default function ProfilePage() {
                                     setItems(items.filter(i => i.id !== item.id));
                                     if (editingItemId === item.id) {
                                       setEditingItemId(null);
-                                      setNewItemForm({ title: "", price: "", category: "" });
+                                      setNewItemForm({ title: "", price: "", category: "", unit: "", size: "", color: "", available: true });
                                     }
                                     toast.success("Product deleted!");
                                   } else {

@@ -11,19 +11,45 @@ interface ProductProps {
   category?: string;
   price: number;
   image?: string;
+  unit?: string | null;
+  size?: string | null;
+  color?: string | null;
+  available?: boolean;
 }
 
 export function ProductCard({ product, index }: { product: ProductProps; index: number }) {
   const { addItem } = useCart();
   const [isAdding, setIsAdding] = useState(false);
+  const [showVariantModal, setShowVariantModal] = useState(false);
+  const [selectedColor, setSelectedColor] = useState("");
+  const [selectedSize, setSelectedSize] = useState("");
+  const [selectedUnit, setSelectedUnit] = useState("");
 
   // Handle both 'title' (fallback) and 'name' (Firebase) fields
   const productTitle = product.title || product.name || "Product";
   const productCategory = product.category || "Uncategorized";
   const productImage = product.image || "";
+  const hasVariants = product.color || product.size || product.unit;
+  const isAvailable = product.available !== false;
 
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.stopPropagation();
+    
+    if (!isAvailable) {
+      toast.error("This product is not available");
+      return;
+    }
+
+    // If product has variants, show selection modal
+    if (hasVariants) {
+      setShowVariantModal(true);
+      return;
+    }
+
+    addItemToCart();
+  };
+
+  const addItemToCart = () => {
     setIsAdding(true);
     try {
       addItem({
@@ -32,8 +58,15 @@ export function ProductCard({ product, index }: { product: ProductProps; index: 
         price: product.price,
         quantity: 1,
         image: productImage,
+        selectedColor: selectedColor || undefined,
+        selectedSize: selectedSize || undefined,
+        selectedUnit: selectedUnit || undefined,
       });
       toast.success(`${productTitle} added to cart`);
+      setShowVariantModal(false);
+      setSelectedColor("");
+      setSelectedSize("");
+      setSelectedUnit("");
     } catch (error) {
       toast.error("Failed to add to cart");
     } finally {
@@ -71,8 +104,98 @@ export function ProductCard({ product, index }: { product: ProductProps; index: 
       <div className="px-1">
         <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1" data-testid={`text-category-${product.id}`}>{productCategory}</p>
         <h3 className="font-semibold text-sm leading-tight mb-1 line-clamp-1" data-testid={`text-title-${product.id}`}>{productTitle}</h3>
+        
+        {/* Variants display */}
+        {hasVariants && (
+          <div className="flex flex-wrap gap-1 mb-2">
+            {product.unit && <span className="inline-block px-1.5 py-0.5 bg-gray-100 rounded text-[9px] font-medium">{product.unit}</span>}
+            {product.size && <span className="inline-block px-1.5 py-0.5 bg-gray-100 rounded text-[9px] font-medium">{product.size}</span>}
+            {product.color && <span className="inline-block px-1.5 py-0.5 bg-gray-100 rounded text-[9px] font-medium">{product.color}</span>}
+          </div>
+        )}
+        
+        {/* Availability status */}
+        {!isAvailable && (
+          <p className="text-xs font-semibold text-red-600 mb-1">غير متاح</p>
+        )}
+        
         <p className="font-bold text-lg" data-testid={`text-price-${product.id}`}>${product.price.toFixed(2)}</p>
       </div>
+
+      {/* Variant Selection Modal */}
+      {showVariantModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-end" onClick={() => setShowVariantModal(false)}>
+          <motion.div
+            initial={{ y: 300 }}
+            animate={{ y: 0 }}
+            exit={{ y: 300 }}
+            onClick={(e) => e.stopPropagation()}
+            className="w-full bg-white rounded-t-3xl p-6 max-h-[80vh] overflow-y-auto"
+          >
+            <h2 className="text-lg font-bold mb-4">Select Options for {productTitle}</h2>
+            
+            {product.unit && (
+              <div className="mb-4">
+                <p className="text-sm font-semibold mb-2">وحدة (Unit)</p>
+                <input
+                  type="text"
+                  placeholder="Enter unit"
+                  value={selectedUnit}
+                  onChange={(e) => setSelectedUnit(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"
+                  data-testid={`input-variant-unit-${product.id}`}
+                />
+              </div>
+            )}
+            
+            {product.size && (
+              <div className="mb-4">
+                <p className="text-sm font-semibold mb-2">مقاس (Size)</p>
+                <input
+                  type="text"
+                  placeholder="Enter size"
+                  value={selectedSize}
+                  onChange={(e) => setSelectedSize(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"
+                  data-testid={`input-variant-size-${product.id}`}
+                />
+              </div>
+            )}
+            
+            {product.color && (
+              <div className="mb-4">
+                <p className="text-sm font-semibold mb-2">لون (Color)</p>
+                <input
+                  type="text"
+                  placeholder="Enter color"
+                  value={selectedColor}
+                  onChange={(e) => setSelectedColor(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"
+                  data-testid={`input-variant-color-${product.id}`}
+                />
+              </div>
+            )}
+            
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowVariantModal(false)}
+                className="flex-1 px-4 py-3 border border-gray-200 rounded-lg font-semibold text-sm"
+                data-testid={`button-cancel-variant-${product.id}`}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={addItemToCart}
+                disabled={isAdding}
+                className="flex-1 px-4 py-3 bg-black text-white rounded-lg font-semibold text-sm disabled:opacity-50"
+                data-testid={`button-add-variant-${product.id}`}
+              >
+                {isAdding ? "Adding..." : "Add to Cart"}
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </motion.div>
   );
 }

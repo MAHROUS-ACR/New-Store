@@ -6,6 +6,9 @@ export interface CartItem {
   price: number;
   quantity: number;
   image: string;
+  selectedColor?: string;
+  selectedSize?: string;
+  selectedUnit?: string;
 }
 
 interface CartContextType {
