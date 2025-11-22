@@ -56,16 +56,25 @@ export function UserProvider({ children }: { children: ReactNode }) {
         setFirestore(db);
 
         // Listen to Firebase Auth state changes
+        let unsubscribeUser: (() => void) | null = null;
+        
         const unsubscribe = onAuthStateChanged(auth, (firebaseUser: FirebaseUser | null) => {
+          // Clean up previous user listener
+          if (unsubscribeUser) {
+            unsubscribeUser();
+            unsubscribeUser = null;
+          }
+
           if (firebaseUser) {
             // User is signed in - set up real-time listener for user data from Firestore
             const userRef = doc(db, "users", firebaseUser.uid);
-            const unsubscribeUser = onSnapshot(userRef, (userSnap) => {
+            unsubscribeUser = onSnapshot(userRef, (userSnap) => {
               let role = "user"; // default role
               
               if (userSnap.exists()) {
                 const firestoreData = userSnap.data();
                 role = firestoreData.role || "user";
+                console.log("📍 User role from Firestore:", role);
               }
               
               const userData: User = {
@@ -74,6 +83,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
                 username: firebaseUser.displayName || firebaseUser.email?.split("@")[0],
                 role: role,
               };
+              console.log("📍 Updating user state with role:", userData.role);
               setUser(userData);
               localStorage.setItem("user", JSON.stringify(userData));
               setIsLoading(false);
@@ -93,8 +103,6 @@ export function UserProvider({ children }: { children: ReactNode }) {
               localStorage.setItem("user", JSON.stringify(userData));
               setIsLoading(false);
             });
-
-            return () => unsubscribeUser();
           } else {
             // User is signed out
             setUser(null);
@@ -103,7 +111,12 @@ export function UserProvider({ children }: { children: ReactNode }) {
           }
         });
 
-        return () => unsubscribe();
+        return () => {
+          unsubscribe();
+          if (unsubscribeUser) {
+            unsubscribeUser();
+          }
+        };
       } catch (error) {
         console.error("Failed to initialize Firebase:", error);
         setIsLoading(false);
