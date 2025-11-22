@@ -614,7 +614,13 @@ export default function ProfilePage() {
                 {menuItems.map((item) => (
                   <button
                     key={item.label}
-                    onClick={() => setLocation(item.path)}
+                    onClick={() => {
+                      // Store previous page for back navigation
+                      if (item.path === "/orders") {
+                        sessionStorage.setItem('previousPage', '/profile');
+                      }
+                      setLocation(item.path);
+                    }}
                     className="w-full flex items-center justify-between p-4 bg-white rounded-2xl border border-gray-100 hover:border-gray-200 transition-colors group"
                     data-testid={`button-${item.label.toLowerCase().replace(/\s+/g, "-")}`}
                   >

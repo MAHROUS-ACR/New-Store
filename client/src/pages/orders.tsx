@@ -140,7 +140,13 @@ export default function OrdersPage() {
         {/* Header */}
         <div className="px-6 pb-4 pt-2 flex items-center gap-4 border-b border-gray-100 flex-shrink-0">
           <button
-            onClick={() => setLocation("/")}
+            onClick={() => {
+              // Check if there's a previousPage stored in sessionStorage
+              const previousPage = sessionStorage.getItem('previousPage');
+              const backPath = previousPage || '/';
+              sessionStorage.removeItem('previousPage'); // Clear after use
+              setLocation(backPath);
+            }}
             className="w-10 h-10 rounded-full bg-white border border-gray-100 flex items-center justify-center"
             data-testid="button-back"
           >
