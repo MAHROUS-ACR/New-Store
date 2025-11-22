@@ -42,10 +42,27 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<"profile" | "admin">("profile");
 
   // Check if sessionStorage has preferred tab (from order-details back button)
+  const fetchAllOrders = async () => {
+    setOrdersLoading(true);
+    try {
+      const response = await fetch("/api/orders/admin/all");
+      if (response.ok) {
+        const data = await response.json();
+        setOrders(data || []);
+      }
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+      toast.error("Failed to load orders");
+    } finally {
+      setOrdersLoading(false);
+    }
+  };
+
   useEffect(() => {
     const preferredTab = sessionStorage.getItem('preferredTab');
     if (preferredTab === 'admin') {
       setActiveTab('admin');
+      fetchAllOrders(); // Fetch orders when switching to admin tab
       sessionStorage.removeItem('preferredTab'); // Clear after use
     } else {
       setActiveTab('profile');
@@ -312,22 +329,6 @@ export default function ProfilePage() {
       toast.error("Failed to connect to server");
     } finally {
       setIsSaving(false);
-    }
-  };
-
-  const fetchAllOrders = async () => {
-    setOrdersLoading(true);
-    try {
-      const response = await fetch("/api/orders/admin/all");
-      if (response.ok) {
-        const data = await response.json();
-        setOrders(data || []);
-      }
-    } catch (error) {
-      console.error("Error fetching orders:", error);
-      toast.error("Failed to load orders");
-    } finally {
-      setOrdersLoading(false);
     }
   };
 
