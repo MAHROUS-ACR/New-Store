@@ -507,11 +507,11 @@ export default function CheckoutPage() {
                 </div>
               )}
 
-              {/* Zone Display for Saved Address */}
+              {/* Saved Address Details */}
               {shippingType === "saved" && (
-                <div className="bg-green-50 border border-green-200 rounded-2xl p-4 mb-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-semibold text-sm">Shipping Zone</h3>
+                <div className="bg-green-50 border border-green-200 rounded-2xl p-4 mb-4 space-y-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="font-semibold text-sm">Delivery Address</h3>
                     <button
                       type="button"
                       onClick={() => setShippingType(null)}
@@ -522,9 +522,19 @@ export default function CheckoutPage() {
                     </button>
                   </div>
                   
-                  <div className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm">
-                    <p className="font-medium">{selectedZone}</p>
-                    <p className="text-xs text-gray-500">Fixed zone for your saved address</p>
+                  <div className="bg-white border border-gray-200 rounded-lg p-3 text-sm space-y-2">
+                    <div>
+                      <p className="text-xs text-gray-500">Address</p>
+                      <p className="font-medium">{userProfile?.address}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500">Phone</p>
+                      <p className="font-medium">{userProfile?.phone}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500">Zone</p>
+                      <p className="font-medium">{selectedZone}</p>
+                    </div>
                   </div>
                 </div>
               )}
