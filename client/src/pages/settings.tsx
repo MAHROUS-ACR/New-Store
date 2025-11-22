@@ -65,11 +65,6 @@ export default function SettingsPage() {
   }, []);
 
   const handleSaveServerConfig = async () => {
-    if (!projectId || !privateKey || !clientEmail) {
-      toast.error("Please fill in all Firebase configuration fields");
-      return;
-    }
-
     setIsLoading(true);
     try {
       const response = await fetch("/api/firebase/config", {
@@ -79,16 +74,18 @@ export default function SettingsPage() {
           projectId,
           privateKey,
           clientEmail,
+          firebaseApiKey,
+          firebaseProjectId,
+          firebaseAppId,
+          firebaseAuthDomain,
+          firebaseStorageBucket,
+          firebaseMessagingSenderId,
+          firebaseMeasurementId,
         }),
       });
 
       if (response.ok) {
         toast.success("Firebase configuration saved successfully!");
-        setProjectId("");
-        setPrivateKey("");
-        setClientEmail("");
-        // Redirect to home and trigger data reload
-        setTimeout(() => setLocation("/"), 500);
       } else {
         const error = await response.json();
         toast.error(error.message || "Failed to save configuration");
@@ -100,25 +97,47 @@ export default function SettingsPage() {
     }
   };
 
-  const handleSaveAuthConfig = () => {
-    if (!firebaseApiKey || !firebaseProjectId || !firebaseAppId) {
-      toast.error("Please fill in all Firebase Authentication fields");
-      return;
-    }
-
+  const handleSaveAuthConfig = async () => {
+    // Save to server together with server config
+    setIsLoading(true);
     try {
-      saveFirebaseConfig({
-        apiKey: firebaseApiKey,
-        projectId: firebaseProjectId,
-        appId: firebaseAppId,
-        authDomain: firebaseAuthDomain,
-        storageBucket: firebaseStorageBucket,
-        messagingSenderId: firebaseMessagingSenderId,
-        measurementId: firebaseMeasurementId,
+      const response = await fetch("/api/firebase/config", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          projectId,
+          privateKey,
+          clientEmail,
+          firebaseApiKey,
+          firebaseProjectId,
+          firebaseAppId,
+          firebaseAuthDomain,
+          firebaseStorageBucket,
+          firebaseMessagingSenderId,
+          firebaseMeasurementId,
+        }),
       });
-      toast.success("Firebase Authentication settings saved!");
+
+      if (response.ok) {
+        // Also save to localStorage for client-side use
+        saveFirebaseConfig({
+          apiKey: firebaseApiKey,
+          projectId: firebaseProjectId,
+          appId: firebaseAppId,
+          authDomain: firebaseAuthDomain,
+          storageBucket: firebaseStorageBucket,
+          messagingSenderId: firebaseMessagingSenderId,
+          measurementId: firebaseMeasurementId,
+        });
+        toast.success("Firebase Authentication settings saved!");
+      } else {
+        const error = await response.json();
+        toast.error(error.message || "Failed to save authentication settings");
+      }
     } catch (error) {
-      toast.error("Failed to save authentication settings");
+      toast.error("Failed to connect to server");
+    } finally {
+      setIsLoading(false);
     }
   };
 
