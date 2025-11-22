@@ -382,6 +382,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           address: "",
           phone: "",
           email: "",
+          logo: "",
           firebase: null,
         });
       }
@@ -406,7 +407,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(503).json({ message: "Firebase not configured" });
       }
 
-      const { name, address, phone, email } = req.body;
+      const { name, address, phone, email, logo } = req.body;
 
       if (!name || !address || !phone || !email) {
         return res.status(400).json({ message: "All store fields are required" });
@@ -418,6 +419,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         address,
         phone,
         email,
+        logo: logo || "",
         updatedAt: new Date().toISOString(),
       };
 

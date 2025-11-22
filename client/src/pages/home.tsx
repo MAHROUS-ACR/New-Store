@@ -52,6 +52,21 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
   const [firebaseConfigured, setFirebaseConfigured] = useState(false);
   const [error, setError] = useState("");
+  const [storeName, setStoreName] = useState("Flux Wallet");
+  const [storeLogo, setStoreLogo] = useState<string>("");
+
+  const fetchStoreSettings = async () => {
+    try {
+      const response = await fetch("/api/store-settings");
+      if (response.ok) {
+        const data = await response.json();
+        setStoreName(data.name || "Flux Wallet");
+        setStoreLogo(data.logo || "");
+      }
+    } catch (error) {
+      console.error("Failed to load store settings:", error);
+    }
+  };
 
   const fetchProductsData = async () => {
     setIsLoading(true);
@@ -95,6 +110,7 @@ export default function Home() {
 
   useEffect(() => {
     fetchProductsData();
+    fetchStoreSettings();
   }, [location]);
 
   // Extract unique categories from products
@@ -116,31 +132,45 @@ export default function Home() {
   return (
     <MobileWrapper>
       <div className="w-full flex-1 flex flex-col overflow-hidden">
-        {/* Header */}
-        <div className="px-6 pb-4 pt-2 flex items-center justify-between gap-4 flex-shrink-0">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <input 
-              type="text" 
-              placeholder="Search products..." 
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 bg-white border border-gray-100 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
-              data-testid="input-search"
-            />
-          </div>
-          <button 
-            onClick={() => setLocation("/cart")}
-            className="w-11 h-11 bg-black text-white rounded-2xl flex items-center justify-center relative hover:bg-neutral-800 transition-colors"
-            data-testid="button-cart"
-          >
-            <ShoppingCart className="w-5 h-5" />
-            {items.length > 0 && (
-              <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full border-2 border-white flex items-center justify-center text-[10px] font-bold text-white">
-                {items.length}
+        {/* Store Header */}
+        <div className="px-6 pt-4 pb-3 flex-shrink-0 border-b border-gray-100">
+          <div className="flex items-center gap-3 mb-4">
+            {storeLogo ? (
+              <img src={storeLogo} alt={storeName} className="w-10 h-10 rounded-lg object-cover" />
+            ) : (
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">
+                {storeName.charAt(0)}
               </div>
             )}
-          </button>
+            <h1 className="text-lg font-bold text-gray-900">{storeName}</h1>
+          </div>
+
+          {/* Search and Cart */}
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <input 
+                type="text" 
+                placeholder="Search products..." 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 bg-white border border-gray-100 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                data-testid="input-search"
+              />
+            </div>
+            <button 
+              onClick={() => setLocation("/cart")}
+              className="w-11 h-11 bg-black text-white rounded-2xl flex items-center justify-center relative hover:bg-neutral-800 transition-colors flex-shrink-0"
+              data-testid="button-cart"
+            >
+              <ShoppingCart className="w-5 h-5" />
+              {items.length > 0 && (
+                <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full border-2 border-white flex items-center justify-center text-[10px] font-bold text-white">
+                  {items.length}
+                </div>
+              )}
+            </button>
+          </div>
         </div>
 
         {/* Firebase Status Banner */}
