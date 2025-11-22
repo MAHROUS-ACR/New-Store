@@ -119,6 +119,20 @@ export default function ProfilePage() {
           setStoreAddress(data.address || "");
           setStorePhone(data.phone || "");
           setStoreEmail(data.email || "");
+          
+          // Load Firebase settings from Firestore if available
+          if (data.firebase) {
+            setProjectId(data.firebase.projectId || "");
+            setPrivateKey(data.firebase.privateKey || "");
+            setClientEmail(data.firebase.clientEmail || "");
+            setFirebaseApiKey(data.firebase.firebaseApiKey || "");
+            setFirebaseProjectId(data.firebase.firebaseProjectId || "");
+            setFirebaseAppId(data.firebase.firebaseAppId || "");
+            setFirebaseAuthDomain(data.firebase.firebaseAuthDomain || "");
+            setFirebaseStorageBucket(data.firebase.firebaseStorageBucket || "");
+            setFirebaseMessagingSenderId(data.firebase.firebaseMessagingSenderId || "");
+            setFirebaseMeasurementId(data.firebase.firebaseMeasurementId || "");
+          }
         }
       } catch (error) {
         console.error("Failed to load store settings:", error);

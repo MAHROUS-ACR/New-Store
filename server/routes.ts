@@ -260,6 +260,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           address: "",
           phone: "",
           email: "",
+          firebase: null,
         });
       }
 
@@ -287,7 +288,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const db = getFirestore();
-      const storeData = {
+      const storeData: any = {
         name,
         address,
         phone,
