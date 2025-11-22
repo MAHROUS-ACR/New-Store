@@ -41,23 +41,16 @@ export default function ProfilePage() {
   const { user, isLoggedIn, logout, isLoading } = useUser();
   const [activeTab, setActiveTab] = useState<"profile" | "admin">("profile");
 
-  // Check if coming from order details with tab=admin parameter
+  // Check if sessionStorage has preferred tab (from order-details back button)
   useEffect(() => {
-    const fullPath = location;
-    console.log('Profile page location:', fullPath);
-    
-    const queryParams = new URLSearchParams(location.split('?')[1] || '');
-    const tabFromQuery = queryParams.get('tab');
-    console.log('Tab from query:', tabFromQuery);
-    
-    if (tabFromQuery === 'admin') {
-      console.log('Setting active tab to admin');
+    const preferredTab = sessionStorage.getItem('preferredTab');
+    if (preferredTab === 'admin') {
       setActiveTab('admin');
+      sessionStorage.removeItem('preferredTab'); // Clear after use
     } else {
-      console.log('Setting active tab to profile');
       setActiveTab('profile');
     }
-  }, [location]);
+  }, []);
   const [orders, setOrders] = useState<AdminOrder[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
   const [editingOrderId, setEditingOrderId] = useState<string | null>(null);
