@@ -26,9 +26,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       if (!isFirebaseConfigured()) {
         return res.json({
-          projectId: process.env.FIREBASE_PROJECT_ID || "",
-          privateKey: process.env.FIREBASE_PRIVATE_KEY || "",
-          clientEmail: process.env.FIREBASE_CLIENT_EMAIL || "",
+          projectId: "",
+          privateKey: "",
+          clientEmail: "",
           firebaseApiKey: "",
           firebaseProjectId: "",
           firebaseAppId: "",
@@ -43,11 +43,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const doc = await db.collection("settings").doc("store").get();
       const data = doc.data();
 
+      // Return saved Firebase config from Firestore, or empty config if not found
       if (!doc.exists || !data?.firebase) {
         return res.json({
-          projectId: process.env.FIREBASE_PROJECT_ID || "",
-          privateKey: process.env.FIREBASE_PRIVATE_KEY || "",
-          clientEmail: process.env.FIREBASE_CLIENT_EMAIL || "",
+          projectId: "",
+          privateKey: "",
+          clientEmail: "",
           firebaseApiKey: "",
           firebaseProjectId: "",
           firebaseAppId: "",
@@ -58,13 +59,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
+      console.log("Loaded Firebase config from Firestore:", JSON.stringify(data.firebase, null, 2));
       res.json(data.firebase);
     } catch (error) {
+      console.error("Error loading Firebase config:", error);
       res.status(500).json({ message: "Failed to get Firebase config" });
     }
   });
 
-  // Update Firebase configuration in Firestore
+  // Update Firebase configuration in Firestore (save with store settings)
   app.post("/api/firebase/config", async (req, res) => {
     try {
       if (!isFirebaseConfigured()) {
@@ -73,15 +76,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const { projectId, privateKey, clientEmail, firebaseApiKey, firebaseProjectId, firebaseAppId, firebaseAuthDomain, firebaseStorageBucket, firebaseMessagingSenderId, firebaseMeasurementId } = req.body;
 
-      if (!projectId || !privateKey || !clientEmail) {
-        return res.status(400).json({ message: "Missing required fields" });
-      }
-
+      // Save all fields (even if empty) - no validation
       const db = getFirestore();
       const firebaseConfig = {
-        projectId,
-        privateKey,
-        clientEmail,
+        projectId: projectId || "",
+        privateKey: privateKey || "",
+        clientEmail: clientEmail || "",
         firebaseApiKey: firebaseApiKey || "",
         firebaseProjectId: firebaseProjectId || "",
         firebaseAppId: firebaseAppId || "",
@@ -94,6 +94,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get existing store settings
       const docRef = db.collection("settings").doc("store");
       const existingDoc = await docRef.get();
+
+      console.log("Saving Firebase config:", JSON.stringify(firebaseConfig, null, 2));
 
       if (existingDoc.exists) {
         // Merge with existing data
@@ -114,7 +116,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       console.log("✅ Firebase config saved to Firestore");
-      res.json({ message: "Firebase configured successfully" });
+      res.json({ message: "Firebase configuration saved successfully" });
     } catch (error: any) {
       console.error("❌ Error saving Firebase config:", error);
       res.status(500).json({
