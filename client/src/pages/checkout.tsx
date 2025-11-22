@@ -264,10 +264,19 @@ export default function CheckoutPage() {
           <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-6">
             <h3 className="font-semibold text-sm mb-3">Order Summary</h3>
             <div className="space-y-2 text-sm">
-              {items.map(item => (
-                <div key={item.id} className="flex justify-between">
-                  <span>{item.quantity}x {item.title}</span>
-                  <span>${(item.price * item.quantity).toFixed(2)}</span>
+              {items.map((item, idx) => (
+                <div key={`${item.id}-${idx}`} className="flex flex-col gap-1">
+                  <div className="flex justify-between">
+                    <span>{item.quantity}x {item.title}</span>
+                    <span>${(item.price * item.quantity).toFixed(2)}</span>
+                  </div>
+                  {(item.selectedColor || item.selectedSize || item.selectedUnit) && (
+                    <div className="flex flex-wrap gap-1 ml-2">
+                      {item.selectedUnit && <span className="inline-block px-1.5 py-0.5 bg-blue-200 text-blue-800 rounded text-[9px]">{item.selectedUnit}</span>}
+                      {item.selectedSize && <span className="inline-block px-1.5 py-0.5 bg-green-200 text-green-800 rounded text-[9px]">{item.selectedSize}</span>}
+                      {item.selectedColor && <span className="inline-block px-1.5 py-0.5 bg-red-200 text-red-800 rounded text-[9px]">{item.selectedColor}</span>}
+                    </div>
+                  )}
                 </div>
               ))}
               <div className="border-t border-blue-200 pt-2 font-bold flex justify-between">
