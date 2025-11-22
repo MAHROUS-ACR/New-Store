@@ -136,7 +136,6 @@ export default function SettingsPage() {
     }
   };
 
-
   const handleClearAuthConfig = () => {
     clearFirebaseConfig();
     setFirebaseApiKey("");
@@ -147,7 +146,6 @@ export default function SettingsPage() {
     setFirebaseMessagingSenderId("");
     setFirebaseMeasurementId("");
     toast.success("Firebase Authentication settings cleared!");
-    // Redirect to home to reload with demo data
     setTimeout(() => setLocation("/"), 500);
   };
 
@@ -164,15 +162,15 @@ export default function SettingsPage() {
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div>
-            <h1 className="text-xl font-bold">Firebase Settings</h1>
-            <p className="text-xs text-muted-foreground">Configure your data store</p>
+            <h1 className="text-xl font-bold">Settings</h1>
+            <p className="text-xs text-muted-foreground">Configure your application</p>
           </div>
         </div>
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto no-scrollbar pb-24 w-full">
           <div className="w-full px-6 py-6">
-            {/* Server Config Section */}
+            {/* Firebase Data Configuration Section */}
             <div className="mb-8">
               <h2 className="text-lg font-bold mb-4">Firebase Data Configuration</h2>
               <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-6">
@@ -238,82 +236,11 @@ export default function SettingsPage() {
                     Include the full key with BEGIN and END markers
                   </p>
                 </div>
-
               </div>
             </div>
 
-            {/* Store Settings Section */}
-            <div className="mt-8 pt-8 border-t border-gray-200">
-              <h2 className="text-lg font-bold mb-4">Store Information</h2>
-              <p className="text-sm text-muted-foreground mb-6">
-                Configure your store details
-              </p>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-semibold mb-2" htmlFor="storeName">
-                    Store Name
-                  </label>
-                  <input
-                    id="storeName"
-                    type="text"
-                    value={storeName}
-                    onChange={(e) => setStoreName(e.target.value)}
-                    placeholder="Your Store Name"
-                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                    data-testid="input-store-name"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold mb-2" htmlFor="storeAddress">
-                    Address
-                  </label>
-                  <input
-                    id="storeAddress"
-                    type="text"
-                    value={storeAddress}
-                    onChange={(e) => setStoreAddress(e.target.value)}
-                    placeholder="Store Address"
-                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                    data-testid="input-store-address"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold mb-2" htmlFor="storePhone">
-                    Phone Number
-                  </label>
-                  <input
-                    id="storePhone"
-                    type="tel"
-                    value={storePhone}
-                    onChange={(e) => setStorePhone(e.target.value)}
-                    placeholder="+1 234 567 8900"
-                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                    data-testid="input-store-phone"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold mb-2" htmlFor="storeEmail">
-                    Email
-                  </label>
-                  <input
-                    id="storeEmail"
-                    type="email"
-                    value={storeEmail}
-                    onChange={(e) => setStoreEmail(e.target.value)}
-                    placeholder="info@store.com"
-                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                    data-testid="input-store-email"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Client Auth Config Section */}
-            <div className="mt-8 pt-8 border-t border-gray-200">
+            {/* Firebase Authentication Section */}
+            <div className="mb-8 pt-8 border-t border-gray-200">
               <h2 className="text-lg font-bold mb-4">Firebase Authentication</h2>
               <p className="text-sm text-muted-foreground mb-6">
                 Configure your Firebase project for client-side authentication (sign up/login)
@@ -424,37 +351,110 @@ export default function SettingsPage() {
                     data-testid="input-firebase-measurement-id"
                   />
                 </div>
-
-                <button
-                  onClick={handleSaveAllSettings}
-                  disabled={isLoading}
-                  className="w-full bg-emerald-600 text-white py-4 rounded-2xl font-semibold flex items-center justify-center gap-2 hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  data-testid="button-save-all-settings"
-                >
-                  {isLoading ? (
-                    <>
-                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      Saving...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="w-5 h-5" />
-                      Save All Settings
-                    </>
-                  )}
-                </button>
-
-                {firebaseApiKey && (
-                  <button
-                    onClick={handleClearAuthConfig}
-                    className="w-full bg-red-50 text-red-600 py-3 rounded-2xl font-semibold flex items-center justify-center gap-2 border border-red-200 hover:bg-red-100 transition-colors"
-                    data-testid="button-clear-auth-config"
-                  >
-                    <LogOut className="w-5 h-5" />
-                    Clear Settings
-                  </button>
-                )}
               </div>
+            </div>
+
+            {/* Store Settings Section */}
+            <div className="mb-8 pt-8 border-t border-gray-200">
+              <h2 className="text-lg font-bold mb-4">Store Information</h2>
+              <p className="text-sm text-muted-foreground mb-6">
+                Configure your store details
+              </p>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-semibold mb-2" htmlFor="storeName">
+                    Store Name
+                  </label>
+                  <input
+                    id="storeName"
+                    type="text"
+                    value={storeName}
+                    onChange={(e) => setStoreName(e.target.value)}
+                    placeholder="Your Store Name"
+                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    data-testid="input-store-name"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold mb-2" htmlFor="storeAddress">
+                    Address
+                  </label>
+                  <input
+                    id="storeAddress"
+                    type="text"
+                    value={storeAddress}
+                    onChange={(e) => setStoreAddress(e.target.value)}
+                    placeholder="Store Address"
+                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    data-testid="input-store-address"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold mb-2" htmlFor="storePhone">
+                    Phone Number
+                  </label>
+                  <input
+                    id="storePhone"
+                    type="tel"
+                    value={storePhone}
+                    onChange={(e) => setStorePhone(e.target.value)}
+                    placeholder="+1 234 567 8900"
+                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    data-testid="input-store-phone"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold mb-2" htmlFor="storeEmail">
+                    Email
+                  </label>
+                  <input
+                    id="storeEmail"
+                    type="email"
+                    value={storeEmail}
+                    onChange={(e) => setStoreEmail(e.target.value)}
+                    placeholder="info@store.com"
+                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    data-testid="input-store-email"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Save Button - One Button to Save All */}
+            <div className="pt-8 border-t border-gray-200 space-y-3">
+              <button
+                onClick={handleSaveAllSettings}
+                disabled={isLoading}
+                className="w-full bg-emerald-600 text-white py-4 rounded-2xl font-semibold flex items-center justify-center gap-2 hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                data-testid="button-save-all-settings"
+              >
+                {isLoading ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-5 h-5" />
+                    Save All Settings
+                  </>
+                )}
+              </button>
+
+              {firebaseApiKey && (
+                <button
+                  onClick={handleClearAuthConfig}
+                  className="w-full bg-red-50 text-red-600 py-3 rounded-2xl font-semibold flex items-center justify-center gap-2 border border-red-200 hover:bg-red-100 transition-colors"
+                  data-testid="button-clear-auth-config"
+                >
+                  <LogOut className="w-5 h-5" />
+                  Clear Settings
+                </button>
+              )}
             </div>
           </div>
         </div>
