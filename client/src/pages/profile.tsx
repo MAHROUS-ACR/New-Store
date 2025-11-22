@@ -835,7 +835,10 @@ export default function ProfilePage() {
                       {orders.filter(order => selectedStatusFilter === null || order.status === selectedStatusFilter).map((order) => (
                         <button
                           key={order.id}
-                          onClick={() => setLocation(`/order/${order.id}`)}
+                          onClick={() => {
+                            sessionStorage.setItem('previousPage', '/profile');
+                            setLocation(`/order/${order.id}`);
+                          }}
                           className="w-full p-3 bg-white border border-gray-200 rounded-2xl hover:border-primary hover:shadow-sm transition-all text-left"
                           data-testid={`order-${order.id}`}
                         >

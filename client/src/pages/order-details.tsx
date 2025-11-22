@@ -45,12 +45,18 @@ export default function OrderDetailsPage() {
   const orderId = location.split("/order/")[1]?.split("?")[0];
   // Determine back path based on user role and store tab preference
   const handleBack = () => {
+    // Check if there's a previousPage stored in sessionStorage
+    const previousPage = sessionStorage.getItem('previousPage');
+    const backPath = previousPage || '/profile';
+    
     if (user?.role === 'admin') {
       sessionStorage.setItem('preferredTab', 'admin');
     } else {
       sessionStorage.removeItem('preferredTab');
     }
-    setLocation('/profile');
+    
+    sessionStorage.removeItem('previousPage'); // Clear after use
+    setLocation(backPath);
   };
 
   useEffect(() => {
