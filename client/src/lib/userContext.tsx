@@ -22,6 +22,7 @@ interface UserContextType {
   signup: (email: string, password: string, username: string) => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  setRole: (role: string) => void;
   isLoggedIn: boolean;
   isLoading: boolean;
 }
@@ -31,6 +32,7 @@ const defaultUserValue: UserContextType = {
   signup: async () => {},
   login: async () => {},
   logout: async () => {},
+  setRole: () => {},
   isLoggedIn: false,
   isLoading: true,
 };
@@ -55,11 +57,15 @@ export function UserProvider({ children }: { children: ReactNode }) {
         const unsubscribe = onAuthStateChanged(auth, (firebaseUser: FirebaseUser | null) => {
           if (firebaseUser) {
             // User is signed in
+            // Try to get stored user data from localStorage to preserve role
+            const storedUser = localStorage.getItem("user");
+            const storedRole = storedUser ? JSON.parse(storedUser).role : "user";
+            
             const userData: User = {
               id: firebaseUser.uid,
               email: firebaseUser.email || "",
               username: firebaseUser.displayName || firebaseUser.email?.split("@")[0],
-              role: "user",
+              role: storedRole,
             };
             setUser(userData);
             localStorage.setItem("user", JSON.stringify(userData));
@@ -109,6 +115,14 @@ export function UserProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem("orders");
   };
 
+  const setRole = (role: string) => {
+    if (user) {
+      const updatedUser = { ...user, role };
+      setUser(updatedUser);
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+    }
+  };
+
   return (
     <UserContext.Provider
       value={{
@@ -116,6 +130,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
         signup,
         login,
         logout,
+        setRole,
         isLoggedIn: !!user,
         isLoading,
       }}
