@@ -101,6 +101,14 @@ export default function SettingsPage() {
         }),
       });
 
+      if (!firebaseResponse.ok) {
+        const errorData = await firebaseResponse.json();
+        console.error("Firebase config save error:", errorData);
+        toast.error(`Firebase save failed: ${errorData.message || "Unknown error"}`);
+        setIsLoading(false);
+        return;
+      }
+
       // Save Store settings
       const storeResponse = await fetch("/api/store-settings", {
         method: "POST",
@@ -113,6 +121,14 @@ export default function SettingsPage() {
         }),
       });
 
+      if (!storeResponse.ok) {
+        const errorData = await storeResponse.json();
+        console.error("Store settings save error:", errorData);
+        toast.error(`Store settings save failed: ${errorData.message || "Unknown error"}`);
+        setIsLoading(false);
+        return;
+      }
+
       // Also save to localStorage for client-side use
       saveFirebaseConfig({
         apiKey: firebaseApiKey,
@@ -124,13 +140,11 @@ export default function SettingsPage() {
         measurementId: firebaseMeasurementId,
       });
 
-      if (firebaseResponse.ok && storeResponse.ok) {
-        toast.success("All settings saved successfully!");
-      } else {
-        toast.error("Failed to save some settings");
-      }
-    } catch (error) {
-      toast.error("Failed to save settings");
+      toast.success("All settings saved successfully!");
+      console.log("✅ All settings saved to Firestore and localStorage");
+    } catch (error: any) {
+      console.error("Error saving settings:", error);
+      toast.error(`Error: ${error.message || "Failed to save settings"}`);
     } finally {
       setIsLoading(false);
     }
