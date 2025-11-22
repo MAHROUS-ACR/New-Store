@@ -497,6 +497,162 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get all categories
+  app.get("/api/categories", async (req, res) => {
+    try {
+      if (!isFirebaseConfigured()) {
+        return res.json([]);
+      }
+
+      const db = getFirestore();
+      const snapshot = await db.collection("categories").get();
+      const categories: any[] = [];
+      
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        categories.push({
+          id: doc.id,
+          name: data.name || "",
+        });
+      });
+
+      console.log(`✅ Fetched ${categories.length} categories from Firestore`);
+      res.json(categories);
+    } catch (error: any) {
+      console.error("❌ Error fetching categories:", error);
+      res.status(500).json({ message: "Failed to fetch categories" });
+    }
+  });
+
+  // Add or update category
+  app.post("/api/categories", async (req, res) => {
+    try {
+      if (!isFirebaseConfigured()) {
+        return res.status(503).json({ message: "Firebase not configured" });
+      }
+
+      const { id, name } = req.body;
+
+      if (!name) {
+        return res.status(400).json({ message: "Category name is required" });
+      }
+
+      const db = getFirestore();
+      const docId = id || name.toLowerCase().replace(/\s+/g, "_");
+      
+      await db.collection("categories").doc(docId).set({
+        name: name,
+        updatedAt: new Date().toISOString(),
+      }, { merge: true });
+
+      console.log(`✅ Category ${docId} saved to Firestore`);
+      res.json({ id: docId, name, message: "Category saved successfully" });
+    } catch (error: any) {
+      console.error("❌ Error saving category:", error);
+      res.status(500).json({ message: "Failed to save category" });
+    }
+  });
+
+  // Delete category
+  app.delete("/api/categories/:id", async (req, res) => {
+    try {
+      if (!isFirebaseConfigured()) {
+        return res.status(503).json({ message: "Firebase not configured" });
+      }
+
+      const { id } = req.params;
+      const db = getFirestore();
+      
+      await db.collection("categories").doc(id).delete();
+
+      console.log(`✅ Category ${id} deleted from Firestore`);
+      res.json({ message: "Category deleted successfully" });
+    } catch (error: any) {
+      console.error("❌ Error deleting category:", error);
+      res.status(500).json({ message: "Failed to delete category" });
+    }
+  });
+
+  // Get all products
+  app.get("/api/products/admin", async (req, res) => {
+    try {
+      if (!isFirebaseConfigured()) {
+        return res.json([]);
+      }
+
+      const db = getFirestore();
+      const snapshot = await db.collection("products").get();
+      const products: any[] = [];
+      
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        products.push({
+          id: doc.id,
+          title: data.title || "",
+          price: data.price || 0,
+          category: data.category || "",
+        });
+      });
+
+      console.log(`✅ Fetched ${products.length} products from Firestore`);
+      res.json(products);
+    } catch (error: any) {
+      console.error("❌ Error fetching products:", error);
+      res.status(500).json({ message: "Failed to fetch products" });
+    }
+  });
+
+  // Add or update product
+  app.post("/api/products/admin", async (req, res) => {
+    try {
+      if (!isFirebaseConfigured()) {
+        return res.status(503).json({ message: "Firebase not configured" });
+      }
+
+      const { id, title, price, category } = req.body;
+
+      if (!title || !price || !category) {
+        return res.status(400).json({ message: "All fields are required" });
+      }
+
+      const db = getFirestore();
+      const docId = id || Date.now().toString();
+      
+      await db.collection("products").doc(docId).set({
+        title: title,
+        price: parseFloat(price),
+        category: category,
+        updatedAt: new Date().toISOString(),
+      }, { merge: true });
+
+      console.log(`✅ Product ${docId} saved to Firestore`);
+      res.json({ id: docId, title, price, category, message: "Product saved successfully" });
+    } catch (error: any) {
+      console.error("❌ Error saving product:", error);
+      res.status(500).json({ message: "Failed to save product" });
+    }
+  });
+
+  // Delete product
+  app.delete("/api/products/admin/:id", async (req, res) => {
+    try {
+      if (!isFirebaseConfigured()) {
+        return res.status(503).json({ message: "Firebase not configured" });
+      }
+
+      const { id } = req.params;
+      const db = getFirestore();
+      
+      await db.collection("products").doc(id).delete();
+
+      console.log(`✅ Product ${id} deleted from Firestore`);
+      res.json({ message: "Product deleted successfully" });
+    } catch (error: any) {
+      console.error("❌ Error deleting product:", error);
+      res.status(500).json({ message: "Failed to delete product" });
+    }
+  });
+
   const server = createServer(app);
   return server;
 }

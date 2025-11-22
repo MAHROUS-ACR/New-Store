@@ -291,6 +291,30 @@ export default function ProfilePage() {
     }
   };
 
+  const fetchCategories = async () => {
+    try {
+      const response = await fetch("/api/categories");
+      if (response.ok) {
+        const data = await response.json();
+        setCategories(data || []);
+      }
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+    }
+  };
+
+  const fetchProducts = async () => {
+    try {
+      const response = await fetch("/api/products/admin");
+      if (response.ok) {
+        const data = await response.json();
+        setItems(data || []);
+      }
+    } catch (error) {
+      console.error("Error fetching products:", error);
+    }
+  };
+
   const handleStatusUpdate = async (orderId: string, status: string) => {
     try {
       const response = await fetch(`/api/orders/${orderId}`, {
@@ -818,7 +842,10 @@ export default function ProfilePage() {
 
               {/* Categories Management Section */}
               <button
-                onClick={() => setShowCategories(!showCategories)}
+                onClick={() => {
+                  setShowCategories(!showCategories);
+                  if (!showCategories) fetchCategories();
+                }}
                 className="w-full flex items-center justify-between p-4 bg-green-50 rounded-2xl border border-green-200 hover:border-green-300 transition-colors mb-6"
                 data-testid="button-categories-section"
               >
@@ -847,15 +874,25 @@ export default function ProfilePage() {
                         data-testid="input-category-name"
                       />
                       <button
-                        onClick={() => {
+                        onClick={async () => {
                           if (newCategoryName.trim()) {
-                            const newCategory = {
-                              id: Date.now().toString(),
-                              name: newCategoryName,
-                            };
-                            setCategories([...categories, newCategory]);
-                            setNewCategoryName("");
-                            toast.success("Category added!");
+                            try {
+                              const response = await fetch("/api/categories", {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({ name: newCategoryName }),
+                              });
+                              if (response.ok) {
+                                const data = await response.json();
+                                setCategories([...categories, { id: data.id, name: data.name }]);
+                                setNewCategoryName("");
+                                toast.success("Category added!");
+                              } else {
+                                toast.error("Failed to add category");
+                              }
+                            } catch (error) {
+                              toast.error("Failed to add category");
+                            }
                           } else {
                             toast.error("Enter category name");
                           }
@@ -889,12 +926,25 @@ export default function ProfilePage() {
                                 data-testid={`input-edit-category-${cat.id}`}
                               />
                               <button
-                                onClick={() => {
+                                onClick={async () => {
                                   if (newCategoryName.trim()) {
-                                    setCategories(categories.map(c => c.id === cat.id ? { ...c, name: newCategoryName } : c));
-                                    setEditingCategoryId(null);
-                                    setNewCategoryName("");
-                                    toast.success("Category updated!");
+                                    try {
+                                      const response = await fetch("/api/categories", {
+                                        method: "POST",
+                                        headers: { "Content-Type": "application/json" },
+                                        body: JSON.stringify({ id: cat.id, name: newCategoryName }),
+                                      });
+                                      if (response.ok) {
+                                        setCategories(categories.map(c => c.id === cat.id ? { ...c, name: newCategoryName } : c));
+                                        setEditingCategoryId(null);
+                                        setNewCategoryName("");
+                                        toast.success("Category updated!");
+                                      } else {
+                                        toast.error("Failed to update category");
+                                      }
+                                    } catch (error) {
+                                      toast.error("Failed to update category");
+                                    }
                                   }
                                 }}
                                 className="px-3 py-2 bg-green-600 text-white rounded-lg flex items-center justify-center hover:bg-green-700 transition-colors text-xs"
@@ -928,9 +978,20 @@ export default function ProfilePage() {
                                   <Edit2 className="w-3 h-3" />
                                 </button>
                                 <button
-                                  onClick={() => {
-                                    setCategories(categories.filter(c => c.id !== cat.id));
-                                    toast.success("Category deleted!");
+                                  onClick={async () => {
+                                    try {
+                                      const response = await fetch(`/api/categories/${cat.id}`, {
+                                        method: "DELETE",
+                                      });
+                                      if (response.ok) {
+                                        setCategories(categories.filter(c => c.id !== cat.id));
+                                        toast.success("Category deleted!");
+                                      } else {
+                                        toast.error("Failed to delete category");
+                                      }
+                                    } catch (error) {
+                                      toast.error("Failed to delete category");
+                                    }
                                   }}
                                   className="px-3 py-2 bg-red-100 text-red-700 rounded-lg flex items-center justify-center hover:bg-red-200 transition-colors text-xs"
                                   data-testid={`button-delete-category-${cat.id}`}
@@ -949,7 +1010,13 @@ export default function ProfilePage() {
 
               {/* Products Management Section */}
               <button
-                onClick={() => setShowItems(!showItems)}
+                onClick={() => {
+                  setShowItems(!showItems);
+                  if (!showItems) {
+                    fetchProducts();
+                    fetchCategories();
+                  }
+                }}
                 className="w-full flex items-center justify-between p-4 bg-blue-50 rounded-2xl border border-blue-200 hover:border-blue-300 transition-colors mb-6 mt-6"
                 data-testid="button-toggle-items"
               >
@@ -998,28 +1065,46 @@ export default function ProfilePage() {
                       </select>
                       <div className="flex gap-2">
                         <button
-                          onClick={() => {
+                          onClick={async () => {
                             if (newItemForm.title && newItemForm.price && newItemForm.category) {
-                              if (editingItemId) {
-                                // Update existing item
-                                setItems(items.map(i => i.id === editingItemId ? {
-                                  ...i,
-                                  ...newItemForm,
-                                  price: parseFloat(newItemForm.price),
-                                } : i));
-                                toast.success("Product updated!");
-                                setEditingItemId(null);
-                              } else {
-                                // Add new item
-                                const newItem = {
-                                  id: Date.now().toString(),
-                                  ...newItemForm,
-                                  price: parseFloat(newItemForm.price),
-                                };
-                                setItems([...items, newItem]);
-                                toast.success("Product added!");
+                              try {
+                                const response = await fetch("/api/products/admin", {
+                                  method: "POST",
+                                  headers: { "Content-Type": "application/json" },
+                                  body: JSON.stringify({
+                                    id: editingItemId || undefined,
+                                    title: newItemForm.title,
+                                    price: parseFloat(newItemForm.price),
+                                    category: newItemForm.category,
+                                  }),
+                                });
+                                if (response.ok) {
+                                  const data = await response.json();
+                                  if (editingItemId) {
+                                    setItems(items.map(i => i.id === editingItemId ? {
+                                      id: data.id,
+                                      title: data.title,
+                                      price: data.price,
+                                      category: data.category,
+                                    } : i));
+                                    toast.success("Product updated!");
+                                    setEditingItemId(null);
+                                  } else {
+                                    setItems([...items, {
+                                      id: data.id,
+                                      title: data.title,
+                                      price: data.price,
+                                      category: data.category,
+                                    }]);
+                                    toast.success("Product added!");
+                                  }
+                                  setNewItemForm({ title: "", price: "", category: "" });
+                                } else {
+                                  toast.error("Failed to save product");
+                                }
+                              } catch (error) {
+                                toast.error("Failed to save product");
                               }
-                              setNewItemForm({ title: "", price: "", category: "" });
                             } else {
                               toast.error("Please fill all fields");
                             }
@@ -1077,13 +1162,24 @@ export default function ProfilePage() {
                               Edit
                             </button>
                             <button
-                              onClick={() => {
-                                setItems(items.filter(i => i.id !== item.id));
-                                if (editingItemId === item.id) {
-                                  setEditingItemId(null);
-                                  setNewItemForm({ title: "", price: "", category: "" });
+                              onClick={async () => {
+                                try {
+                                  const response = await fetch(`/api/products/admin/${item.id}`, {
+                                    method: "DELETE",
+                                  });
+                                  if (response.ok) {
+                                    setItems(items.filter(i => i.id !== item.id));
+                                    if (editingItemId === item.id) {
+                                      setEditingItemId(null);
+                                      setNewItemForm({ title: "", price: "", category: "" });
+                                    }
+                                    toast.success("Product deleted!");
+                                  } else {
+                                    toast.error("Failed to delete product");
+                                  }
+                                } catch (error) {
+                                  toast.error("Failed to delete product");
                                 }
-                                toast.success("Product deleted!");
                               }}
                               className="flex-1 px-3 py-2 bg-red-100 text-red-700 rounded-lg flex items-center justify-center gap-1 hover:bg-red-200 transition-colors text-xs font-semibold"
                               data-testid={`button-delete-item-${item.id}`}
