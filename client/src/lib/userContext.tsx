@@ -71,17 +71,19 @@ export function UserProvider({ children }: { children: ReactNode }) {
             const userRef = doc(db, "users", firebaseUser.uid);
             unsubscribeUser = onSnapshot(userRef, (userSnap) => {
               let role = "user"; // default role
+              let username = firebaseUser.email?.split("@")[0] || "user"; // default username
               
               if (userSnap.exists()) {
                 const firestoreData = userSnap.data();
                 role = firestoreData.role || "user";
-                console.log("📍 User role from Firestore:", role);
+                username = firestoreData.username || username;
+                console.log("📍 User data from Firestore - username:", username, "role:", role);
               }
               
               const userData: User = {
                 id: firebaseUser.uid,
                 email: firebaseUser.email || "",
-                username: firebaseUser.displayName || firebaseUser.email?.split("@")[0],
+                username: username,
                 role: role,
               };
               console.log("📍 Updating user state with role:", userData.role);
@@ -92,12 +94,14 @@ export function UserProvider({ children }: { children: ReactNode }) {
               console.error("Failed to fetch user data from Firestore:", error);
               // Fallback to stored user data
               const storedUser = localStorage.getItem("user");
-              const storedRole = storedUser ? JSON.parse(storedUser).role : "user";
+              const storedData = storedUser ? JSON.parse(storedUser) : {};
+              const storedRole = storedData.role || "user";
+              const storedUsername = storedData.username || firebaseUser.email?.split("@")[0];
               
               const userData: User = {
                 id: firebaseUser.uid,
                 email: firebaseUser.email || "",
-                username: firebaseUser.displayName || firebaseUser.email?.split("@")[0],
+                username: storedUsername,
                 role: storedRole,
               };
               setUser(userData);
