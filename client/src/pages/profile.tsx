@@ -218,16 +218,29 @@ export default function ProfilePage() {
           address: storeAddress,
           phone: storePhone,
           email: storeEmail,
+          firebase: {
+            projectId,
+            privateKey,
+            clientEmail,
+            firebaseApiKey,
+            firebaseProjectId,
+            firebaseAppId,
+            firebaseAuthDomain,
+            firebaseStorageBucket,
+            firebaseMessagingSenderId,
+            firebaseMeasurementId,
+          },
         }),
       });
 
       if (response.ok) {
-        toast.success("Store settings saved successfully!");
+        toast.success("Store and Firebase settings saved to Firestore!");
       } else {
         const error = await response.json();
-        toast.error(error.message || "Failed to save store settings");
+        toast.error(error.message || "Failed to save settings");
       }
     } catch (error) {
+      console.error("Save error:", error);
       toast.error("Failed to connect to server");
     } finally {
       setIsSaving(false);

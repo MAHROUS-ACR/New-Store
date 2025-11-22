@@ -273,30 +273,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Save store settings
+  // Save store settings with optional Firebase config
   app.post("/api/store-settings", async (req, res) => {
     try {
       if (!isFirebaseConfigured()) {
         return res.status(503).json({ message: "Firebase not configured" });
       }
 
-      const { name, address, phone, email } = req.body;
+      const { name, address, phone, email, firebase } = req.body;
 
       if (!name || !address || !phone || !email) {
-        return res.status(400).json({ message: "All fields are required" });
+        return res.status(400).json({ message: "All store fields are required" });
       }
 
       const db = getFirestore();
-      await db.collection("settings").doc("store").set({
+      const storeData = {
         name,
         address,
         phone,
         email,
         updatedAt: new Date().toISOString(),
-      });
+      };
+
+      // Include Firebase config if provided
+      if (firebase) {
+        storeData.firebase = firebase;
+      }
+
+      await db.collection("settings").doc("store").set(storeData);
 
       console.log("✅ Store settings saved successfully to Firestore");
-      res.json({ message: "Store settings saved successfully" });
+      res.json({ message: "Store and Firebase settings saved successfully" });
     } catch (error: any) {
       console.error("❌ Error saving store settings:", error);
       res.status(500).json({
