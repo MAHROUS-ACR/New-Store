@@ -45,7 +45,7 @@ export default function ProfilePage() {
   const [newStatus, setNewStatus] = useState<string>("");
   const [selectedOrder, setSelectedOrder] = useState<AdminOrder | null>(null);
   const [showFirebaseSettings, setShowFirebaseSettings] = useState(false);
-  const [showOrders, setShowOrders] = useState(true);
+  const [showOrders, setShowOrders] = useState(false);
   const [showItems, setShowItems] = useState(false);
   const [showCategories, setShowCategories] = useState(false);
   const [showUsers, setShowUsers] = useState(false);
