@@ -145,14 +145,14 @@ export default function ProfilePage() {
     return { totalRevenue, totalShipping, salesAmount, completedCount, pendingCount, filtered };
   };
 
-  // Fetch user's orders and calculate stats
+  // Fetch user's completed orders and calculate stats
   const fetchUserOrdersStats = async () => {
     if (!user?.id) return;
     try {
       const response = await fetch("/api/orders");
       if (response.ok) {
         const data = await response.json();
-        const userOrders = data.filter((o: AdminOrder) => o.userId === user.id);
+        const userOrders = data.filter((o: AdminOrder) => o.userId === user.id && o.status === 'completed');
         setUserOrdersCount(userOrders.length);
         setUserOrdersTotal(userOrders.reduce((sum: number, o: AdminOrder) => sum + o.total, 0));
       }
