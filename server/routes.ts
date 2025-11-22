@@ -43,8 +43,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const doc = await db.collection("settings").doc("store").get();
       const data = doc.data();
 
+      console.log("📦 Firestore doc exists:", doc.exists);
+      console.log("📦 Document data keys:", data ? Object.keys(data) : "null");
+      console.log("📦 Firebase config field exists:", !!data?.firebase);
+      if (data?.firebase) {
+        console.log("📦 Firebase config data:", JSON.stringify(data.firebase, null, 2));
+      }
+
       // Return saved Firebase config from Firestore, or empty config if not found
       if (!doc.exists || !data?.firebase) {
+        console.log("⚠️ Returning empty Firebase config");
         return res.json({
           projectId: "",
           privateKey: "",
@@ -59,10 +67,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      console.log("Loaded Firebase config from Firestore:", JSON.stringify(data.firebase, null, 2));
+      console.log("✅ Returning Firebase config from Firestore");
       res.json(data.firebase);
     } catch (error) {
-      console.error("Error loading Firebase config:", error);
+      console.error("❌ Error loading Firebase config:", error);
       res.status(500).json({ message: "Failed to get Firebase config" });
     }
   });
