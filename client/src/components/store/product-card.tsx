@@ -189,9 +189,9 @@ export function ProductCard({ product, index }: { product: ProductProps; index: 
                     return (
                       <button
                         key={colorName}
-                        onClick={() => setSelectedColor(colorName || '')}
+                        onClick={() => setSelectedColor(color || '')}
                         className={`flex items-center gap-2 px-3 py-2 rounded-lg border-2 transition-all ${
-                          selectedColor === colorName
+                          selectedColor === color
                             ? 'border-gray-800 bg-gray-50'
                             : 'border-gray-200 bg-white hover:border-gray-300'
                         }`}
