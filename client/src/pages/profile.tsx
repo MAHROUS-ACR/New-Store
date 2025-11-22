@@ -259,6 +259,7 @@ export default function ProfilePage() {
   useEffect(() => {
     if (activeTab === 'admin') {
       fetchCategories(); // Load categories when admin tab is active
+      fetchProducts(); // Load products when admin tab is active
     }
   }, [activeTab]);
 

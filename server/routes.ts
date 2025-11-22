@@ -188,6 +188,110 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get all products (admin)
+  app.get("/api/products/admin", async (req, res) => {
+    try {
+      if (!isFirebaseConfigured()) {
+        return res.json([]);
+      }
+
+      const db = getFirestore();
+      const snapshot = await db.collection("products").get();
+      const products: any[] = [];
+      
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        products.push({
+          id: doc.id,
+          title: data.title || "",
+          description: data.description || "",
+          price: data.price || 0,
+          category: data.category || "",
+          image: data.image || null,
+          units: data.units || null,
+          sizes: data.sizes || null,
+          colors: data.colors || null,
+          available: data.available !== false,
+        });
+      });
+
+      console.log(`✅ Fetched ${products.length} products from Firestore`);
+      res.json(products);
+    } catch (error: any) {
+      console.error("❌ Error fetching products:", error);
+      res.status(500).json({ message: "Failed to fetch products" });
+    }
+  });
+
+  // Add or update product
+  app.post("/api/products/admin", async (req, res) => {
+    try {
+      if (!isFirebaseConfigured()) {
+        return res.status(503).json({ message: "Firebase not configured" });
+      }
+
+      const { id, title, description, price, category, image, units, sizes, colors, available } = req.body;
+
+      if (!title || !price || !category) {
+        return res.status(400).json({ message: "All fields are required" });
+      }
+
+      const db = getFirestore();
+      const docId = id || Date.now().toString();
+      
+      await db.collection("products").doc(docId).set({
+        title: title,
+        description: description || null,
+        price: parseFloat(price),
+        category: category,
+        image: image || null,
+        units: units || null,
+        sizes: sizes || null,
+        colors: colors || null,
+        available: available !== false,
+        updatedAt: new Date().toISOString(),
+      }, { merge: true });
+
+      console.log(`✅ Product ${docId} saved to Firestore`);
+      res.json({ 
+        id: docId, 
+        title, 
+        description,
+        price, 
+        category,
+        image,
+        units,
+        sizes,
+        colors,
+        available,
+        message: "Product saved successfully" 
+      });
+    } catch (error: any) {
+      console.error("❌ Error saving product:", error);
+      res.status(500).json({ message: "Failed to save product" });
+    }
+  });
+
+  // Delete product
+  app.delete("/api/products/admin/:id", async (req, res) => {
+    try {
+      if (!isFirebaseConfigured()) {
+        return res.status(503).json({ message: "Firebase not configured" });
+      }
+
+      const { id } = req.params;
+      const db = getFirestore();
+      
+      await db.collection("products").doc(id).delete();
+
+      console.log(`✅ Product ${id} deleted from Firestore`);
+      res.json({ message: "Product deleted successfully" });
+    } catch (error: any) {
+      console.error("❌ Error deleting product:", error);
+      res.status(500).json({ message: "Failed to delete product" });
+    }
+  });
+
   // Get single product by ID
   app.get("/api/products/:id", async (req, res) => {
     try {
@@ -638,107 +742,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("❌ Error deleting category:", error);
       res.status(500).json({ message: "Failed to delete category" });
-    }
-  });
-
-  // Get all products (admin)
-  app.get("/api/products/admin", async (req, res) => {
-    try {
-      if (!isFirebaseConfigured()) {
-        return res.json([]);
-      }
-
-      const db = getFirestore();
-      const snapshot = await db.collection("products").get();
-      const products: any[] = [];
-      
-      snapshot.forEach((doc) => {
-        const data = doc.data();
-        products.push({
-          id: doc.id,
-          title: data.title || "",
-          price: data.price || 0,
-          category: data.category || "",
-          image: data.image || null,
-          units: data.units || null,
-          sizes: data.sizes || null,
-          colors: data.colors || null,
-          available: data.available !== false,
-        });
-      });
-
-      console.log(`✅ Fetched ${products.length} products from Firestore`);
-      res.json(products);
-    } catch (error: any) {
-      console.error("❌ Error fetching products:", error);
-      res.status(500).json({ message: "Failed to fetch products" });
-    }
-  });
-
-  // Add or update product
-  app.post("/api/products/admin", async (req, res) => {
-    try {
-      if (!isFirebaseConfigured()) {
-        return res.status(503).json({ message: "Firebase not configured" });
-      }
-
-      const { id, title, price, category, image, units, sizes, colors, available } = req.body;
-
-      if (!title || !price || !category) {
-        return res.status(400).json({ message: "All fields are required" });
-      }
-
-      const db = getFirestore();
-      const docId = id || Date.now().toString();
-      
-      await db.collection("products").doc(docId).set({
-        title: title,
-        price: parseFloat(price),
-        category: category,
-        image: image || null,
-        units: units || null,
-        sizes: sizes || null,
-        colors: colors || null,
-        available: available !== false,
-        updatedAt: new Date().toISOString(),
-      }, { merge: true });
-
-      console.log(`✅ Product ${docId} saved to Firestore`);
-      res.json({ 
-        id: docId, 
-        title, 
-        price, 
-        category,
-        image,
-        units,
-        sizes,
-        colors,
-        available,
-        message: "Product saved successfully" 
-      });
-    } catch (error: any) {
-      console.error("❌ Error saving product:", error);
-      res.status(500).json({ message: "Failed to save product" });
-    }
-  });
-
-  // Delete product
-  app.delete("/api/products/admin/:id", async (req, res) => {
-    try {
-      if (!isFirebaseConfigured()) {
-        return res.status(503).json({ message: "Firebase not configured" });
-      }
-
-      const { id } = req.params;
-      const db = getFirestore();
-      
-      await db.collection("products").doc(id).delete();
-
-      console.log(`✅ Product ${id} deleted from Firestore`);
-      res.json({ message: "Product deleted successfully" });
-    } catch (error: any) {
-      console.error("❌ Error deleting product:", error);
-      res.status(500).json({ message: "Failed to delete product" });
     }
   });
 
