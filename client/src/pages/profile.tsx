@@ -44,6 +44,7 @@ export default function ProfilePage() {
   const [showFirebaseSettings, setShowFirebaseSettings] = useState(false);
   const [showOrders, setShowOrders] = useState(true);
   const [showItems, setShowItems] = useState(false);
+  const [showCategories, setShowCategories] = useState(false);
   const [showUsers, setShowUsers] = useState(false);
   const [showStoreSettings, setShowStoreSettings] = useState(false);
   const [selectedStatusFilter, setSelectedStatusFilter] = useState<string | null>(null);
@@ -817,10 +818,7 @@ export default function ProfilePage() {
 
               {/* Categories Management Section */}
               <button
-                onClick={() => {
-                  setShowItems(!showItems);
-                  // Load categories when opening items
-                }}
+                onClick={() => setShowCategories(!showCategories)}
                 className="w-full flex items-center justify-between p-4 bg-green-50 rounded-2xl border border-green-200 hover:border-green-300 transition-colors mb-6"
                 data-testid="button-categories-section"
               >
@@ -830,11 +828,11 @@ export default function ProfilePage() {
                   </div>
                   <span className="font-semibold text-sm text-green-900">Categories</span>
                 </div>
-                <ChevronRight className={`w-5 h-5 text-green-400 transition-transform ${showItems ? "rotate-90" : ""}`} />
+                <ChevronRight className={`w-5 h-5 text-green-400 transition-transform ${showCategories ? "rotate-90" : ""}`} />
               </button>
 
               {/* Categories List */}
-              {showItems && (
+              {showCategories && (
                 <div className="mb-6">
                   {/* Add New Category */}
                   <div className="bg-white rounded-2xl p-4 border border-gray-200 mb-4">
@@ -949,20 +947,19 @@ export default function ProfilePage() {
                 </div>
               )}
 
-              {/* Items Management Section */}
+              {/* Products Management Section */}
               <button
-                onClick={() => setShowItems(false)}
-                className="w-full flex items-center justify-between p-4 bg-blue-50 rounded-2xl border border-blue-200 hover:border-blue-300 transition-colors mb-6 mt-6 opacity-50 cursor-not-allowed"
+                onClick={() => setShowItems(!showItems)}
+                className="w-full flex items-center justify-between p-4 bg-blue-50 rounded-2xl border border-blue-200 hover:border-blue-300 transition-colors mb-6 mt-6"
                 data-testid="button-toggle-items"
-                disabled
               >
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-blue-100 text-blue-600">
                     <Package className="w-6 h-6" />
                   </div>
-                  <span className="font-semibold text-sm text-blue-900">Items Management (Legacy)</span>
+                  <span className="font-semibold text-sm text-blue-900">Products</span>
                 </div>
-                <ChevronRight className={`w-5 h-5 text-blue-400 transition-transform`} />
+                <ChevronRight className={`w-5 h-5 text-blue-400 transition-transform ${showItems ? "rotate-90" : ""}`} />
               </button>
 
               {/* Items Content */}
@@ -970,11 +967,11 @@ export default function ProfilePage() {
                 <div className="mb-6">
                   {/* Add New Item Form */}
                   <div className="bg-white rounded-2xl p-4 border border-gray-200 mb-4">
-                    <h3 className="text-sm font-bold mb-3">Add New Item</h3>
+                    <h3 className="text-sm font-bold mb-3">{editingItemId ? "Edit Product" : "Add New Product"}</h3>
                     <div className="space-y-3">
                       <input
                         type="text"
-                        placeholder="Item Title"
+                        placeholder="Product Title"
                         value={newItemForm.title}
                         onChange={(e) => setNewItemForm({ ...newItemForm, title: e.target.value })}
                         className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
@@ -988,35 +985,65 @@ export default function ProfilePage() {
                         className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                         data-testid="input-item-price"
                       />
-                      <input
-                        type="text"
-                        placeholder="Category"
+                      <select
                         value={newItemForm.category}
                         onChange={(e) => setNewItemForm({ ...newItemForm, category: e.target.value })}
                         className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                        data-testid="input-item-category"
-                      />
-                      <button
-                        onClick={() => {
-                          if (newItemForm.title && newItemForm.price && newItemForm.category) {
-                            const newItem = {
-                              id: Date.now().toString(),
-                              ...newItemForm,
-                              price: parseFloat(newItemForm.price),
-                            };
-                            setItems([...items, newItem]);
-                            setNewItemForm({ title: "", price: "", category: "" });
-                            toast.success("Item added successfully!");
-                          } else {
-                            toast.error("Please fill all fields");
-                          }
-                        }}
-                        className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-blue-700 transition-colors text-sm"
-                        data-testid="button-add-item"
+                        data-testid="select-item-category"
                       >
-                        <Plus className="w-4 h-4" />
-                        Add Item
-                      </button>
+                        <option value="">Select Category</option>
+                        {categories.map((cat) => (
+                          <option key={cat.id} value={cat.name}>{cat.name}</option>
+                        ))}
+                      </select>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => {
+                            if (newItemForm.title && newItemForm.price && newItemForm.category) {
+                              if (editingItemId) {
+                                // Update existing item
+                                setItems(items.map(i => i.id === editingItemId ? {
+                                  ...i,
+                                  ...newItemForm,
+                                  price: parseFloat(newItemForm.price),
+                                } : i));
+                                toast.success("Product updated!");
+                                setEditingItemId(null);
+                              } else {
+                                // Add new item
+                                const newItem = {
+                                  id: Date.now().toString(),
+                                  ...newItemForm,
+                                  price: parseFloat(newItemForm.price),
+                                };
+                                setItems([...items, newItem]);
+                                toast.success("Product added!");
+                              }
+                              setNewItemForm({ title: "", price: "", category: "" });
+                            } else {
+                              toast.error("Please fill all fields");
+                            }
+                          }}
+                          className="flex-1 bg-blue-600 text-white py-2 rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-blue-700 transition-colors text-sm"
+                          data-testid="button-add-item"
+                        >
+                          <Plus className="w-4 h-4" />
+                          {editingItemId ? "Update" : "Add"}
+                        </button>
+                        {editingItemId && (
+                          <button
+                            onClick={() => {
+                              setEditingItemId(null);
+                              setNewItemForm({ title: "", price: "", category: "" });
+                            }}
+                            className="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-gray-300 transition-colors text-sm"
+                            data-testid="button-cancel-item"
+                          >
+                            <X className="w-4 h-4" />
+                            Cancel
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
 
@@ -1040,7 +1067,7 @@ export default function ProfilePage() {
                           <div className="flex gap-2">
                             <button
                               onClick={() => {
-                                setEditingItemId(editingItemId === item.id ? null : item.id);
+                                setEditingItemId(item.id);
                                 setNewItemForm(item);
                               }}
                               className="flex-1 px-3 py-2 bg-amber-100 text-amber-700 rounded-lg flex items-center justify-center gap-1 hover:bg-amber-200 transition-colors text-xs font-semibold"
@@ -1052,7 +1079,11 @@ export default function ProfilePage() {
                             <button
                               onClick={() => {
                                 setItems(items.filter(i => i.id !== item.id));
-                                toast.success("Item deleted!");
+                                if (editingItemId === item.id) {
+                                  setEditingItemId(null);
+                                  setNewItemForm({ title: "", price: "", category: "" });
+                                }
+                                toast.success("Product deleted!");
                               }}
                               className="flex-1 px-3 py-2 bg-red-100 text-red-700 rounded-lg flex items-center justify-center gap-1 hover:bg-red-200 transition-colors text-xs font-semibold"
                               data-testid={`button-delete-item-${item.id}`}
