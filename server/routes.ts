@@ -289,6 +289,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/store-settings", async (req, res) => {
     try {
       if (!isFirebaseConfigured()) {
+        console.error("Firebase not configured when saving store settings");
         return res.status(503).json({ message: "Firebase not configured" });
       }
 
@@ -300,12 +301,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         firebase 
       } = req.body;
 
+      console.log("Received store settings save request:", {
+        name,
+        address,
+        phone,
+        email,
+        hasFirebase: !!firebase
+      });
+
       if (!name || !address || !phone || !email) {
+        console.error("Missing required fields for store settings");
         return res.status(400).json({ message: "All fields are required" });
       }
 
       const db = getFirestore();
-      await db.collection("settings").doc("store").set({
+      const settingsData = {
         name,
         address,
         phone,
@@ -323,12 +333,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
           firebaseMeasurementId: "",
         },
         updatedAt: new Date().toISOString(),
-      });
+      };
 
-      console.log("Store settings and Firebase config saved successfully");
+      console.log("Saving to Firestore:", JSON.stringify(settingsData, null, 2));
+      
+      await db.collection("settings").doc("store").set(settingsData, { merge: true });
+
+      console.log("✅ Store settings and Firebase config saved successfully to Firestore");
       res.json({ message: "Store settings and Firebase config saved successfully" });
     } catch (error: any) {
-      console.error("Error saving store settings:", error);
+      console.error("❌ Error saving store settings:", error);
       res.status(500).json({
         message: "Failed to save store settings",
         error: error.message,
