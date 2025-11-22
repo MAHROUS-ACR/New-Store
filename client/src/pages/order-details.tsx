@@ -44,7 +44,7 @@ export default function OrderDetailsPage() {
   // Extract order ID from URL
   const orderId = location.split("/order/")[1]?.split("?")[0];
   // Determine back path based on user role
-  const backPath = user?.role === 'admin' ? '/profile?tab=admin' : '/';
+  const backPath = user?.role === 'admin' ? '/profile?tab=admin' : '/profile';
 
   useEffect(() => {
     if (!authLoading && !isLoggedIn) {

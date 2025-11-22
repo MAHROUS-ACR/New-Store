@@ -43,10 +43,19 @@ export default function ProfilePage() {
 
   // Check if coming from order details with tab=admin parameter
   useEffect(() => {
+    const fullPath = location;
+    console.log('Profile page location:', fullPath);
+    
     const queryParams = new URLSearchParams(location.split('?')[1] || '');
     const tabFromQuery = queryParams.get('tab');
+    console.log('Tab from query:', tabFromQuery);
+    
     if (tabFromQuery === 'admin') {
+      console.log('Setting active tab to admin');
       setActiveTab('admin');
+    } else {
+      console.log('Setting active tab to profile');
+      setActiveTab('profile');
     }
   }, [location]);
   const [orders, setOrders] = useState<AdminOrder[]>([]);
