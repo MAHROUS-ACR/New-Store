@@ -204,7 +204,15 @@ export default function OrdersPage() {
                             <div className="flex flex-wrap gap-1 mt-1">
                               {item.selectedUnit && <span className="inline-block px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded text-[8px]">{item.selectedUnit}</span>}
                               {item.selectedSize && <span className="inline-block px-1.5 py-0.5 bg-green-100 text-green-700 rounded text-[8px]">{item.selectedSize}</span>}
-                              {item.selectedColor && <span className="inline-block px-1.5 py-0.5 bg-red-100 text-red-700 rounded text-[8px]">{item.selectedColor}</span>}
+                              {item.selectedColor && (() => {
+                                const [colorName, colorHex] = typeof item.selectedColor === 'string' ? item.selectedColor.split('|') : [item.selectedColor, '#000000'];
+                                return (
+                                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-red-100 rounded text-[8px] border" style={{borderColor: colorHex || '#000000'}}>
+                                    <span style={{width: '6px', height: '6px', backgroundColor: colorHex || '#000000', borderRadius: '2px'}}></span>
+                                    {colorName}
+                                  </span>
+                                );
+                              })()}
                             </div>
                           )}
                           <p className="text-xs text-muted-foreground">
