@@ -6,6 +6,7 @@ import { useLocation } from "wouter";
 import { useCart } from "@/lib/cartContext";
 import { useUser } from "@/lib/userContext";
 import { toast } from "sonner";
+import { getFirestore, doc, getDoc } from "firebase/firestore";
 
 export default function CheckoutPage() {
   const [, setLocation] = useLocation();
@@ -20,6 +21,15 @@ export default function CheckoutPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<"card" | "delivery" | null>(null);
 
+  // Shipping data
+  const [shippingZones, setShippingZones] = useState<any[]>([]);
+  const [userProfile, setUserProfile] = useState<any>(null);
+  const [shippingType, setShippingType] = useState<"main" | "alt" | "new" | null>(null);
+  const [shippingCost, setShippingCost] = useState(0);
+  const [newAddress, setNewAddress] = useState("");
+  const [newPhone, setNewPhone] = useState("");
+  const [selectedZone, setSelectedZone] = useState("");
+
   const [formData, setFormData] = useState({
     cardNumber: "",
     cardHolder: "",
@@ -30,6 +40,45 @@ export default function CheckoutPage() {
     city: "",
     zipCode: "",
   });
+
+  // Load shipping zones and user profile
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const zonesRes = await fetch("/api/shipping-zones");
+        if (zonesRes.ok) {
+          const zones = await zonesRes.json();
+          setShippingZones(zones || []);
+        }
+      } catch (error) {
+        console.error("Error loading zones:", error);
+      }
+
+      if (user?.id) {
+        try {
+          const db = getFirestore();
+          const userRef = doc(db, "users", user.id);
+          const userSnap = await getDoc(userRef);
+          if (userSnap.exists()) {
+            setUserProfile(userSnap.data());
+            setFormData(prev => ({
+              ...prev,
+              email: userSnap.data().email || "",
+              address: userSnap.data().address || "",
+              city: userSnap.data().zone || "",
+              zipCode: userSnap.data().phone || "",
+            }));
+          }
+        } catch (error) {
+          console.error("Error loading user profile:", error);
+        }
+      }
+    };
+
+    if (paymentMethod) {
+      loadData();
+    }
+  }, [paymentMethod, user?.id]);
 
   const handleCardNumberChange = (e: string) => {
     const value = e.replace(/\s/g, "").slice(0, 16);
@@ -52,20 +101,12 @@ export default function CheckoutPage() {
   };
 
   const validateDeliveryForm = () => {
+    if (!shippingType || !selectedZone) {
+      toast.error("Please select shipping address and zone");
+      return false;
+    }
     if (!formData.email.trim()) {
       toast.error("Please enter email");
-      return false;
-    }
-    if (!formData.address.trim()) {
-      toast.error("Please enter address");
-      return false;
-    }
-    if (!formData.city.trim()) {
-      toast.error("Please enter city");
-      return false;
-    }
-    if (!formData.zipCode.trim()) {
-      toast.error("Please enter zip code");
       return false;
     }
     return true;
@@ -108,6 +149,12 @@ export default function CheckoutPage() {
   };
 
   const handleCardPayment = async () => {
+    if (!shippingType || !selectedZone) {
+      toast.error("Please select shipping address and zone");
+      setIsProcessing(false);
+      return;
+    }
+
     setIsProcessing(true);
     try {
       const paymentResponse = await fetch("/api/payment/create-intent", {
@@ -115,7 +162,7 @@ export default function CheckoutPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           method: "card",
-          amount: Math.round(total * 100),
+          amount: Math.round((total + shippingCost) * 100),
           currency: "usd",
           cardNumber: formData.cardNumber.replace(/\s/g, ""),
           expiryDate: formData.expiryDate,
@@ -133,12 +180,26 @@ export default function CheckoutPage() {
       }
 
       const paymentData = await paymentResponse.json();
+      
+      let shippingAddress = formData.address;
+      let shippingPhone = formData.zipCode;
+      if (shippingType === "new") {
+        shippingAddress = newAddress;
+        shippingPhone = newPhone;
+      }
+
       const orderData = {
         items,
-        total,
+        subtotal: total,
+        shippingCost,
+        total: total + shippingCost,
         status: "confirmed",
         paymentMethod: "card",
         paymentId: paymentData.id,
+        shippingType,
+        shippingAddress,
+        shippingPhone,
+        shippingZone: selectedZone,
         createdAt: new Date().toISOString(),
       };
 
@@ -175,19 +236,32 @@ export default function CheckoutPage() {
   };
 
   const handleDeliveryPayment = async () => {
+    if (!shippingType || !selectedZone) {
+      toast.error("Please select shipping address and zone");
+      setIsProcessing(false);
+      return;
+    }
+
     setIsProcessing(true);
     try {
+      let shippingAddress = formData.address;
+      let shippingPhone = formData.zipCode;
+      if (shippingType === "new") {
+        shippingAddress = newAddress;
+        shippingPhone = newPhone;
+      }
+
       const orderData = {
         items,
-        total,
+        subtotal: total,
+        shippingCost,
+        total: total + shippingCost,
         status: "pending",
         paymentMethod: "delivery",
-        deliveryAddress: {
-          email: formData.email,
-          address: formData.address,
-          city: formData.city,
-          zipCode: formData.zipCode,
-        },
+        shippingType,
+        shippingAddress,
+        shippingPhone,
+        shippingZone: selectedZone,
         createdAt: new Date().toISOString(),
       };
 
@@ -279,9 +353,21 @@ export default function CheckoutPage() {
                   )}
                 </div>
               ))}
-              <div className="border-t border-blue-200 pt-2 font-bold flex justify-between">
-                <span>Total:</span>
-                <span>${total.toFixed(2)}</span>
+              <div className="border-t border-blue-200 pt-2 space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span>Subtotal:</span>
+                  <span>${total.toFixed(2)}</span>
+                </div>
+                {shippingCost > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span>Shipping:</span>
+                    <span>${shippingCost.toFixed(2)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between font-bold text-base">
+                  <span>Total:</span>
+                  <span>${(total + shippingCost).toFixed(2)}</span>
+                </div>
               </div>
             </div>
           </div>
@@ -330,6 +416,149 @@ export default function CheckoutPage() {
                   ← Change Method
                 </button>
               </div>
+
+              {/* Shipping Options */}
+              {!shippingType && (
+                <div className="bg-cyan-50 border border-cyan-200 rounded-2xl p-4 mb-4">
+                  <h3 className="font-semibold text-sm mb-3">Shipping Address</h3>
+                  <div className="space-y-2">
+                    {userProfile?.address && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShippingType("main");
+                          setFormData(prev => ({ ...prev, address: userProfile.address, city: userProfile.zone, zipCode: userProfile.phone }));
+                          setSelectedZone(userProfile.zone);
+                        }}
+                        className="w-full p-3 bg-white border border-cyan-300 rounded-xl text-left hover:bg-cyan-100 transition-colors"
+                        data-testid="button-main-address"
+                      >
+                        <p className="text-sm font-semibold">Main Address</p>
+                        <p className="text-xs text-gray-600">{userProfile.address} • {userProfile.zone}</p>
+                      </button>
+                    )}
+                    
+                    {userProfile?.addressAlt && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShippingType("alt");
+                          setFormData(prev => ({ ...prev, address: userProfile.addressAlt, city: userProfile.zoneAlt, zipCode: userProfile.phone }));
+                          setSelectedZone(userProfile.zoneAlt);
+                        }}
+                        className="w-full p-3 bg-white border border-cyan-300 rounded-xl text-left hover:bg-cyan-100 transition-colors"
+                        data-testid="button-alt-address"
+                      >
+                        <p className="text-sm font-semibold">Alternative Address</p>
+                        <p className="text-xs text-gray-600">{userProfile.addressAlt} • {userProfile.zoneAlt}</p>
+                      </button>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={() => setShippingType("new")}
+                      className="w-full p-3 bg-white border border-cyan-300 rounded-xl text-left hover:bg-cyan-100 transition-colors"
+                      data-testid="button-new-address"
+                    >
+                      <p className="text-sm font-semibold">Enter New Address</p>
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* New Address Form */}
+              {shippingType === "new" && (
+                <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-4 space-y-3">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-semibold text-sm">New Address</h3>
+                    <button
+                      type="button"
+                      onClick={() => setShippingType(null)}
+                      className="text-xs text-primary"
+                      data-testid="button-back-address"
+                    >
+                      Change
+                    </button>
+                  </div>
+                  
+                  <input
+                    type="text"
+                    placeholder="Street address"
+                    value={newAddress}
+                    onChange={(e) => setNewAddress(e.target.value)}
+                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm"
+                    data-testid="input-new-address"
+                  />
+
+                  <input
+                    type="tel"
+                    placeholder="Phone number"
+                    value={newPhone}
+                    onChange={(e) => setNewPhone(e.target.value)}
+                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm"
+                    data-testid="input-new-phone"
+                  />
+
+                  <select
+                    value={selectedZone}
+                    onChange={(e) => {
+                      setSelectedZone(e.target.value);
+                      const zone = shippingZones.find(z => z.name === e.target.value);
+                      if (zone) setShippingCost(zone.shippingCost);
+                    }}
+                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm"
+                    data-testid="select-new-zone"
+                  >
+                    <option value="">Select Zone</option>
+                    {shippingZones.map((zone) => (
+                      <option key={zone.id} value={zone.name}>{zone.name} (${zone.shippingCost})</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {/* Zone Selection for Main/Alt */}
+              {(shippingType === "main" || shippingType === "alt") && (
+                <div className="bg-green-50 border border-green-200 rounded-2xl p-4 mb-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-semibold text-sm">Select Zone</h3>
+                    <button
+                      type="button"
+                      onClick={() => setShippingType(null)}
+                      className="text-xs text-primary"
+                      data-testid="button-back-zone"
+                    >
+                      Change Address
+                    </button>
+                  </div>
+                  
+                  <select
+                    value={selectedZone}
+                    onChange={(e) => {
+                      setSelectedZone(e.target.value);
+                      const zone = shippingZones.find(z => z.name === e.target.value);
+                      if (zone) setShippingCost(zone.shippingCost);
+                    }}
+                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm"
+                    data-testid={`select-${shippingType}-zone`}
+                  >
+                    <option value="">Select Zone</option>
+                    {shippingZones.map((zone) => (
+                      <option key={zone.id} value={zone.name}>{zone.name} (${zone.shippingCost})</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {/* Shipping Cost Display */}
+              {shippingType && selectedZone && (
+                <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3 mb-4 text-sm">
+                  <div className="flex justify-between font-semibold">
+                    <span>Shipping Cost:</span>
+                    <span>${shippingCost}</span>
+                  </div>
+                </div>
+              )}
 
               {paymentMethod === "card" && (
                 <>
@@ -446,7 +675,7 @@ export default function CheckoutPage() {
                     Processing...
                   </>
                 ) : (
-                  `${paymentMethod === "card" ? "Pay" : "Place Order"} $${total.toFixed(2)}`
+                  `${paymentMethod === "card" ? "Pay" : "Place Order"} $${(total + shippingCost).toFixed(2)}`
                 )}
               </button>
             </form>
