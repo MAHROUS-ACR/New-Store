@@ -255,6 +255,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const doc = await db.collection("settings").doc("store").get();
 
       if (!doc.exists) {
+        console.log("No store settings document found in Firestore");
         return res.json({
           name: "",
           address: "",
@@ -264,7 +265,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      res.json(doc.data());
+      const data = doc.data();
+      console.log("Fetched store settings from Firestore:", JSON.stringify(data, null, 2));
+      console.log("Firebase config in response:", !!data?.firebase);
+      res.json(data);
     } catch (error: any) {
       console.error("Error fetching store settings:", error);
       res.status(500).json({
@@ -306,6 +310,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await db.collection("settings").doc("store").set(storeData);
 
       console.log("✅ Store settings saved successfully to Firestore");
+      console.log("Saved data includes firebase config:", !!storeData.firebase);
       res.json({ message: "Store and Firebase settings saved successfully" });
     } catch (error: any) {
       console.error("❌ Error saving store settings:", error);
