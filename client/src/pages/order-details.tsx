@@ -101,10 +101,23 @@ export default function OrderDetailsPage() {
     }
   };
 
-  const handleStatusUpdate = (newSts: string) => {
+  const handleStatusUpdate = async (newSts: string) => {
     if (!newSts || !order) return;
     
     try {
+      // First update Firebase/Server
+      const response = await fetch(`/api/orders/${order.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newSts }),
+      });
+
+      if (!response.ok) {
+        toast.error("Failed to update order status on server");
+        return;
+      }
+
+      // Then update localStorage
       const savedOrders = localStorage.getItem("orders");
       if (savedOrders) {
         const allOrders = JSON.parse(savedOrders);
@@ -112,13 +125,14 @@ export default function OrderDetailsPage() {
           o.id === order.id ? { ...o, status: newSts } : o
         );
         localStorage.setItem("orders", JSON.stringify(updatedOrders));
-        setOrder({ ...order, status: newSts });
-        setEditingStatus(false);
-        setNewStatus("");
-        toast.success("Order status updated");
       }
+
+      setOrder({ ...order, status: newSts });
+      setEditingStatus(false);
+      setNewStatus("");
+      toast.success("Order status updated successfully!");
     } catch (error) {
-      toast.error("Failed to update status");
+      toast.error("Failed to update order status");
       console.error(error);
     }
   };
