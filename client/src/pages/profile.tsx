@@ -738,8 +738,7 @@ export default function ProfilePage() {
                                           {item.selectedColor && (() => {
                                             const [colorName, colorHex] = typeof item.selectedColor === 'string' ? item.selectedColor.split('|') : [item.selectedColor, '#000000'];
                                             return (
-                                              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-red-100 rounded text-[8px] font-semibold border" style={{borderColor: colorHex || '#000000'}}>
-                                                <span style={{width: '6px', height: '6px', backgroundColor: colorHex || '#000000', borderRadius: '2px'}}></span>
+                                              <span className="inline-block px-1.5 py-0.5 rounded text-[8px] font-semibold" style={{backgroundColor: colorHex || '#000000', color: ['#ffffff', '#f0f0f0', '#e0e0e0'].includes((colorHex || '#000000').toLowerCase()) ? '#000000' : '#ffffff'}}>
                                                 {colorName}
                                               </span>
                                             );
