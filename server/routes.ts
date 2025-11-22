@@ -105,14 +105,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log("Saving Firebase config:", JSON.stringify(firebaseConfig, null, 2));
 
-      // Always use set with merge to ensure firebase field is saved correctly
+      // Save using update to properly merge with existing data
       if (existingDoc.exists) {
-        // Merge with existing data (preserves name, address, phone, email)
+        // Use update to add firebase field to existing document
         console.log("📝 Updating existing document with firebase config");
-        await docRef.set({
+        await docRef.update({
           firebase: firebaseConfig,
           updatedAt: new Date().toISOString(),
-        }, { merge: true });
+        });
       } else {
         // Create new document with default store values
         console.log("📝 Creating new document with firebase config");
@@ -133,7 +133,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const savedData = savedDoc.data();
       console.log("✅ Verification - Firebase config in Firestore:", !!savedData?.firebase);
       if (savedData?.firebase) {
-        console.log("✅ Saved data keys:", Object.keys(savedData.firebase));
+        console.log("✅ Saved firebase keys:", Object.keys(savedData.firebase).length, "fields");
+      } else {
+        console.log("❌ Firebase config NOT found in document!");
+        console.log("📦 Document has these keys:", savedData ? Object.keys(savedData) : "null");
       }
       
       res.json({ message: "Firebase configuration saved successfully" });
