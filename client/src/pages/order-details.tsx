@@ -43,6 +43,8 @@ export default function OrderDetailsPage() {
 
   // Extract order ID from URL
   const orderId = location.split("/order/")[1]?.split("?")[0];
+  // Determine back path based on user role
+  const backPath = user?.role === 'admin' ? '/profile' : '/orders';
 
   useEffect(() => {
     if (!authLoading && !isLoggedIn) {
@@ -114,7 +116,7 @@ export default function OrderDetailsPage() {
         {/* Header */}
         <div className="px-6 pb-4 pt-2 flex items-center gap-4 border-b border-gray-100 flex-shrink-0">
           <button
-            onClick={() => setLocation("/orders")}
+            onClick={() => setLocation(backPath)}
             className="w-10 h-10 rounded-full bg-white border border-gray-100 flex items-center justify-center"
             data-testid="button-back"
           >
@@ -135,10 +137,10 @@ export default function OrderDetailsPage() {
             </div>
             <h2 className="text-lg font-bold mb-2">Order not found</h2>
             <button
-              onClick={() => setLocation("/orders")}
+              onClick={() => setLocation(backPath)}
               className="px-6 py-2 bg-black text-white rounded-full text-sm font-semibold mt-4"
             >
-              Back to Orders
+              {user?.role === 'admin' ? 'Back to Admin' : 'Back to Orders'}
             </button>
           </div>
         ) : (
