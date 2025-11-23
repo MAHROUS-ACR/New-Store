@@ -29,6 +29,7 @@ interface Order {
   paymentMethod?: string;
   createdAt: string;
   subtotal?: number;
+  discountedTotal?: number;
   shippingCost?: number;
   shippingAddress?: string;
   shippingPhone?: string;
@@ -306,6 +307,18 @@ export default function OrdersPage() {
                               <span className="text-gray-500">{t("subtotal", language)}</span>
                               <span className="font-medium text-gray-900">${selectedOrder.subtotal.toFixed(2)}</span>
                             </div>
+                          )}
+                          {selectedOrder.discountedTotal !== undefined && selectedOrder.subtotal !== undefined && selectedOrder.discountedTotal < selectedOrder.subtotal && (
+                            <>
+                              <div className="flex justify-between text-green-600 font-semibold">
+                                <span>{language === "ar" ? "الخصم" : "Discount"}</span>
+                                <span>-${(selectedOrder.subtotal - selectedOrder.discountedTotal).toFixed(2)}</span>
+                              </div>
+                              <div className="flex justify-between text-green-600 font-semibold">
+                                <span>{language === "ar" ? "بعد الخصم" : "After Discount"}</span>
+                                <span>${selectedOrder.discountedTotal.toFixed(2)}</span>
+                              </div>
+                            </>
                           )}
                           {selectedOrder.shippingCost !== undefined && selectedOrder.shippingCost > 0 && (
                             <div className="flex justify-between">
