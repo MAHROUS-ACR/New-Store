@@ -4,6 +4,8 @@ import { ArrowLeft, Edit2, Check, X } from "lucide-react";
 import { useLocation } from "wouter";
 import { useEffect, useState } from "react";
 import { useUser } from "@/lib/userContext";
+import { useLanguage } from "@/lib/languageContext";
+import { t } from "@/lib/translations";
 import { toast } from "sonner";
 
 interface CartItem {
@@ -36,6 +38,7 @@ interface Order {
 export default function OrderDetailsPage() {
   const [location, setLocation] = useLocation();
   const { user, isLoggedIn, isLoading: authLoading } = useUser();
+  const { language } = useLanguage();
   const [order, setOrder] = useState<Order | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [editingStatus, setEditingStatus] = useState(false);

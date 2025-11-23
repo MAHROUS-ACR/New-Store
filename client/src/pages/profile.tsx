@@ -12,10 +12,10 @@ import { saveFirebaseConfig, getFirebaseConfig, clearFirebaseConfig } from "@/li
 import { getFirestore, doc, updateDoc, getDoc } from "firebase/firestore";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 
-const menuItems = [
-  { icon: Package, label: "My Orders", path: "/orders", color: "text-purple-600 bg-purple-50" },
-  { icon: Bell, label: "Notifications", path: "/notifications", color: "text-orange-600 bg-orange-50" },
-  { icon: HelpCircle, label: "Help & Support", path: "/help", color: "text-green-600 bg-green-50" },
+const getMenuItems = (language: any) => [
+  { icon: Package, label: t("myOrders", language), path: "/orders", color: "text-purple-600 bg-purple-50" },
+  { icon: Bell, label: t("notifications", language), path: "/notifications", color: "text-orange-600 bg-orange-50" },
+  { icon: HelpCircle, label: t("helpSupport", language), path: "/help", color: "text-green-600 bg-green-50" },
 ];
 
 interface OrderItem {
@@ -762,11 +762,11 @@ export default function ProfilePage() {
                         {/* Orders Stats */}
                         <div className="grid grid-cols-2 gap-1.5 mt-2">
                           <div className="bg-white/20 rounded-lg p-1.5">
-                            <p className="text-xs opacity-75">Orders</p>
+                            <p className="text-xs opacity-75">{t("orders", language)}</p>
                             <p className="text-sm font-bold" data-testid="text-orders-count">{userOrdersCount}</p>
                           </div>
                           <div className="bg-white/20 rounded-lg p-1.5">
-                            <p className="text-xs opacity-75">Total Spent</p>
+                            <p className="text-xs opacity-75">{t("totalSpent", language)}</p>
                             <p className="text-sm font-bold" data-testid="text-orders-total">${userOrdersTotal.toFixed(2)}</p>
                           </div>
                         </div>
@@ -777,7 +777,7 @@ export default function ProfilePage() {
               )}
 
               <div className="w-full px-6 py-4 space-y-3">
-                {menuItems.map((item) => (
+                {getMenuItems(language).map((item) => (
                   <button
                     key={item.label}
                     onClick={() => {
@@ -816,7 +816,7 @@ export default function ProfilePage() {
                     <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-indigo-100 text-indigo-600">
                       <Package className="w-6 h-6" />
                     </div>
-                    <span className="font-semibold text-sm text-indigo-900">Delivery Address</span>
+                    <span className="font-semibold text-sm text-indigo-900">Delivery Address / عنوان التسليم</span>
                   </div>
                   <ChevronRight className={`w-5 h-5 text-indigo-400 transition-transform ${showUserProfile ? "rotate-90" : ""}`} />
                 </button>
@@ -868,7 +868,7 @@ export default function ProfilePage() {
                       className="w-full bg-indigo-600 text-white py-2 rounded-lg font-semibold text-sm hover:bg-indigo-700 disabled:opacity-50"
                       data-testid="button-save-user-profile"
                     >
-                      {isSaving ? "Saving..." : "Save Address"}
+                      {isSaving ? t("saving", language) : t("saveAddress", language)}
                     </button>
                   </div>
                 )}
@@ -1524,7 +1524,7 @@ export default function ProfilePage() {
                 <div className="mb-6">
                   {/* Add New Item Form */}
                   <div className="bg-white rounded-2xl p-4 border border-gray-200 mb-4">
-                    <h3 className="text-sm font-bold mb-3">{editingItemId ? "Edit Product" : "Add New Product"}</h3>
+                    <h3 className="text-sm font-bold mb-3">{editingItemId ? t("editProduct", language) : t("addNewProduct", language)}</h3>
                     <div className="space-y-3">
                       {/* Product Image */}
                       <div>
@@ -1714,7 +1714,7 @@ export default function ProfilePage() {
                           className="w-4 h-4 rounded border-gray-200"
                           data-testid="checkbox-item-available"
                         />
-                        <span className="text-sm">متاح (Available)</span>
+                        <span className="text-sm">{t("availableNow", language)}</span>
                       </label>
                       <div className="flex gap-2">
                         <button
@@ -1766,7 +1766,7 @@ export default function ProfilePage() {
                           data-testid="button-add-item"
                         >
                           <Plus className="w-4 h-4" />
-                          {editingItemId ? "Update" : "Add"}
+                          {editingItemId ? t("update", language) : t("add", language)}
                         </button>
                         {editingItemId && (
                           <button
@@ -1975,7 +1975,7 @@ export default function ProfilePage() {
                     className="w-full bg-yellow-600 text-white py-2 rounded-lg font-semibold text-sm hover:bg-yellow-700 disabled:opacity-50"
                     data-testid="button-save-store-settings"
                   >
-                    {isSaving ? "Saving..." : "Save Store Settings"}
+                    {isSaving ? t("saving", language) : t("saveStoreSettings", language)}
                   </button>
                 </div>
               )}
@@ -2004,7 +2004,7 @@ export default function ProfilePage() {
                 <div className="mb-6">
                   {/* Add Shipping Zone Form */}
                   <div className="bg-white rounded-2xl p-4 border border-gray-200 mb-4">
-                    <h3 className="text-sm font-bold mb-3">{editingZoneId ? "Edit Shipping Zone" : "Add Shipping Zone"}</h3>
+                    <h3 className="text-sm font-bold mb-3">{editingZoneId ? t("editShippingZone", language) : t("addShippingZone", language)}</h3>
                     <div className="space-y-3">
                       <input
                         type="text"
@@ -2027,7 +2027,7 @@ export default function ProfilePage() {
                         className="w-full bg-cyan-600 text-white py-2 rounded-lg font-semibold text-sm hover:bg-cyan-700"
                         data-testid="button-save-zone"
                       >
-                        {editingZoneId ? "Update Zone" : "Add Zone"}
+                        {editingZoneId ? t("updateZone", language) : t("addZone", language)}
                       </button>
                       {editingZoneId && (
                         <button

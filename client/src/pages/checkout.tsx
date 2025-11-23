@@ -5,6 +5,8 @@ import { ArrowLeft, Lock, CreditCard, Truck } from "lucide-react";
 import { useLocation } from "wouter";
 import { useCart } from "@/lib/cartContext";
 import { useUser } from "@/lib/userContext";
+import { useLanguage } from "@/lib/languageContext";
+import { t } from "@/lib/translations";
 import { toast } from "sonner";
 import { getFirestore, doc, getDoc } from "firebase/firestore";
 
@@ -12,6 +14,7 @@ export default function CheckoutPage() {
   const [, setLocation] = useLocation();
   const { items, total, clearCart } = useCart();
   const { user, isLoggedIn, isLoading: authLoading } = useUser();
+  const { language } = useLanguage();
 
   useEffect(() => {
     if (!authLoading && !isLoggedIn) {
@@ -305,7 +308,7 @@ export default function CheckoutPage() {
     return (
       <MobileWrapper>
         <div className="flex-1 flex flex-col items-center justify-center px-6">
-          <h2 className="text-lg font-bold mb-2">No items to checkout</h2>
+          <h2 className="text-lg font-bold mb-2">{t("noItemsCheckout", language)}</h2>
           <button
             onClick={() => setLocation("/cart")}
             className="px-6 py-2 bg-black text-white rounded-full text-sm font-semibold mt-4"

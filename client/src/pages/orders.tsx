@@ -4,6 +4,8 @@ import { ArrowLeft, ChevronRight, X } from "lucide-react";
 import { useLocation } from "wouter";
 import { useEffect, useState } from "react";
 import { useUser } from "@/lib/userContext";
+import { useLanguage } from "@/lib/languageContext";
+import { t } from "@/lib/translations";
 import { toast } from "sonner";
 
 interface CartItem {
@@ -36,6 +38,7 @@ interface Order {
 export default function OrdersPage() {
   const [location, setLocation] = useLocation();
   const { user, isLoggedIn, isLoading: authLoading } = useUser();
+  const { language } = useLanguage();
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [firebaseConfigured, setFirebaseConfigured] = useState(false);
@@ -152,7 +155,7 @@ export default function OrdersPage() {
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <h1 className="text-xl font-bold">My Orders</h1>
+          <h1 className="text-xl font-bold">{t("myOrders", language)}</h1>
         </div>
 
         {/* Content */}
@@ -165,7 +168,7 @@ export default function OrdersPage() {
             <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
               <span className="text-2xl">📦</span>
             </div>
-            <h2 className="text-lg font-bold mb-2">No orders yet</h2>
+            <h2 className="text-lg font-bold mb-2">{t("noOrdersYet", language)}</h2>
             <p className="text-sm text-muted-foreground mb-6 text-center">
               Your orders will appear here once you place one
             </p>
