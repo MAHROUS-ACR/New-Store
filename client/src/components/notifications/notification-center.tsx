@@ -149,11 +149,11 @@ export function NotificationCenter() {
         )}
       </button>
 
-      {/* Dropdown Menu - Absolute positioning */}
+      {/* Dropdown Menu - Absolute positioning centered from button */}
       {isOpen && (
         <div
           ref={menuRef}
-          className="absolute top-12 left-0 bg-white rounded-lg shadow-2xl border border-gray-200 z-50 max-h-80 overflow-y-auto"
+          className="absolute top-12 left-1/2 -translate-x-1/2 bg-white rounded-lg shadow-2xl border border-gray-200 z-50 max-h-80 overflow-y-auto"
           style={{
             width: "340px",
           }}
