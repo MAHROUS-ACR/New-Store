@@ -98,8 +98,9 @@ export function ActiveDealsCarousel({ products, discounts }: ActiveDealsCarousel
             className="absolute inset-0 w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-transparent to-transparent flex flex-col justify-start p-4">
-            <div className="text-white">
-              <div className="flex items-center gap-2 mb-1">
+            <div className="flex items-start justify-between w-full mb-4">
+              {/* Left: Discount Badge */}
+              <div className="flex items-center gap-2">
                 {(() => {
                   const activeDiscount = getActiveDiscount(
                     String(discountedProducts[carouselIndex].id),
@@ -115,11 +116,9 @@ export function ActiveDealsCarousel({ products, discounts }: ActiveDealsCarousel
                   ) : null;
                 })()}
               </div>
-              <h3 className="font-bold text-lg line-clamp-1 drop-shadow-lg">
-                {discountedProducts[carouselIndex].title ||
-                  discountedProducts[carouselIndex].name}
-              </h3>
-              <div className="flex items-center gap-2 mt-2">
+              
+              {/* Right: Price */}
+              <div className="flex flex-col items-end gap-1 text-white">
                 <span className="text-sm line-through opacity-70 drop-shadow-lg">
                   ${discountedProducts[carouselIndex].price.toFixed(2)}
                 </span>
@@ -133,6 +132,12 @@ export function ActiveDealsCarousel({ products, discounts }: ActiveDealsCarousel
                 </span>
               </div>
             </div>
+            
+            {/* Title */}
+            <h3 className="font-bold text-lg line-clamp-1 drop-shadow-lg text-white">
+              {discountedProducts[carouselIndex].title ||
+                discountedProducts[carouselIndex].name}
+            </h3>
           </div>
         </motion.div>
 
