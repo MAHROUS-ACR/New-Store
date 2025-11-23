@@ -149,15 +149,13 @@ export function NotificationCenter() {
         )}
       </button>
 
-      {/* Dropdown Menu - Fixed positioning relative to button */}
+      {/* Dropdown Menu - Absolute positioning */}
       {isOpen && (
         <div
           ref={menuRef}
-          className="fixed bg-white rounded-lg shadow-2xl border border-gray-200 z-[1000] max-h-96 overflow-y-auto"
+          className="absolute top-full right-0 mt-2 bg-white rounded-lg shadow-2xl border border-gray-200 z-50 max-h-96 overflow-y-auto"
           style={{
-            width: "384px", // w-96
-            top: buttonRef.current ? buttonRef.current.getBoundingClientRect().bottom + 8 : 0,
-            right: buttonRef.current ? window.innerWidth - buttonRef.current.getBoundingClientRect().right : 0,
+            width: "340px",
           }}
         >
           {/* Header */}
