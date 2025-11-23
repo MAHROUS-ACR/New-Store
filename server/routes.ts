@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { initializeFirebase, getFirestore, isFirebaseConfigured } from "./firebase";
+import admin from "firebase-admin";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize Firebase from environment variables on server startup
@@ -1035,6 +1036,111 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
+
+  // Save FCM token
+  app.post("/api/notifications/fcm-token", async (req, res) => {
+    try {
+      const { token } = req.body;
+      const userId = req.headers["x-user-id"] as string;
+
+      if (!token) {
+        return res.status(400).json({ message: "FCM token is required" });
+      }
+
+      if (!isFirebaseConfigured()) {
+        return res.json({ message: "Token saved locally" });
+      }
+
+      const db = getFirestore();
+      const fcmTokensRef = db.collection("fcmTokens");
+      
+      // Store FCM token by device
+      const tokenDoc = `token_${Date.now()}`;
+      await fcmTokensRef.doc(tokenDoc).set({
+        token: token,
+        userId: userId || "anonymous",
+        createdAt: new Date().toISOString(),
+        userAgent: req.headers["user-agent"] || "",
+      });
+
+      console.log(`✅ FCM token saved for user: ${userId || "anonymous"}`);
+      res.json({ message: "FCM token saved successfully" });
+    } catch (error: any) {
+      console.error("❌ Error saving FCM token:", error);
+      res.status(500).json({
+        message: "Failed to save FCM token",
+        error: error.message,
+      });
+    }
+  });
+
+  // Send push notification (internal endpoint)
+  async function sendPushNotification(title: string, body: string, data: any = {}) {
+    try {
+      if (!isFirebaseConfigured()) {
+        console.log("⚠️ Firebase not configured, skipping push notification");
+        return;
+      }
+
+      const db = getFirestore();
+      const messaging = admin.messaging();
+
+      // Get all FCM tokens
+      const tokensSnapshot = await db.collection("fcmTokens").limit(100).get();
+      const tokens: string[] = [];
+
+      tokensSnapshot.forEach((doc) => {
+        const token = doc.data().token;
+        if (token) tokens.push(token);
+      });
+
+      if (tokens.length === 0) {
+        console.log("⚠️ No FCM tokens available for push notifications");
+        return;
+      }
+
+      // Send multicast message
+      const message = {
+        notification: {
+          title: title,
+          body: body,
+        },
+        data: {
+          click_action: data.click_action || "/",
+          orderId: data.orderId || "",
+          orderNumber: data.orderNumber?.toString() || "",
+          timestamp: new Date().toISOString(),
+        },
+      };
+
+      const response = await messaging.sendMulticast({
+        ...message,
+        tokens: tokens,
+      });
+
+      console.log(`✅ Sent ${response.successCount} push notifications, failed: ${response.failureCount}`);
+      
+      // Remove invalid tokens
+      if (response.failureCount > 0) {
+        response.responses.forEach((resp, index) => {
+          if (!resp.success) {
+            const invalidToken = tokens[index];
+            db.collection("fcmTokens")
+              .where("token", "==", invalidToken)
+              .get()
+              .then((snapshot) => {
+                snapshot.forEach((doc) => doc.ref.delete());
+              });
+          }
+        });
+      }
+    } catch (error: any) {
+      console.error("❌ Error sending push notification:", error);
+    }
+  }
+
+  // Store sendPushNotification for use in other routes
+  (app as any).sendPushNotification = sendPushNotification;
 
   const server = createServer(app);
   return server;
