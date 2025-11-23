@@ -55,7 +55,7 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
   const [firebaseConfigured, setFirebaseConfigured] = useState(false);
   const [error, setError] = useState("");
-  const [storeName, setStoreName] = useState("Flux Wallet");
+  const [storeName, setStoreName] = useState<string | null>(null);
   const [storeLogo, setStoreLogo] = useState<string>("");
   const [isInitialized, setIsInitialized] = useState(false);
 
@@ -66,9 +66,12 @@ export default function Home() {
         const data = await response.json();
         setStoreName(data.name || "Flux Wallet");
         setStoreLogo(data.logo || "");
+      } else {
+        setStoreName("Flux Wallet");
       }
     } catch (error) {
       console.error("Failed to load store settings:", error);
+      setStoreName("Flux Wallet");
     }
   };
 
@@ -141,16 +144,20 @@ export default function Home() {
         {/* Header */}
         <div className="px-5 pt-3 pb-4 flex-shrink-0 border-b border-gray-100">
           <div className="flex items-center justify-between gap-3 mb-4">
-            <div className="flex items-center gap-2">
-              {storeLogo ? (
-                <img src={storeLogo} alt={storeName} className="w-9 h-9 rounded-lg object-cover" />
-              ) : (
-                <div className="w-9 h-9 bg-black rounded-lg flex items-center justify-center text-white font-bold text-sm">
-                  {storeName.charAt(0)}
-                </div>
-              )}
-              <h1 className="text-base font-bold text-gray-900">{storeName}</h1>
-            </div>
+            {storeName ? (
+              <div className="flex items-center gap-2">
+                {storeLogo ? (
+                  <img src={storeLogo} alt={storeName} className="w-9 h-9 rounded-lg object-cover" />
+                ) : (
+                  <div className="w-9 h-9 bg-black rounded-lg flex items-center justify-center text-white font-bold text-sm">
+                    {storeName.charAt(0)}
+                  </div>
+                )}
+                <h1 className="text-base font-bold text-gray-900">{storeName}</h1>
+              </div>
+            ) : (
+              <div className="w-24 h-5 bg-gray-200 rounded animate-pulse" />
+            )}
             <div className="flex items-center gap-2">
               <button 
                 onClick={() => setLanguage(language === "en" ? "ar" : "en")}
