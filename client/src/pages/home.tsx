@@ -59,7 +59,7 @@ export default function Home() {
   const [storeLogo, setStoreLogo] = useState<string>("");
   const [isInitialized, setIsInitialized] = useState(false);
 
-  const fetchStoreSettings = async () => {
+  const fetchStoreSettings = async (): Promise<void> => {
     try {
       const response = await fetch("/api/store-settings");
       if (response.ok) {
@@ -75,7 +75,7 @@ export default function Home() {
     }
   };
 
-  const fetchProductsData = async () => {
+  const fetchProductsData = async (): Promise<void> => {
     setIsLoading(true);
     setProducts([]); // Clear products immediately while loading
     try {
@@ -118,8 +118,8 @@ export default function Home() {
   };
 
   useEffect(() => {
-    fetchProductsData();
-    fetchStoreSettings();
+    // Run both in parallel for faster loading
+    Promise.all([fetchProductsData(), fetchStoreSettings()]);
   }, [location]);
 
   // Extract unique categories from products
