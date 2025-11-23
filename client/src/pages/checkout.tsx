@@ -46,23 +46,31 @@ export default function CheckoutPage() {
     zipCode: "",
   });
 
-  // Load shipping zones and user profile
+  // Load discounts and shipping zones on component mount
   useEffect(() => {
-    const loadData = async () => {
+    const loadDiscountsAndZones = async () => {
       try {
         // Load discounts
         const discountData = await getAllDiscounts();
         setDiscounts(discountData || []);
 
+        // Load shipping zones
         const zonesRes = await fetch("/api/shipping-zones");
         if (zonesRes.ok) {
           const zones = await zonesRes.json();
           setShippingZones(zones || []);
         }
       } catch (error) {
-        console.error("Error loading zones:", error);
+        console.error("Error loading data:", error);
       }
+    };
 
+    loadDiscountsAndZones();
+  }, []);
+
+  // Load user profile when payment method is selected
+  useEffect(() => {
+    const loadUserProfile = async () => {
       if (user?.id) {
         try {
           const db = getFirestore();
@@ -85,7 +93,7 @@ export default function CheckoutPage() {
     };
 
     if (paymentMethod) {
-      loadData();
+      loadUserProfile();
     }
   }, [paymentMethod, user?.id]);
 
@@ -401,13 +409,13 @@ export default function CheckoutPage() {
                 </div>
                 {calculateTotalWithDiscounts() < total && (
                   <div className="flex justify-between text-sm text-green-600 font-semibold">
-                    <span>{language === "ar" ? "الخصم" : "Discount"}</span>
+                    <span>{t("discount", language)}</span>
                     <span>-${(total - calculateTotalWithDiscounts()).toFixed(2)}</span>
                   </div>
                 )}
                 {calculateTotalWithDiscounts() < total && (
                   <div className="flex justify-between text-sm font-semibold">
-                    <span>{language === "ar" ? "بعد الخصم" : "After Discount"}</span>
+                    <span>{t("afterDiscount", language)}</span>
                     <span className="text-green-600">${calculateTotalWithDiscounts().toFixed(2)}</span>
                   </div>
                 )}
