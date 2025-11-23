@@ -938,13 +938,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const db = getFirestore();
       const snapshot = await db.collection("notifications")
         .where("recipientId", "==", userId)
-        .orderBy("createdAt", "desc")
         .limit(50)
         .get();
       
       const notifications: any[] = [];
       snapshot.forEach((doc) => {
         notifications.push({ id: doc.id, ...doc.data() });
+      });
+
+      // Sort by createdAt descending in JavaScript instead of Firestore
+      notifications.sort((a, b) => {
+        const dateA = new Date(a.createdAt || 0).getTime();
+        const dateB = new Date(b.createdAt || 0).getTime();
+        return dateB - dateA;
       });
 
       console.log(`✅ Fetched ${notifications.length} notifications for user ${userId}`);
@@ -968,13 +974,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const db = getFirestore();
       const snapshot = await db.collection("notifications")
         .where("recipientId", "==", "admin")
-        .orderBy("createdAt", "desc")
         .limit(50)
         .get();
       
       const notifications: any[] = [];
       snapshot.forEach((doc) => {
         notifications.push({ id: doc.id, ...doc.data() });
+      });
+
+      // Sort by createdAt descending in JavaScript instead of Firestore
+      notifications.sort((a, b) => {
+        const dateA = new Date(a.createdAt || 0).getTime();
+        const dateB = new Date(b.createdAt || 0).getTime();
+        return dateB - dateA;
       });
 
       console.log(`✅ Fetched ${notifications.length} notifications for admin`);
