@@ -13,9 +13,9 @@ import { getFirestore, doc, updateDoc, getDoc } from "firebase/firestore";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 
 const getMenuItems = (language: any) => [
-  { icon: Package, label: t("myOrders", language), path: "/orders", color: "text-purple-600 bg-purple-50" },
-  { icon: Bell, label: t("notifications", language), path: "/notifications", color: "text-orange-600 bg-orange-50" },
-  { icon: HelpCircle, label: t("helpSupport", language), path: "/help", color: "text-green-600 bg-green-50" },
+  { icon: Package, label: t("myOrders", language), path: "/orders", buttonBg: "bg-purple-50", borderColor: "border-purple-200 hover:border-purple-300", iconColor: "text-purple-600 bg-purple-100", textColor: "text-purple-900" },
+  { icon: Bell, label: t("notifications", language), path: "/notifications", buttonBg: "bg-orange-50", borderColor: "border-orange-200 hover:border-orange-300", iconColor: "text-orange-600 bg-orange-100", textColor: "text-orange-900" },
+  { icon: HelpCircle, label: t("helpSupport", language), path: "/help", buttonBg: "bg-green-50", borderColor: "border-green-200 hover:border-green-300", iconColor: "text-green-600 bg-green-100", textColor: "text-green-900" },
 ];
 
 interface OrderItem {
@@ -779,16 +779,16 @@ export default function ProfilePage() {
                       }
                       setLocation(item.path);
                     }}
-                    className="w-full flex items-center justify-between p-4 bg-white rounded-2xl border border-gray-100 hover:border-gray-200 transition-colors group"
+                    className={`w-full flex items-center justify-between p-4 ${item.buttonBg} rounded-2xl border ${item.borderColor} transition-colors group`}
                     data-testid={`button-${item.label.toLowerCase().replace(/\s+/g, "-")}`}
                   >
                     <div className="flex items-center gap-4">
-                      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${item.color}`}>
+                      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${item.iconColor}`}>
                         <item.icon className="w-6 h-6" />
                       </div>
-                      <span className="font-semibold text-sm">{item.label}</span>
+                      <span className={`font-semibold text-sm ${item.textColor}`}>{item.label}</span>
                     </div>
-                    <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-gray-600 transition-colors" />
+                    <ChevronRight className={`w-5 h-5 transition-colors ${item.textColor.split(' ')[0].replace('text-', 'group-hover:text-')}-600`} />
                   </button>
                 ))}
 
