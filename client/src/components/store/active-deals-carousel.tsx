@@ -115,15 +115,15 @@ export function ActiveDealsCarousel({ products, discounts }: ActiveDealsCarousel
                   ) : null;
                 })()}
               </div>
-              <h3 className="font-bold text-lg line-clamp-1">
+              <h3 className="font-bold text-lg line-clamp-1 drop-shadow-lg">
                 {discountedProducts[carouselIndex].title ||
                   discountedProducts[carouselIndex].name}
               </h3>
               <div className="flex items-center gap-2 mt-2">
-                <span className="text-sm line-through opacity-70">
+                <span className="text-sm line-through opacity-70 drop-shadow-lg">
                   ${discountedProducts[carouselIndex].price.toFixed(2)}
                 </span>
-                <span className="text-lg font-bold text-yellow-300">
+                <span className="text-lg font-bold text-yellow-300 drop-shadow-lg">
                   $
                   {calculateDiscountedPrice(
                     discountedProducts[carouselIndex].price,
