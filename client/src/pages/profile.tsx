@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { MobileWrapper } from "@/components/mobile-wrapper";
 import { BottomNav } from "@/components/bottom-nav";
 import { Settings, Database, Package, Bell, HelpCircle, LogOut, ChevronRight, Edit2, Check, X, Save, Plus, Trash2, TrendingUp, Globe, ShoppingBag, Store, Users, Truck, BarChart3, MapPin, Zap } from "lucide-react";
+import { NotificationCenter } from "@/components/notifications/notification-center";
 import { useLocation } from "wouter";
 import { useUser } from "@/lib/userContext";
 import { useLanguage } from "@/lib/languageContext";
@@ -752,6 +753,7 @@ export default function ProfilePage() {
         {/* Header */}
         <div className="px-6 pb-4 pt-2 flex items-center justify-between gap-4 border-b border-gray-100 flex-shrink-0">
           <h1 className="text-xl font-bold">{t("profile", language)}</h1>
+          <NotificationCenter />
           <div className="flex items-center gap-2">
             <button 
               onClick={() => setLocation("/settings")}

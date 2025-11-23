@@ -388,6 +388,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       console.log("Order saved:", orderId, "Order #", orderNumber);
+      
+      // Create notification for admin about new order
+      try {
+        const db = getFirestore();
+        const notificationId = `notification-${Date.now()}`;
+        await db.collection("notifications").doc(notificationId).set({
+          id: notificationId,
+          type: "new_order",
+          recipientId: "admin",
+          orderId: orderId,
+          orderNumber: orderNumber,
+          userId: orderData.userId,
+          message: `طلب جديد رقم #${orderNumber} من ${orderData.customerName || "عميل"}`,
+          messageEn: `New order #${orderNumber} from ${orderData.customerName || "Customer"}`,
+          read: false,
+          createdAt: new Date().toISOString(),
+        });
+        console.log("✅ Admin notification created for new order:", orderId);
+      } catch (notificationError) {
+        console.error("⚠️ Failed to create admin notification:", notificationError);
+      }
+      
       res.json({ id: orderId, orderNumber: orderNumber, message: "Order saved successfully" });
     } catch (error: any) {
       console.error("Error saving order:", error);
@@ -519,10 +541,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("Updating order status:", orderId, "to:", status);
 
       const db = getFirestore();
+      
+      // Get order to retrieve userId for notification
+      const orderDoc = await db.collection("orders").doc(orderId).get();
+      const orderData = orderDoc.data();
+      
       await db.collection("orders").doc(orderId).update({
         status: status,
         updatedAt: new Date().toISOString(),
       });
+
+      // Create notification for user about order status change
+      if (orderData?.userId) {
+        try {
+          const notificationId = `notification-${Date.now()}`;
+          const statusMessages: any = {
+            pending: { ar: "تم استقبال طلبك", en: "Your order has been received" },
+            confirmed: { ar: "تم تأكيد طلبك", en: "Your order has been confirmed" },
+            processing: { ar: "جاري معالجة طلبك", en: "Your order is being processed" },
+            shipped: { ar: "تم شحن طلبك", en: "Your order has been shipped" },
+            delivered: { ar: "تم توصيل طلبك", en: "Your order has been delivered" },
+            cancelled: { ar: "تم إلغاء طلبك", en: "Your order has been cancelled" },
+          };
+          
+          const statusMsg = statusMessages[status] || { ar: "تم تحديث حالة طلبك", en: "Your order status has been updated" };
+          
+          await db.collection("notifications").doc(notificationId).set({
+            id: notificationId,
+            type: "order_status_change",
+            recipientId: orderData.userId,
+            orderId: orderId,
+            orderNumber: orderData.orderNumber,
+            status: status,
+            message: `${statusMsg.ar} - الطلب #${orderData.orderNumber}`,
+            messageEn: `${statusMsg.en} - Order #${orderData.orderNumber}`,
+            read: false,
+            createdAt: new Date().toISOString(),
+          });
+          console.log("✅ User notification created for order status change:", orderId);
+        } catch (notificationError) {
+          console.error("⚠️ Failed to create user notification:", notificationError);
+        }
+      }
 
       console.log("Order updated successfully:", orderId);
       res.json({ message: "Order updated successfully" });
@@ -859,6 +919,120 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("❌ Error deleting shipping zone:", error);
       res.status(500).json({ message: "Failed to delete shipping zone" });
+    }
+  });
+
+  // Get notifications for user
+  app.get("/api/notifications", async (req, res) => {
+    try {
+      if (!isFirebaseConfigured()) {
+        return res.json([]);
+      }
+
+      const userId = req.headers["x-user-id"] as string;
+      if (!userId) {
+        return res.status(401).json({ message: "User ID required" });
+      }
+
+      const db = getFirestore();
+      const snapshot = await db.collection("notifications")
+        .where("recipientId", "==", userId)
+        .orderBy("createdAt", "desc")
+        .limit(50)
+        .get();
+      
+      const notifications: any[] = [];
+      snapshot.forEach((doc) => {
+        notifications.push({ id: doc.id, ...doc.data() });
+      });
+
+      console.log(`✅ Fetched ${notifications.length} notifications for user ${userId}`);
+      res.json(notifications);
+    } catch (error: any) {
+      console.error("❌ Error fetching notifications:", error);
+      res.status(500).json({
+        message: "Failed to fetch notifications",
+        error: error.message,
+      });
+    }
+  });
+
+  // Get notifications for admin
+  app.get("/api/notifications/admin", async (req, res) => {
+    try {
+      if (!isFirebaseConfigured()) {
+        return res.json([]);
+      }
+
+      const db = getFirestore();
+      const snapshot = await db.collection("notifications")
+        .where("recipientId", "==", "admin")
+        .orderBy("createdAt", "desc")
+        .limit(50)
+        .get();
+      
+      const notifications: any[] = [];
+      snapshot.forEach((doc) => {
+        notifications.push({ id: doc.id, ...doc.data() });
+      });
+
+      console.log(`✅ Fetched ${notifications.length} notifications for admin`);
+      res.json(notifications);
+    } catch (error: any) {
+      console.error("❌ Error fetching admin notifications:", error);
+      res.status(500).json({
+        message: "Failed to fetch notifications",
+        error: error.message,
+      });
+    }
+  });
+
+  // Mark notification as read
+  app.put("/api/notifications/:id/read", async (req, res) => {
+    try {
+      if (!isFirebaseConfigured()) {
+        return res.status(503).json({ message: "Firebase not configured" });
+      }
+
+      const { id } = req.params;
+      const db = getFirestore();
+      
+      await db.collection("notifications").doc(id).update({
+        read: true,
+        readAt: new Date().toISOString(),
+      });
+
+      console.log(`✅ Notification ${id} marked as read`);
+      res.json({ message: "Notification marked as read" });
+    } catch (error: any) {
+      console.error("❌ Error marking notification as read:", error);
+      res.status(500).json({
+        message: "Failed to mark notification as read",
+        error: error.message,
+      });
+    }
+  });
+
+  // Delete notification
+  app.delete("/api/notifications/:id", async (req, res) => {
+    try {
+      if (!isFirebaseConfigured()) {
+        return res.status(503).json({ message: "Firebase not configured" });
+      }
+
+      const { id } = req.params;
+      const db = getFirestore();
+      
+      await db.collection("notifications").doc(id).delete();
+
+      console.log(`✅ Notification ${id} deleted`);
+      res.json({ message: "Notification deleted" });
+    } catch (error: any) {
+      console.error("❌ Error deleting notification:", error);
+      res.status(500).json({
+        message: "Failed to delete notification",
+        error: error.message,
+      });
     }
   });
 

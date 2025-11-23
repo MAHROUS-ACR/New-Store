@@ -18,6 +18,22 @@ Flux Wallet is a high-fidelity mobile e-commerce application built as a progress
 
 ## Recent Changes (Nov 23, 2025)
 
+- **Notification System (NEW):**
+  - **Admin Notifications:** Receive notification when user submits new order
+  - **User Notifications:** Receive notification when order status changes (pending → confirmed → shipped → delivered, etc.)
+  - **Notification Bell:** Badge showing unread notification count in header (home.tsx and profile.tsx)
+  - **Notification Center:** Dropdown menu showing all notifications with timestamps
+  - **Mark as Read:** Click checkmark to mark individual notifications as read
+  - **Delete Notifications:** Remove notifications with delete button
+  - **Auto-polling:** Notifications automatically refresh every 30 seconds
+  - **Bilingual Support:** Notifications in Arabic and English based on language setting
+  - **Firestore Integration:** All notifications stored in Firestore notifications collection
+  - **API Endpoints:**
+    - `GET /api/notifications` - Get user's notifications
+    - `GET /api/notifications/admin` - Get admin notifications
+    - `PUT /api/notifications/:id/read` - Mark notification as read
+    - `DELETE /api/notifications/:id` - Delete notification
+
 - **Discount System Refactoring:**
   - **Moved discounts from separate page to Admin Tab** - Now integrated directly in profile.tsx admin panel
   - Discounts button integrated into admin menu (Zap icon, yellow theme)
@@ -58,6 +74,12 @@ Preferred communication style: Simple, everyday language.
 - `BottomNav`: Fixed navigation bar with active state animations
 - `CartProvider`: Global cart state with localStorage persistence
 - Product display components with lazy loading and animations
+- **NotificationCenter (NEW):** Notification bell icon with dropdown menu showing:
+  - Unread notification count badge
+  - All notifications sorted by most recent
+  - Auto-refresh every 30 seconds
+  - Mark as read / Delete functionality
+  - Bilingual message display
 - **Admin Panel (profile.tsx)**: Integrated admin tab with sections for:
   - Orders management
   - Products management
@@ -82,6 +104,11 @@ Preferred communication style: Simple, everyday language.
 - **Storage Abstraction:** `IStorage` interface allows switching between in-memory and database storage without changing business logic
 - **API Structure:** RESTful endpoints under `/api/*` namespace
 - **Request Logging:** Custom middleware logs API requests with response details and timing
+- **Notification Endpoints:**
+  - `GET /api/notifications` - Get user's notifications
+  - `GET /api/notifications/admin` - Get admin notifications
+  - `PUT /api/notifications/:id/read` - Mark notification as read
+  - `DELETE /api/notifications/:id` - Delete notification
 - **Discount Endpoints:**
   - `GET /api/discounts` - Get all discounts
   - `GET /api/discounts/:productId` - Get active discount for specific product
