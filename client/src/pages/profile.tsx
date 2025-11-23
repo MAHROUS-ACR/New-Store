@@ -827,7 +827,7 @@ export default function ProfilePage() {
                       <label className="text-xs font-semibold mb-1 block">{t("mainAddress", language)} *</label>
                       <input
                         type="text"
-                        placeholder="Street address"
+                        placeholder={t("streetAddressPlaceholder", language)}
                         value={userAddress}
                         onChange={(e) => setUserAddress(e.target.value)}
                         className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200"
@@ -836,7 +836,7 @@ export default function ProfilePage() {
                     </div>
 
                     <div>
-                      <label className="text-xs font-semibold mb-1 block">Main Shipping Zone *</label>
+                      <label className="text-xs font-semibold mb-1 block">{t("mainShippingZone", language)} *</label>
                       <select
                         value={userZone}
                         onChange={(e) => setUserZone(e.target.value)}
@@ -854,7 +854,7 @@ export default function ProfilePage() {
                       <label className="text-xs font-semibold mb-1 block">{t("phoneNumber", language)} *</label>
                       <input
                         type="tel"
-                        placeholder="Mobile number"
+                        placeholder={t("mobileNumberPlaceholder", language)}
                         value={userPhone}
                         onChange={(e) => setUserPhone(e.target.value)}
                         className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200"
@@ -989,7 +989,7 @@ export default function ProfilePage() {
                           }`}
                           data-testid="filter-cancelled"
                         >
-                          Cancelled
+                          {t("cancelled", language)}
                         </button>
                       </div>
                     </div>
@@ -1055,7 +1055,7 @@ export default function ProfilePage() {
                   <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-emerald-100 text-emerald-600">
                     <TrendingUp className="w-6 h-6" />
                   </div>
-                  <span className="font-semibold text-sm text-emerald-900">Sales Analytics</span>
+                  <span className="font-semibold text-sm text-emerald-900">{t("salesAnalytics", language)}</span>
                 </div>
                 <ChevronRight className={`w-5 h-5 text-emerald-400 transition-transform ${showAnalytics ? "rotate-90" : ""}`} />
               </button>
@@ -1069,7 +1069,7 @@ export default function ProfilePage() {
                     <div className="space-y-4">
                       {/* Date Range Filter */}
                       <div className="bg-white rounded-2xl p-3 border border-gray-200">
-                        <p className="text-xs font-semibold text-gray-500 mb-2">Filter by Period</p>
+                        <p className="text-xs font-semibold text-gray-500 mb-2">{t("filterByPeriod", language)}</p>
                         <div className="flex gap-2">
                           <button
                             onClick={() => setAnalyticsDateRange("all")}
@@ -1080,7 +1080,7 @@ export default function ProfilePage() {
                             }`}
                             data-testid="filter-all-time"
                           >
-                            All Time
+                            {t("allTime", language)}
                           </button>
                           <button
                             onClick={() => setAnalyticsDateRange("month")}
@@ -1091,7 +1091,7 @@ export default function ProfilePage() {
                             }`}
                             data-testid="filter-this-month"
                           >
-                            This Month
+                            {t("thisMonth", language)}
                           </button>
                           <button
                             onClick={() => setAnalyticsDateRange("year")}
@@ -1102,7 +1102,7 @@ export default function ProfilePage() {
                             }`}
                             data-testid="filter-this-year"
                           >
-                            This Year
+                            {t("thisYear", language)}
                           </button>
                         </div>
                       </div>
@@ -1111,37 +1111,37 @@ export default function ProfilePage() {
                       <div className="grid grid-cols-2 gap-3">
                         {/* Total Revenue with Breakdown */}
                         <div className="bg-white rounded-2xl p-4 border border-gray-200">
-                          <p className="text-xs text-gray-500 mb-2">Total Revenue</p>
+                          <p className="text-xs text-gray-500 mb-2">{t("totalRevenue", language)}</p>
                           <p className="text-lg font-bold text-emerald-600 mb-2">${getAnalyticsData().totalRevenue.toFixed(2)}</p>
                           <div className="space-y-1 text-xs border-t pt-2">
                             <div className="flex justify-between">
-                              <span className="text-gray-600">Sales:</span>
+                              <span className="text-gray-600">{t("salesAmount", language)}:</span>
                               <span className="font-semibold text-emerald-600">${getAnalyticsData().salesAmount.toFixed(2)}</span>
                             </div>
                             <div className="flex justify-between">
-                              <span className="text-gray-600">Shipping:</span>
+                              <span className="text-gray-600">{t("shippingAmount", language)}:</span>
                               <span className="font-semibold text-orange-600">${getAnalyticsData().totalShipping.toFixed(2)}</span>
                             </div>
                           </div>
                         </div>
 
                         <div className="bg-white rounded-2xl p-4 border border-gray-200">
-                          <p className="text-xs text-gray-500 mb-1">Total Orders</p>
+                          <p className="text-xs text-gray-500 mb-1">{t("totalOrders", language)}</p>
                           <p className="text-lg font-bold text-blue-600">{getAnalyticsData().filtered.length}</p>
                         </div>
                         <div className="bg-white rounded-2xl p-4 border border-gray-200">
-                          <p className="text-xs text-gray-500 mb-1">Completed</p>
+                          <p className="text-xs text-gray-500 mb-1">{t("completed", language)}</p>
                           <p className="text-lg font-bold text-green-600">{getAnalyticsData().completedCount}</p>
                         </div>
                         <div className="bg-white rounded-2xl p-4 border border-gray-200">
-                          <p className="text-xs text-gray-500 mb-1">Pending</p>
+                          <p className="text-xs text-gray-500 mb-1">{t("pending", language)}</p>
                           <p className="text-lg font-bold text-amber-600">{getAnalyticsData().pendingCount}</p>
                         </div>
                       </div>
 
                       {/* Sales Trend Chart */}
                       <div className="bg-white rounded-2xl p-4 border border-gray-200">
-                        <p className="text-sm font-semibold text-gray-900 mb-3">Sales Trend</p>
+                        <p className="text-sm font-semibold text-gray-900 mb-3">{t("salesTrend", language)}</p>
                         <ResponsiveContainer width="100%" height={250}>
                           <LineChart data={(() => {
                             const grouped: { [key: string]: number } = {};
@@ -1162,7 +1162,7 @@ export default function ProfilePage() {
 
                       {/* Orders by Status Chart */}
                       <div className="bg-white rounded-2xl p-4 border border-gray-200">
-                        <p className="text-sm font-semibold text-gray-900 mb-3">Orders by Status</p>
+                        <p className="text-sm font-semibold text-gray-900 mb-3">{t("ordersByStatus", language)}</p>
                         <ResponsiveContainer width="100%" height={250}>
                           <BarChart data={(() => {
                             const statusCounts: { [key: string]: number } = {};
@@ -1182,7 +1182,7 @@ export default function ProfilePage() {
 
                       {/* Revenue by Status */}
                       <div className="bg-white rounded-2xl p-4 border border-gray-200">
-                        <p className="text-sm font-semibold text-gray-900 mb-3">Revenue by Status</p>
+                        <p className="text-sm font-semibold text-gray-900 mb-3">{t("revenueByStatus", language)}</p>
                         <ResponsiveContainer width="100%" height={250}>
                           <PieChart>
                             <Pie
@@ -1245,7 +1245,7 @@ export default function ProfilePage() {
                   <div className="bg-white rounded-2xl p-4 border border-gray-200 mb-4">
                     <input
                       type="text"
-                      placeholder="Search users by email..."
+                      placeholder={t("searchByEmail", language)}
                       value={userSearchQuery}
                       onChange={(e) => setUserSearchQuery(e.target.value)}
                       className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
@@ -1289,8 +1289,8 @@ export default function ProfilePage() {
                                 className="flex-1 px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                                 data-testid={`select-user-role-${u.id}`}
                               >
-                                <option value="user">User</option>
-                                <option value="admin">Admin</option>
+                                <option value="user">{t("userRole", language)}</option>
+                                <option value="admin">{t("adminRole", language)}</option>
                               </select>
                               <button
                                 onClick={() => handleUserRoleUpdate(u.id, newUserRole)}
@@ -1357,7 +1357,7 @@ export default function ProfilePage() {
                     <div className="flex gap-2">
                       <input
                         type="text"
-                        placeholder="Category name"
+                        placeholder={t("categoryNamePlaceholder", language)}
                         value={newCategoryName}
                         onChange={(e) => setNewCategoryName(e.target.value)}
                         className="flex-1 px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
@@ -1548,14 +1548,14 @@ export default function ProfilePage() {
                       </div>
                       <input
                         type="text"
-                        placeholder="Product Title"
+                        placeholder={t("productTitlePlaceholder", language)}
                         value={newItemForm.title}
                         onChange={(e) => setNewItemForm({ ...newItemForm, title: e.target.value })}
                         className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                         data-testid="input-item-title"
                       />
                       <textarea
-                        placeholder="Product Description (اختياري)"
+                        placeholder={t("productDescPlaceholder", language)}
                         value={newItemForm.description || ""}
                         onChange={(e) => setNewItemForm({ ...newItemForm, description: e.target.value })}
                         className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"
@@ -1564,7 +1564,7 @@ export default function ProfilePage() {
                       />
                       <input
                         type="number"
-                        placeholder="Price"
+                        placeholder={t("pricePlaceholder", language)}
                         value={newItemForm.price}
                         onChange={(e) => setNewItemForm({ ...newItemForm, price: e.target.value })}
                         className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
@@ -1576,18 +1576,18 @@ export default function ProfilePage() {
                         className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                         data-testid="select-item-category"
                       >
-                        <option value="">Select Category</option>
+                        <option value="">{t("selectCategory", language)}</option>
                         {categories.map((cat) => (
                           <option key={cat.id} value={cat.name}>{cat.name}</option>
                         ))}
                       </select>
                       {/* Units */}
                       <div>
-                        <label className="text-xs font-semibold mb-1 block">وحدات (Units) - اختياري</label>
+                        <label className="text-xs font-semibold mb-1 block">{t("unitsLabel", language)}</label>
                         <div className="flex gap-2 mb-2">
                           <input
                             type="text"
-                            placeholder="أضف وحدة"
+                            placeholder={t("addUnitPlaceholder", language)}
                             value={unitInput}
                             onChange={(e) => setUnitInput(e.target.value)}
                             className="flex-1 px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm"
@@ -1603,7 +1603,7 @@ export default function ProfilePage() {
                             className="px-3 py-2 bg-blue-100 text-blue-700 rounded-lg text-sm font-semibold"
                             data-testid="button-add-unit"
                           >
-                            أضف
+                            {t("addButton", language)}
                           </button>
                         </div>
                         {newItemForm.units.length > 0 && (
@@ -1620,11 +1620,11 @@ export default function ProfilePage() {
 
                       {/* Sizes */}
                       <div>
-                        <label className="text-xs font-semibold mb-1 block">مقاسات (Sizes) - اختياري</label>
+                        <label className="text-xs font-semibold mb-1 block">{t("sizesLabel", language)}</label>
                         <div className="flex gap-2 mb-2">
                           <input
                             type="text"
-                            placeholder="أضف مقاس"
+                            placeholder={t("addSizePlaceholder", language)}
                             value={sizeInput}
                             onChange={(e) => setSizeInput(e.target.value)}
                             className="flex-1 px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm"
@@ -1640,7 +1640,7 @@ export default function ProfilePage() {
                             className="px-3 py-2 bg-green-100 text-green-700 rounded-lg text-sm font-semibold"
                             data-testid="button-add-size"
                           >
-                            أضف
+                            {t("addButton", language)}
                           </button>
                         </div>
                         {newItemForm.sizes.length > 0 && (
@@ -1657,12 +1657,12 @@ export default function ProfilePage() {
 
                       {/* Colors */}
                       <div>
-                        <label className="text-xs font-semibold mb-1 block">ألوان (Colors) - اختياري</label>
+                        <label className="text-xs font-semibold mb-1 block">{t("colorsLabel", language)}</label>
                         <div className="space-y-2 mb-2">
                           <div className="flex gap-2">
                             <input
                               type="text"
-                              placeholder="اسم اللون"
+                              placeholder={t("colorNamePlaceholder", language)}
                               value={colorInput}
                               onChange={(e) => setColorInput(e.target.value)}
                               className="flex-1 px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm"
@@ -1686,7 +1686,7 @@ export default function ProfilePage() {
                               className="px-3 py-2 bg-red-100 text-red-700 rounded-lg text-sm font-semibold"
                               data-testid="button-add-color"
                             >
-                              أضف
+                              {t("addButton", language)}
                             </button>
                           </div>
                         </div>
@@ -1782,7 +1782,7 @@ export default function ProfilePage() {
                             data-testid="button-cancel-item"
                           >
                             <X className="w-4 h-4" />
-                            Cancel
+                            {t("cancelButton", language)}
                           </button>
                         )}
                       </div>
@@ -1791,7 +1791,7 @@ export default function ProfilePage() {
 
                   {/* Items List */}
                   {items.length === 0 ? (
-                    <div className="text-center py-8 text-gray-500">No items yet</div>
+                    <div className="text-center py-8 text-gray-500">{t("noItemsYet", language)}</div>
                   ) : (
                     <div className="space-y-3">
                       {items.map((item) => (
@@ -1826,7 +1826,7 @@ export default function ProfilePage() {
                                       </span>
                                     );
                                   })}
-                                  {!item.available && <span className="inline-block px-2 py-1 bg-red-100 text-red-700 rounded text-xs">غير متاح</span>}
+                                  {!item.available && <span className="inline-block px-2 py-1 bg-red-100 text-red-700 rounded text-xs">{t("notAvailable", language)}</span>}
                                 </div>
                               </div>
                             </div>
@@ -1856,7 +1856,7 @@ export default function ProfilePage() {
                               data-testid={`button-edit-item-${item.id}`}
                             >
                               <Edit2 className="w-3 h-3" />
-                              Edit
+                              {t("editButton", language)}
                             </button>
                             <button
                               onClick={async () => {
