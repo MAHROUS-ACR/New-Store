@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { MobileWrapper } from "@/components/mobile-wrapper";
 import { BottomNav } from "@/components/bottom-nav";
-import { ArrowLeft, Database, Save, LogOut, Bell, CheckCircle, AlertCircle } from "lucide-react";
+import { ArrowLeft, Database, Save, LogOut } from "lucide-react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
 import { saveFirebaseConfig, getFirebaseConfig, clearFirebaseConfig } from "@/lib/firebaseConfig";
@@ -364,34 +364,6 @@ export default function SettingsPage() {
                     className="w-full px-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                     data-testid="input-firebase-measurement-id"
                   />
-                </div>
-              </div>
-            </div>
-
-            {/* Firebase Cloud Messaging Section */}
-            <div className="mb-8 pt-8 border-t border-gray-200">
-              <h2 className="text-lg font-bold mb-4">Firebase Cloud Messaging</h2>
-              <p className="text-sm text-muted-foreground mb-6">
-                Configure push notifications for instant order alerts
-              </p>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-semibold mb-2" htmlFor="firebaseMessagingSenderId">
-                    Messaging Sender ID
-                  </label>
-                  <input
-                    id="firebaseMessagingSenderId"
-                    type="text"
-                    value={firebaseMessagingSenderId}
-                    onChange={(e) => setFirebaseMessagingSenderId(e.target.value)}
-                    placeholder="123456789012"
-                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                    data-testid="input-firebase-messaging-sender-id"
-                  />
-                  <p className="text-xs text-muted-foreground mt-2">
-                    Find this in Firebase Console → Cloud Messaging → Project credentials
-                  </p>
                 </div>
               </div>
             </div>
