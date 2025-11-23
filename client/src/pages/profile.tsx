@@ -15,7 +15,6 @@ import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, L
 
 const getMenuItems = (language: any) => [
   { icon: Package, label: t("myOrders", language), path: "/orders", buttonBg: "bg-purple-50", borderColor: "border-purple-200 hover:border-purple-300", iconColor: "text-purple-600 bg-purple-100", textColor: "text-purple-900" },
-  { icon: Bell, label: language === "ar" ? "إعداد الإشعارات" : "Setup Notifications", path: "/notification-setup", buttonBg: "bg-orange-50", borderColor: "border-orange-200 hover:border-orange-300", iconColor: "text-orange-600 bg-orange-100", textColor: "text-orange-900" },
   { icon: HelpCircle, label: t("helpSupport", language), path: "/help", buttonBg: "bg-green-50", borderColor: "border-green-200 hover:border-green-300", iconColor: "text-green-600 bg-green-100", textColor: "text-green-900" },
 ];
 
