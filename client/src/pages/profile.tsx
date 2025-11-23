@@ -274,6 +274,7 @@ export default function ProfilePage() {
     if (activeTab === 'admin') {
       fetchCategories(); // Load categories when admin tab is active
       fetchProducts(); // Load products when admin tab is active
+      fetchDiscounts(); // Load discounts when admin tab is active
     }
   }, [activeTab]);
 
@@ -2123,7 +2124,7 @@ export default function ProfilePage() {
                         className="w-full bg-yellow-600 text-white py-2 rounded-lg font-semibold text-sm hover:bg-yellow-700"
                         data-testid="button-save-discount"
                       >
-                        {editingDiscountId ? t("updateZone", language) : t("addZone", language)}
+                        {editingDiscountId ? t("editButton", language) + " " + t("discounts", language) : t("addDiscount", language)}
                       </button>
                       {editingDiscountId && (
                         <button
@@ -2141,14 +2142,16 @@ export default function ProfilePage() {
                   </div>
 
                   {/* Discounts List */}
-                  {discounts.length > 0 && (
-                    <div className="bg-white rounded-2xl p-4 border border-gray-200">
-                      <h3 className="text-sm font-bold mb-3">{t("activeDiscounts", language)}</h3>
+                  <div className="bg-white rounded-2xl p-4 border border-gray-200">
+                    <h3 className="text-sm font-bold mb-3">{t("activeDiscounts", language)} ({discounts.length})</h3>
+                    {discounts.length === 0 ? (
+                      <p className="text-sm text-gray-500 text-center py-4">{t("noDiscountsYet", language)}</p>
+                    ) : (
                       <div className="space-y-3">
                         {discounts.map((discount) => {
                           const product = items.find(p => String(p.id) === String(discount.productId));
                           return (
-                            <div key={discount.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                            <div key={discount.id} className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg border border-yellow-100">
                               <div>
                                 <p className="text-sm font-semibold text-gray-900" data-testid={`text-discount-product-${discount.id}`}>{product?.title || discount.productId}</p>
                                 <p className="text-xs text-yellow-600 font-bold">{discount.discountPercentage}% OFF</p>
@@ -2182,8 +2185,8 @@ export default function ProfilePage() {
                           );
                         })}
                       </div>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
               )}
 
