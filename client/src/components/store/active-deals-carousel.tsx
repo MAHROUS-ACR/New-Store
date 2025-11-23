@@ -106,9 +106,12 @@ export function ActiveDealsCarousel({ products, discounts }: ActiveDealsCarousel
                     discounts
                   );
                   return activeDiscount ? (
-                    <span className="inline-block bg-red-500 text-white px-2 py-1 rounded-lg text-xs font-bold">
+                    <motion.span 
+                      animate={{ scale: [1, 1.05, 1] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                      className="inline-block bg-gradient-to-br from-red-500 to-red-600 text-white px-3 py-2 rounded-lg text-base font-black shadow-lg shadow-red-500/50 border-2 border-yellow-300">
                       -{activeDiscount.discountPercentage}%
-                    </span>
+                    </motion.span>
                   ) : null;
                 })()}
               </div>
