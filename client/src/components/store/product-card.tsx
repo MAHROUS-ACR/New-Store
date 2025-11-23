@@ -5,6 +5,7 @@ import { useLanguage } from "@/lib/languageContext";
 import { t } from "@/lib/translations";
 import { useState } from "react";
 import { toast } from "sonner";
+import { getActiveDiscount, calculateDiscountedPrice, type Discount } from "@/lib/discountUtils";
 
 interface ProductProps {
   id: string | number;
@@ -19,7 +20,7 @@ interface ProductProps {
   available?: boolean;
 }
 
-export function ProductCard({ product, index, onProductClick }: { product: ProductProps; index: number; onProductClick?: (id: string | number) => void }) {
+export function ProductCard({ product, index, discounts = [], onProductClick }: { product: ProductProps; index: number; discounts?: Discount[]; onProductClick?: (id: string | number) => void }) {
   const { addItem } = useCart();
   const { language } = useLanguage();
   const [isAdding, setIsAdding] = useState(false);
@@ -36,6 +37,10 @@ export function ProductCard({ product, index, onProductClick }: { product: Produ
                       (product.sizes && product.sizes.length > 0) || 
                       (product.units && product.units.length > 0);
   const isAvailable = product.available !== false;
+  
+  // Get discount info
+  const activeDiscount = getActiveDiscount(String(product.id), discounts);
+  const discountedPrice = activeDiscount ? calculateDiscountedPrice(product.price, activeDiscount.discountPercentage) : product.price;
 
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -98,6 +103,11 @@ export function ProductCard({ product, index, onProductClick }: { product: Produ
           alt={productTitle}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
         />
+        {activeDiscount && (
+          <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded-full text-[10px] font-bold" data-testid={`badge-discount-${product.id}`}>
+            {language === "ar" ? `وفر ${activeDiscount.discountPercentage}%` : `Save ${activeDiscount.discountPercentage}%`}
+          </div>
+        )}
         <button
           onClick={handleAddToCart}
           disabled={isAdding}
@@ -147,7 +157,16 @@ export function ProductCard({ product, index, onProductClick }: { product: Produ
         
         {/* Price and Availability */}
         <div className="flex items-center justify-between gap-2">
-          <p className="font-bold text-lg" data-testid={`text-price-${product.id}`}>${product.price.toFixed(2)}</p>
+          <div className="flex flex-col gap-0.5">
+            {activeDiscount ? (
+              <>
+                <p className="font-bold text-lg text-green-600" data-testid={`text-price-${product.id}`}>${discountedPrice.toFixed(2)}</p>
+                <p className="text-xs text-gray-400 line-through">${product.price.toFixed(2)}</p>
+              </>
+            ) : (
+              <p className="font-bold text-lg" data-testid={`text-price-${product.id}`}>${product.price.toFixed(2)}</p>
+            )}
+          </div>
           {!isAvailable && (
             <p className="text-xs font-semibold text-red-600 bg-red-50 px-2 py-1 rounded whitespace-nowrap" data-testid={`text-unavailable-${product.id}`}>{t("unavailable", language)}</p>
           )}

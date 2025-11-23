@@ -91,25 +91,29 @@ export class DbStorage implements IStorage {
 
   async createDiscount(discount: InsertDiscount): Promise<Discount> {
     try {
-      const client = await getSqlClient();
-      const startDate = discount.startDate instanceof Date ? discount.startDate.toISOString() : discount.startDate;
-      const endDate = discount.endDate instanceof Date ? discount.endDate.toISOString() : discount.endDate;
+      const db = await getDb();
+      const startDate = discount.startDate instanceof Date ? discount.startDate : new Date(discount.startDate);
+      const endDate = discount.endDate instanceof Date ? discount.endDate : new Date(discount.endDate);
       
-      const result = await client(
-        `INSERT INTO discounts (product_id, discount_percentage, start_date, end_date) 
-         VALUES ($1, $2, $3, $4) 
-         RETURNING *`,
-        [discount.productId, discount.discountPercentage, startDate, endDate]
-      );
+      const result = await db.insert(discounts).values({
+        productId: discount.productId,
+        discountPercentage: discount.discountPercentage,
+        startDate,
+        endDate,
+      }).returning();
+      
+      if (!result || !result[0]) {
+        throw new Error("Failed to create discount");
+      }
       
       const row = result[0];
       return {
         id: row.id,
-        productId: row.product_id,
-        discountPercentage: String(row.discount_percentage),
-        startDate: new Date(row.start_date),
-        endDate: new Date(row.end_date),
-        createdAt: new Date(row.created_at),
+        productId: row.productId,
+        discountPercentage: String(row.discountPercentage),
+        startDate: row.startDate instanceof Date ? row.startDate : new Date(row.startDate),
+        endDate: row.endDate instanceof Date ? row.endDate : new Date(row.endDate),
+        createdAt: row.createdAt instanceof Date ? row.createdAt : new Date(row.createdAt),
       };
     } catch (error) {
       console.error("Error creating discount:", error);
@@ -119,25 +123,30 @@ export class DbStorage implements IStorage {
 
   async getDiscountByProductId(productId: string): Promise<Discount | undefined> {
     try {
-      const client = await getSqlClient();
-      const now = new Date().toISOString();
-      const result = await client(
-        `SELECT * FROM discounts 
-         WHERE product_id = $1 AND start_date <= $2 AND end_date >= $2
-         LIMIT 1`,
-        [productId, now]
-      );
+      const db = await getDb();
+      const now = new Date();
+      const result = await db
+        .select()
+        .from(discounts)
+        .where(
+          and(
+            eq(discounts.productId, productId),
+            lte(discounts.startDate, now),
+            gte(discounts.endDate, now)
+          )
+        )
+        .limit(1);
       
       if (!result || result.length === 0) return undefined;
       
       const row = result[0];
       return {
         id: row.id,
-        productId: row.product_id,
-        discountPercentage: String(row.discount_percentage),
-        startDate: new Date(row.start_date),
-        endDate: new Date(row.end_date),
-        createdAt: new Date(row.created_at),
+        productId: row.productId,
+        discountPercentage: String(row.discountPercentage),
+        startDate: row.startDate instanceof Date ? row.startDate : new Date(row.startDate),
+        endDate: row.endDate instanceof Date ? row.endDate : new Date(row.endDate),
+        createdAt: row.createdAt instanceof Date ? row.createdAt : new Date(row.createdAt),
       };
     } catch (error) {
       console.error("Error getting discount:", error);
@@ -147,15 +156,15 @@ export class DbStorage implements IStorage {
 
   async getAllDiscounts(): Promise<Discount[]> {
     try {
-      const client = await getSqlClient();
-      const results = await client("SELECT * FROM discounts");
+      const db = await getDb();
+      const results = await db.select().from(discounts);
       return (results || []).map((d: any) => ({
-        id: d.id || "",
-        productId: d.product_id || "",
-        discountPercentage: String(d.discount_percentage || "0"),
-        startDate: d.start_date ? new Date(d.start_date) : new Date(),
-        endDate: d.end_date ? new Date(d.end_date) : new Date(),
-        createdAt: d.created_at ? new Date(d.created_at) : new Date(),
+        id: d.id,
+        productId: d.productId,
+        discountPercentage: String(d.discountPercentage),
+        startDate: d.startDate instanceof Date ? d.startDate : new Date(d.startDate),
+        endDate: d.endDate instanceof Date ? d.endDate : new Date(d.endDate),
+        createdAt: d.createdAt instanceof Date ? d.createdAt : new Date(d.createdAt),
       }));
     } catch (error) {
       console.error("Error getting all discounts:", error);
@@ -165,49 +174,37 @@ export class DbStorage implements IStorage {
 
   async updateDiscount(id: string, discount: Partial<InsertDiscount>): Promise<Discount | undefined> {
     try {
-      const client = await getSqlClient();
-      
-      const updates: string[] = [];
-      const values: any[] = [];
-      let paramCount = 1;
+      const db = await getDb();
+      const updateData: any = {};
       
       if (discount.discountPercentage !== undefined) {
-        updates.push(`discount_percentage = $${paramCount}`);
-        values.push(discount.discountPercentage);
-        paramCount++;
+        updateData.discountPercentage = discount.discountPercentage;
       }
       if (discount.startDate !== undefined) {
-        updates.push(`start_date = $${paramCount}`);
-        const startDate = discount.startDate instanceof Date ? discount.startDate.toISOString() : discount.startDate;
-        values.push(startDate);
-        paramCount++;
+        updateData.startDate = discount.startDate instanceof Date ? discount.startDate : new Date(discount.startDate);
       }
       if (discount.endDate !== undefined) {
-        updates.push(`end_date = $${paramCount}`);
-        const endDate = discount.endDate instanceof Date ? discount.endDate.toISOString() : discount.endDate;
-        values.push(endDate);
-        paramCount++;
+        updateData.endDate = discount.endDate instanceof Date ? discount.endDate : new Date(discount.endDate);
       }
       
-      if (updates.length === 0) return undefined;
+      if (Object.keys(updateData).length === 0) return undefined;
       
-      values.push(id);
+      const result = await db
+        .update(discounts)
+        .set(updateData)
+        .where(eq(discounts.id, id))
+        .returning();
       
-      const result = await client(
-        `UPDATE discounts SET ${updates.join(", ")} WHERE id = $${paramCount} RETURNING *`,
-        values
-      );
-      
-      if (!result || result.length === 0) return undefined;
+      if (!result || !result[0]) return undefined;
       
       const row = result[0];
       return {
         id: row.id,
-        productId: row.product_id,
-        discountPercentage: String(row.discount_percentage),
-        startDate: new Date(row.start_date),
-        endDate: new Date(row.end_date),
-        createdAt: new Date(row.created_at),
+        productId: row.productId,
+        discountPercentage: String(row.discountPercentage),
+        startDate: row.startDate instanceof Date ? row.startDate : new Date(row.startDate),
+        endDate: row.endDate instanceof Date ? row.endDate : new Date(row.endDate),
+        createdAt: row.createdAt instanceof Date ? row.createdAt : new Date(row.createdAt),
       };
     } catch (error) {
       console.error("Error updating discount:", error);

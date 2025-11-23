@@ -9,6 +9,7 @@ import { useLanguage } from "@/lib/languageContext";
 import { t } from "@/lib/translations";
 import { toast } from "sonner";
 import { getFirestore, doc, getDoc } from "firebase/firestore";
+import { getAllDiscounts, getActiveDiscount, calculateDiscountedPrice, type Discount } from "@/lib/discountUtils";
 
 export default function CheckoutPage() {
   const [, setLocation] = useLocation();
@@ -31,6 +32,7 @@ export default function CheckoutPage() {
   const [shippingCost, setShippingCost] = useState(0);
   const [newAddress, setNewAddress] = useState("");
   const [newPhone, setNewPhone] = useState("");
+  const [discounts, setDiscounts] = useState<Discount[]>([]);
   const [selectedZone, setSelectedZone] = useState("");
 
   const [formData, setFormData] = useState({
@@ -48,6 +50,10 @@ export default function CheckoutPage() {
   useEffect(() => {
     const loadData = async () => {
       try {
+        // Load discounts
+        const discountData = await getAllDiscounts();
+        setDiscounts(discountData || []);
+
         const zonesRes = await fetch("/api/shipping-zones");
         if (zonesRes.ok) {
           const zones = await zonesRes.json();
@@ -143,6 +149,14 @@ export default function CheckoutPage() {
     }
   };
 
+  const calculateTotalWithDiscounts = () => {
+    return items.reduce((sum, item) => {
+      const activeDiscount = getActiveDiscount(item.id, discounts);
+      const discountedPrice = activeDiscount ? calculateDiscountedPrice(item.price, activeDiscount.discountPercentage) : item.price;
+      return sum + discountedPrice * item.quantity;
+    }, 0);
+  };
+
   const handleCardPayment = async () => {
     if (!shippingType || !selectedZone) {
       toast.error(t("selectShippingAddressAndZone", language));
@@ -152,12 +166,15 @@ export default function CheckoutPage() {
 
     setIsProcessing(true);
     try {
+      const totalWithDiscounts = calculateTotalWithDiscounts();
+      const finalTotal = totalWithDiscounts + shippingCost;
+
       const paymentResponse = await fetch("/api/payment/create-intent", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           method: "card",
-          amount: Math.round((total + shippingCost) * 100),
+          amount: Math.round(finalTotal * 100),
           currency: "usd",
           cardNumber: formData.cardNumber.replace(/\s/g, ""),
           expiryDate: formData.expiryDate,
@@ -192,8 +209,9 @@ export default function CheckoutPage() {
         orderNumber: nextOrderNumber,
         items,
         subtotal: total,
+        discountedTotal: totalWithDiscounts,
         shippingCost,
-        total: total + shippingCost,
+        total: finalTotal,
         status: "confirmed",
         paymentMethod: "card",
         paymentId: paymentData.id,
@@ -245,6 +263,9 @@ export default function CheckoutPage() {
 
     setIsProcessing(true);
     try {
+      const totalWithDiscounts = calculateTotalWithDiscounts();
+      const finalTotal = totalWithDiscounts + shippingCost;
+
       let shippingAddress = formData.address;
       let shippingPhone = formData.zipCode;
       if (shippingType === "new") {
@@ -261,8 +282,9 @@ export default function CheckoutPage() {
         orderNumber: nextOrderNumber2,
         items,
         subtotal: total,
+        discountedTotal: totalWithDiscounts,
         shippingCost,
-        total: total + shippingCost,
+        total: finalTotal,
         status: "pending",
         paymentMethod: "delivery",
         shippingType,

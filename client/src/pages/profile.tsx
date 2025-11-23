@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { t } from "@/lib/translations";
 import avatarImage from "@assets/generated_images/professional_user_avatar_portrait.png";
 import { saveFirebaseConfig, getFirebaseConfig, clearFirebaseConfig } from "@/lib/firebaseConfig";
-import { getFirestore, doc, updateDoc, getDoc } from "firebase/firestore";
+import { getFirestore, doc, updateDoc, getDoc, collection, setDoc } from "firebase/firestore";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 
 const getMenuItems = (language: any) => [
@@ -594,21 +594,49 @@ export default function ProfilePage() {
     }
 
     try {
+      const discountData = {
+        productId: discountFormData.productId,
+        discountPercentage: parseFloat(discountFormData.discountPercentage),
+        startDate: new Date(discountFormData.startDate + "T00:00:00Z").toISOString(),
+        endDate: new Date(discountFormData.endDate + "T00:00:00Z").toISOString(),
+      };
+
       const url = editingDiscountId ? `/api/discounts/${editingDiscountId}` : "/api/discounts";
       const method = editingDiscountId ? "PUT" : "POST";
 
       const response = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          productId: discountFormData.productId,
-          discountPercentage: parseFloat(discountFormData.discountPercentage),
-          startDate: new Date(discountFormData.startDate + "T00:00:00Z").toISOString(),
-          endDate: new Date(discountFormData.endDate + "T00:00:00Z").toISOString(),
-        }),
+        body: JSON.stringify(discountData),
       });
 
       if (response.ok) {
+        // Also save to Firestore
+        try {
+          const db = getFirestore();
+          const discountsRef = collection(db, "discounts");
+          
+          if (editingDiscountId) {
+            // Update in Firestore
+            const discountDoc = doc(db, "discounts", editingDiscountId);
+            await updateDoc(discountDoc, {
+              ...discountData,
+              updatedAt: new Date(),
+            });
+          } else {
+            // Add to Firestore with server-generated ID
+            const resultData = await response.json();
+            const newDocRef = doc(db, "discounts", resultData.id);
+            await setDoc(newDocRef, {
+              ...discountData,
+              id: resultData.id,
+              createdAt: new Date(),
+            });
+          }
+        } catch (firestoreError) {
+          console.error("Warning: Failed to sync to Firestore:", firestoreError);
+        }
+
         toast.success(editingDiscountId ? "Discount updated!" : "Discount created!");
         setDiscountFormData({ productId: "", discountPercentage: "", startDate: "", endDate: "" });
         setEditingDiscountId(null);

@@ -7,6 +7,7 @@ import { useCart } from "@/lib/cartContext";
 import { useLanguage } from "@/lib/languageContext";
 import { t } from "@/lib/translations";
 import { toast } from "sonner";
+import { getAllDiscounts, getActiveDiscount, calculateDiscountedPrice, type Discount } from "@/lib/discountUtils";
 
 export default function ProductDetailsPage() {
   const [, setLocation] = useLocation();
@@ -20,11 +21,17 @@ export default function ProductDetailsPage() {
   const [selectedUnit, setSelectedUnit] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [isAdding, setIsAdding] = useState(false);
+  const [discounts, setDiscounts] = useState<Discount[]>([]);
 
   useEffect(() => {
-    const loadProduct = async () => {
+    const loadProductAndDiscounts = async () => {
       setIsLoading(true);
       try {
+        // Load discounts
+        const discountData = await getAllDiscounts();
+        setDiscounts(discountData || []);
+
+        // Load product
         const response = await fetch(`/api/products/${params?.id}`);
         if (response.ok) {
           const data = await response.json();
@@ -53,7 +60,7 @@ export default function ProductDetailsPage() {
     };
 
     if (params?.id) {
-      loadProduct();
+      loadProductAndDiscounts();
     }
   }, [params?.id, setLocation]);
 
@@ -128,6 +135,10 @@ export default function ProductDetailsPage() {
   const hasVariants = (product.colors && product.colors.length > 0) || 
                       (product.sizes && product.sizes.length > 0) || 
                       (product.units && product.units.length > 0);
+  
+  // Get discount info
+  const activeDiscount = getActiveDiscount(String(product?.id), discounts);
+  const discountedPrice = activeDiscount ? calculateDiscountedPrice(product.price, activeDiscount.discountPercentage) : product?.price;
 
   return (
     <MobileWrapper>
@@ -171,10 +182,20 @@ export default function ProductDetailsPage() {
               )}
             </div>
 
-            {/* Price */}
+            {/* Price and Discount */}
             <div className="mb-4">
               <p className="text-sm text-gray-600 mb-1">{t("price", language)}</p>
-              <p className="text-3xl font-bold" data-testid="text-price">${product.price.toFixed(2)}</p>
+              {activeDiscount ? (
+                <div className="flex items-baseline gap-3">
+                  <p className="text-3xl font-bold text-green-600" data-testid="text-price">${discountedPrice.toFixed(2)}</p>
+                  <p className="text-lg text-gray-400 line-through">${product.price.toFixed(2)}</p>
+                  <p className="px-2 py-1 bg-red-100 text-red-700 rounded text-xs font-bold">
+                    {language === "ar" ? `وفر ${activeDiscount.discountPercentage}%` : `Save ${activeDiscount.discountPercentage}%`}
+                  </p>
+                </div>
+              ) : (
+                <p className="text-3xl font-bold" data-testid="text-price">${product.price.toFixed(2)}</p>
+              )}
             </div>
 
             {/* Category */}

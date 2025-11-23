@@ -6,11 +6,26 @@ import { useCart } from "@/lib/cartContext";
 import { useLanguage } from "@/lib/languageContext";
 import { t } from "@/lib/translations";
 import { toast } from "sonner";
+import { useState, useEffect } from "react";
+import { getAllDiscounts, getActiveDiscount, calculateDiscountedPrice, type Discount } from "@/lib/discountUtils";
 
 export default function CartPage() {
   const [, setLocation] = useLocation();
   const { items, removeItem, updateQuantity, total } = useCart();
   const { language } = useLanguage();
+  const [discounts, setDiscounts] = useState<Discount[]>([]);
+
+  useEffect(() => {
+    const fetchDiscounts = async () => {
+      try {
+        const data = await getAllDiscounts();
+        setDiscounts(data || []);
+      } catch (error) {
+        console.error("Error loading discounts:", error);
+      }
+    };
+    fetchDiscounts();
+  }, []);
 
   const handleCheckout = () => {
     if (items.length === 0) {
@@ -19,6 +34,20 @@ export default function CartPage() {
     }
     setLocation("/checkout");
   };
+
+  const calculateItemPrice = (item: any) => {
+    const activeDiscount = getActiveDiscount(item.id, discounts);
+    if (activeDiscount) {
+      return calculateDiscountedPrice(item.price, activeDiscount.discountPercentage);
+    }
+    return item.price;
+  };
+
+  const calculateTotalWithDiscounts = () => {
+    return items.reduce((sum, item) => sum + calculateItemPrice(item) * item.quantity, 0);
+  };
+
+  const totalWithDiscounts = calculateTotalWithDiscounts();
 
   if (items.length === 0) {
     return (
@@ -87,7 +116,22 @@ export default function CartPage() {
                       })()}
                     </div>
                   )}
-                  <p className="text-lg font-bold mt-1">${item.price.toFixed(2)}</p>
+                  {(() => {
+                    const activeDiscount = getActiveDiscount(item.id, discounts);
+                    const discountedPrice = calculateItemPrice(item);
+                    return (
+                      <div className="mt-1">
+                        {activeDiscount ? (
+                          <div className="flex items-baseline gap-2">
+                            <p className="text-lg font-bold text-green-600">${discountedPrice.toFixed(2)}</p>
+                            <p className="text-xs text-gray-400 line-through">${item.price.toFixed(2)}</p>
+                          </div>
+                        ) : (
+                          <p className="text-lg font-bold">${item.price.toFixed(2)}</p>
+                        )}
+                      </div>
+                    );
+                  })()}
                   <div className="flex items-center gap-2 mt-2">
                     <button
                       onClick={() => updateQuantity(item.id, item.quantity - 1)}
@@ -125,10 +169,24 @@ export default function CartPage() {
               <span className="text-muted-foreground">{t("subtotal", language)}</span>
               <span className="font-semibold">${total.toFixed(2)}</span>
             </div>
-            <div className="flex justify-between text-base font-bold pt-2 border-t border-gray-100">
-              <span>{t("total", language)}</span>
-              <span>${total.toFixed(2)}</span>
-            </div>
+            {totalWithDiscounts < total && (
+              <>
+                <div className="flex justify-between text-sm text-green-600">
+                  <span>Discount Savings</span>
+                  <span className="font-semibold">-${(total - totalWithDiscounts).toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-base font-bold pt-2 border-t border-gray-100 text-green-600">
+                  <span>{t("total", language)}</span>
+                  <span>${totalWithDiscounts.toFixed(2)}</span>
+                </div>
+              </>
+            )}
+            {totalWithDiscounts === total && (
+              <div className="flex justify-between text-base font-bold pt-2 border-t border-gray-100">
+                <span>{t("total", language)}</span>
+                <span>${total.toFixed(2)}</span>
+              </div>
+            )}
           </div>
           <button
             onClick={handleCheckout}

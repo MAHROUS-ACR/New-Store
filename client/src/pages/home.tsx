@@ -9,6 +9,7 @@ import { useLocation } from "wouter";
 import { useCart } from "@/lib/cartContext";
 import { useLanguage } from "@/lib/languageContext";
 import { t } from "@/lib/translations";
+import { getAllDiscounts, type Discount } from "@/lib/discountUtils";
 import imgHeadphones from "@assets/generated_images/wireless_headphones_product_shot.png";
 import imgWatch from "@assets/generated_images/smart_watch_product_shot.png";
 import imgShoes from "@assets/generated_images/designer_running_shoes_product_shot.png";
@@ -58,6 +59,7 @@ export default function Home() {
   const [storeName, setStoreName] = useState<string | null>(null);
   const [storeLogo, setStoreLogo] = useState<string>("");
   const [isInitialized, setIsInitialized] = useState(false);
+  const [discounts, setDiscounts] = useState<Discount[]>([]);
 
   const fetchStoreSettings = async (): Promise<void> => {
     try {
@@ -118,9 +120,19 @@ export default function Home() {
   };
 
   useEffect(() => {
-    // Run both in parallel for faster loading
-    Promise.all([fetchProductsData(), fetchStoreSettings()]);
+    // Run in parallel for faster loading
+    Promise.all([fetchProductsData(), fetchStoreSettings(), fetchDiscounts()]);
   }, [location]);
+
+  const fetchDiscounts = async () => {
+    try {
+      const data = await getAllDiscounts();
+      setDiscounts(data || []);
+    } catch (error) {
+      console.error("Error loading discounts:", error);
+      setDiscounts([]);
+    }
+  };
 
   // Extract unique categories from products
   const categories = ["All", ...Array.from(new Set(products
@@ -243,6 +255,7 @@ export default function Home() {
                     key={product.id} 
                     product={product} 
                     index={index}
+                    discounts={discounts}
                     onProductClick={(id) => setLocation(`/product/${id}`)}
                   />
                 ))}
