@@ -49,6 +49,7 @@ export default function OrderDetailsPage() {
   const [totalOrders, setTotalOrders] = useState(0);
   const [completedOrders, setCompletedOrders] = useState(0);
   const [completedOrdersValue, setCompletedOrdersValue] = useState(0);
+  const [orderUser, setOrderUser] = useState<any>(null);
 
   // Extract order ID from URL
   const orderId = location.split("/order/")[1]?.split("?")[0];
@@ -125,14 +126,27 @@ export default function OrderDetailsPage() {
     };
 
     fetchOrder();
-    
-    // Calculate user order statistics
-    if (user?.role === 'admin') {
+  }, [orderId, user]);
+
+  // Separate effect to handle order user and statistics once order is loaded
+  useEffect(() => {
+    if (!order) return;
+
+    // If order has stored userName, use it directly
+    if (order.userName && order.userEmail) {
+      setOrderUser({
+        username: order.userName,
+        email: order.userEmail
+      });
+    }
+
+    // Calculate user order statistics for admin
+    if (user?.role === 'admin' && order.userId) {
       try {
         const savedOrders = localStorage.getItem("orders");
         if (savedOrders) {
           const allOrders = JSON.parse(savedOrders);
-          const userOrders = allOrders.filter((o: Order) => o.userId === order?.userId);
+          const userOrders = allOrders.filter((o: Order) => o.userId === order.userId);
           const completedOrdersList = userOrders.filter((o: Order) => o.status === 'completed');
           setTotalOrders(userOrders.length);
           setCompletedOrders(completedOrdersList.length);
@@ -143,7 +157,7 @@ export default function OrderDetailsPage() {
         console.error("Error calculating statistics:", e);
       }
     }
-  }, [orderId, user, order?.userId]);
+  }, [order, user?.role]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -409,27 +423,27 @@ export default function OrderDetailsPage() {
               </div>
 
               {/* User Information */}
-              {order?.userName && (
+              {orderUser?.username && (
                 <div className="bg-white rounded-2xl border border-gray-100 p-5">
                   <h3 className="font-semibold text-sm mb-5">{language === "ar" ? "بيانات المستخدم" : "Customer Information"}</h3>
                   
                   <div className="flex items-center gap-6">
                     {/* User Avatar */}
                     <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white text-5xl font-bold flex-shrink-0 shadow-lg ring-4 ring-blue-100" data-testid="avatar-user">
-                      {order.userName?.charAt(0).toUpperCase() || "U"}
+                      {orderUser.username?.charAt(0).toUpperCase() || "U"}
                     </div>
                     
                     {/* User Details */}
                     <div className="flex-1 min-w-0">
                       <div>
                         <p className="text-xs text-muted-foreground uppercase tracking-wider">{language === "ar" ? "الاسم" : "Name"}</p>
-                        <p className="font-semibold text-sm mb-3" data-testid="text-username">{order.userName}</p>
+                        <p className="font-semibold text-sm mb-3" data-testid="text-username">{orderUser.username}</p>
                       </div>
                       
-                      {order.userEmail && (
+                      {orderUser.email && (
                         <div>
                           <p className="text-xs text-muted-foreground uppercase tracking-wider">{language === "ar" ? "البريد الإلكتروني" : "Email"}</p>
-                          <p className="font-medium text-sm text-blue-600 break-all" data-testid="text-email">{order.userEmail}</p>
+                          <p className="font-medium text-sm text-blue-600 break-all" data-testid="text-email">{orderUser.email}</p>
                         </div>
                       )}
                     </div>
