@@ -7,6 +7,8 @@ import { CategoryFilter } from "@/components/store/category-filter";
 import { ProductCard } from "@/components/store/product-card";
 import { useLocation } from "wouter";
 import { useCart } from "@/lib/cartContext";
+import { useLanguage } from "@/lib/languageContext";
+import { t } from "@/lib/translations";
 import imgHeadphones from "@assets/generated_images/wireless_headphones_product_shot.png";
 import imgWatch from "@assets/generated_images/smart_watch_product_shot.png";
 import imgShoes from "@assets/generated_images/designer_running_shoes_product_shot.png";
@@ -46,6 +48,7 @@ const fallbackProducts = [
 export default function Home() {
   const [location, setLocation] = useLocation();
   const { items } = useCart();
+  const { language } = useLanguage();
   const [activeCategory, setActiveCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [products, setProducts] = useState<any[]>([]);

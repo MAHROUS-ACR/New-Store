@@ -6,15 +6,21 @@ export const translations = {
     home: "Home",
     cart: "Cart",
     profile: "Profile",
+    search: "Search",
     
     // Home Page
     categories: "Categories",
     products: "Products",
     noProducts: "No products available",
+    all: "All",
     
-    // Product Card
+    // Product Card & Details
     addToCart: "Add to Cart",
     unavailable: "Unavailable",
+    available: "Available",
+    availableNow: "Available Now",
+    notAvailable: "Not Available",
+    addingToCart: "Adding to Cart...",
     
     // Product Details
     details: "Details",
@@ -80,21 +86,33 @@ export const translations = {
     productUpdated: "Product updated successfully",
     productAdded: "Product added successfully",
     productDeleted: "Product deleted successfully",
+    
+    // Status
+    pending: "Pending",
+    completed: "Completed",
+    cancelled: "Cancelled",
+    shipped: "Shipped",
   },
   ar: {
     // Bottom Navigation
     home: "الرئيسية",
     cart: "السلة",
     profile: "الملف الشخصي",
+    search: "بحث",
     
     // Home Page
     categories: "الفئات",
     products: "المنتجات",
     noProducts: "لا توجد منتجات متاحة",
+    all: "الكل",
     
-    // Product Card
+    // Product Card & Details
     addToCart: "أضف إلى السلة",
     unavailable: "غير متاح",
+    available: "متاح",
+    availableNow: "متاح الآن",
+    notAvailable: "غير متاح",
+    addingToCart: "جاري الإضافة...",
     
     // Product Details
     details: "التفاصيل",
@@ -160,6 +178,12 @@ export const translations = {
     productUpdated: "تم تحديث المنتج بنجاح",
     productAdded: "تم إضافة المنتج بنجاح",
     productDeleted: "تم حذف المنتج بنجاح",
+    
+    // Status
+    pending: "قيد الانتظار",
+    completed: "مكتمل",
+    cancelled: "ملغى",
+    shipped: "تم الشحن",
   },
 };
 

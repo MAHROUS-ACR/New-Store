@@ -1,6 +1,8 @@
 import { motion } from "framer-motion";
 import { Plus, ShoppingCart } from "lucide-react";
 import { useCart } from "@/lib/cartContext";
+import { useLanguage } from "@/lib/languageContext";
+import { t } from "@/lib/translations";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -19,6 +21,7 @@ interface ProductProps {
 
 export function ProductCard({ product, index, onProductClick }: { product: ProductProps; index: number; onProductClick?: (id: string | number) => void }) {
   const { addItem } = useCart();
+  const { language } = useLanguage();
   const [isAdding, setIsAdding] = useState(false);
   const [showVariantModal, setShowVariantModal] = useState(false);
   const [selectedColor, setSelectedColor] = useState("");
@@ -38,7 +41,7 @@ export function ProductCard({ product, index, onProductClick }: { product: Produ
     e.stopPropagation();
     
     if (!isAvailable) {
-      toast.error("This product is not available");
+      toast.error(t("productNotAvailable", language));
       return;
     }
 
@@ -68,14 +71,14 @@ export function ProductCard({ product, index, onProductClick }: { product: Produ
       console.log("Item data:", itemData);
       addItem(itemData);
       console.log("Item added successfully");
-      toast.success(`${productTitle} added to cart`);
+      toast.success(t("addedToCart", language));
       setShowVariantModal(false);
       setSelectedColor("");
       setSelectedSize("");
       setSelectedUnit("");
     } catch (error) {
       console.error("Error adding to cart:", error);
-      toast.error("Failed to add to cart");
+      toast.error(t("failedToAddCart", language));
     } finally {
       setIsAdding(false);
     }
@@ -146,10 +149,10 @@ export function ProductCard({ product, index, onProductClick }: { product: Produ
         <div className="flex items-center justify-between gap-2">
           <p className="font-bold text-lg" data-testid={`text-price-${product.id}`}>${product.price.toFixed(2)}</p>
           {!isAvailable && (
-            <p className="text-xs font-semibold text-red-600 bg-red-50 px-2 py-1 rounded whitespace-nowrap" data-testid={`text-unavailable-${product.id}`}>غير متاح</p>
+            <p className="text-xs font-semibold text-red-600 bg-red-50 px-2 py-1 rounded whitespace-nowrap" data-testid={`text-unavailable-${product.id}`}>{t("unavailable", language)}</p>
           )}
           {isAvailable && (
-            <p className="text-xs font-semibold text-green-600 bg-green-50 px-2 py-1 rounded whitespace-nowrap" data-testid={`text-available-${product.id}`}>متاح</p>
+            <p className="text-xs font-semibold text-green-600 bg-green-50 px-2 py-1 rounded whitespace-nowrap" data-testid={`text-available-${product.id}`}>{t("available", language)}</p>
           )}
         </div>
       </div>
@@ -168,7 +171,7 @@ export function ProductCard({ product, index, onProductClick }: { product: Produ
             
             {product.units && product.units.length > 0 && (
               <div className="mb-4">
-                <p className="text-sm font-semibold mb-2">وحدة (Unit)</p>
+                <p className="text-sm font-semibold mb-2">{t("selectUnit", language)}</p>
                 <select
                   value={selectedUnit}
                   onChange={(e) => setSelectedUnit(e.target.value)}

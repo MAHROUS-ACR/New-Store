@@ -4,12 +4,15 @@ import { MobileWrapper } from "@/components/mobile-wrapper";
 import { BottomNav } from "@/components/bottom-nav";
 import { ArrowLeft, ShoppingCart, Check, X } from "lucide-react";
 import { useCart } from "@/lib/cartContext";
+import { useLanguage } from "@/lib/languageContext";
+import { t } from "@/lib/translations";
 import { toast } from "sonner";
 
 export default function ProductDetailsPage() {
   const [, setLocation] = useLocation();
   const [match, params] = useRoute("/product/:id");
   const { addItem } = useCart();
+  const { language } = useLanguage();
   const [product, setProduct] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedColor, setSelectedColor] = useState("");
@@ -58,7 +61,7 @@ export default function ProductDetailsPage() {
     if (!product) return;
     
     if (!product.available) {
-      toast.error("هذا المنتج غير متاح");
+      toast.error(t("productNotAvailable", language));
       return;
     }
 
@@ -80,11 +83,11 @@ export default function ProductDetailsPage() {
         addItem(itemData);
       }
       console.log("All items added successfully");
-      toast.success(`تمت إضافة ${quantity} من المنتج إلى السلة`);
+      toast.success(t("addedToCart", language));
       setTimeout(() => setLocation("/cart"), 1000);
     } catch (error) {
       console.error("Error adding to cart:", error);
-      toast.error("فشل إضافة المنتج");
+      toast.error(t("failedToAddCart", language));
     } finally {
       setIsAdding(false);
     }
@@ -96,7 +99,7 @@ export default function ProductDetailsPage() {
         <div className="flex items-center justify-center flex-1">
           <div className="text-center">
             <div className="w-12 h-12 border-4 border-gray-200 border-t-black rounded-full animate-spin mx-auto mb-4" />
-            <p className="text-sm text-gray-600">جاري التحميل...</p>
+            <p className="text-sm text-gray-600">{t("loading", language)}</p>
           </div>
         </div>
       </MobileWrapper>
@@ -108,12 +111,12 @@ export default function ProductDetailsPage() {
       <MobileWrapper>
         <div className="flex items-center justify-center flex-1">
           <div className="text-center">
-            <p className="text-lg font-bold mb-4">المنتج غير موجود</p>
+            <p className="text-lg font-bold mb-4">Product Not Found</p>
             <button
               onClick={() => setLocation("/")}
               className="px-6 py-2 bg-black text-white rounded-full text-sm font-semibold"
             >
-              العودة للرئيسية
+              Back to Home
             </button>
           </div>
         </div>
@@ -158,26 +161,26 @@ export default function ProductDetailsPage() {
               {product.available ? (
                 <div className="flex items-center gap-2 text-green-700 bg-green-50 px-3 py-2 rounded-lg w-fit">
                   <Check className="w-4 h-4" />
-                  <span className="text-sm font-semibold">متاح الآن</span>
+                  <span className="text-sm font-semibold">{t("availableNow", language)}</span>
                 </div>
               ) : (
                 <div className="flex items-center gap-2 text-red-700 bg-red-50 px-3 py-2 rounded-lg w-fit">
                   <X className="w-4 h-4" />
-                  <span className="text-sm font-semibold">غير متاح</span>
+                  <span className="text-sm font-semibold">{t("notAvailable", language)}</span>
                 </div>
               )}
             </div>
 
             {/* Price */}
             <div className="mb-4">
-              <p className="text-sm text-gray-600 mb-1">السعر</p>
+              <p className="text-sm text-gray-600 mb-1">{t("price", language)}</p>
               <p className="text-3xl font-bold" data-testid="text-price">${product.price.toFixed(2)}</p>
             </div>
 
             {/* Category */}
             {product.category && (
               <div className="mb-4">
-                <p className="text-sm text-gray-600 mb-1">الفئة</p>
+                <p className="text-sm text-gray-600 mb-1">Category</p>
                 <p className="text-sm font-semibold" data-testid="text-category">{product.category}</p>
               </div>
             )}
@@ -185,7 +188,7 @@ export default function ProductDetailsPage() {
             {/* Description */}
             {product.description && (
               <div className="mb-4">
-                <p className="text-sm text-gray-600 mb-1">الوصف</p>
+                <p className="text-sm text-gray-600 mb-1">{t("description", language)}</p>
                 <p className="text-sm text-gray-700 leading-relaxed" data-testid="text-description">{product.description}</p>
               </div>
             )}
@@ -193,18 +196,18 @@ export default function ProductDetailsPage() {
             {/* Variants */}
             {hasVariants && (
               <div className="mb-6">
-                <h3 className="font-semibold text-sm mb-3">خيارات المنتج</h3>
+                <h3 className="font-semibold text-sm mb-3">Options</h3>
                 
                 {product.units && product.units.length > 0 && (
                   <div className="mb-4">
-                    <p className="text-sm font-semibold mb-2">الوحدة</p>
+                    <p className="text-sm font-semibold mb-2">{t("selectUnit", language)}</p>
                     <select
                       value={selectedUnit}
                       onChange={(e) => setSelectedUnit(e.target.value)}
                       className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"
                       data-testid="select-unit"
                     >
-                      <option value="">اختر وحدة</option>
+                      <option value="">Select Unit</option>
                       {product.units.map((unit: string) => (
                         <option key={unit} value={unit || ""}>{unit}</option>
                       ))}
@@ -214,14 +217,14 @@ export default function ProductDetailsPage() {
                 
                 {product.sizes && product.sizes.length > 0 && (
                   <div className="mb-4">
-                    <p className="text-sm font-semibold mb-2">المقاس</p>
+                    <p className="text-sm font-semibold mb-2">{t("selectSize", language)}</p>
                     <select
                       value={selectedSize}
                       onChange={(e) => setSelectedSize(e.target.value)}
                       className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"
                       data-testid="select-size"
                     >
-                      <option value="">اختر مقاس</option>
+                      <option value="">Select Size</option>
                       {product.sizes.map((size: string) => (
                         <option key={size} value={size || ""}>{size}</option>
                       ))}
@@ -231,7 +234,7 @@ export default function ProductDetailsPage() {
                 
                 {product.colors && product.colors.length > 0 && (
                   <div className="mb-4">
-                    <p className="text-sm font-semibold mb-2">اللون</p>
+                    <p className="text-sm font-semibold mb-2">{t("selectColor", language)}</p>
                     <div className="grid grid-cols-2 gap-2">
                       {product.colors.map((color: string) => {
                         const colorName = typeof color === 'string' ? color.split('|')[0] : (color || '');
@@ -262,7 +265,7 @@ export default function ProductDetailsPage() {
 
             {/* Quantity */}
             <div className="mb-6">
-              <p className="text-sm font-semibold mb-2">الكمية</p>
+              <p className="text-sm font-semibold mb-2">{t("quantity", language)}</p>
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
@@ -298,7 +301,7 @@ export default function ProductDetailsPage() {
             className="flex-1 px-4 py-3 border border-gray-200 rounded-lg font-semibold text-sm hover:bg-gray-50 transition-colors"
             data-testid="button-continue-shopping"
           >
-            تصفح المزيد
+            Continue Shopping
           </button>
           <button
             onClick={handleAddToCart}
@@ -307,7 +310,7 @@ export default function ProductDetailsPage() {
             data-testid="button-add-to-cart"
           >
             <ShoppingCart className="w-4 h-4" />
-            {isAdding ? "جاري الإضافة..." : "أضف للسلة"}
+            {isAdding ? t("addingToCart", language) : t("addToCart", language)}
           </button>
         </div>
       </div>
