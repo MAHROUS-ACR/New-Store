@@ -18,9 +18,18 @@ Flux Wallet is a high-fidelity mobile e-commerce application built as a progress
 
 ## Recent Changes (Nov 23, 2025)
 
-- **Notification System (NEW):**
-  - **Admin Notifications:** Receive notification when user submits new order
-  - **User Notifications:** Receive notification when order status changes (pending → confirmed → shipped → delivered, etc.)
+- **Push Notifications System (NEW):**
+  - **Firebase Cloud Messaging (FCM):** Push notifications that reach devices even when app is closed
+  - **Service Worker:** Handles background message delivery and notification display
+  - **Permission Requests:** Browser asks user to enable notifications on first visit
+  - **FCM Token Management:** Stores device tokens in Firestore fcmTokens collection
+  - **Automatic Notification Triggers:**
+    - Admin notified immediately when new order is created
+    - Customer notified immediately when order status changes
+  - **Setup Guide:** Full step-by-step guide at `/notification-setup` with Firebase configuration instructions
+  - **Notification Permissions:** System automatically requests notification permission with retry logic
+
+- **Real-time Notification Sync:**
   - **Notification Bell:** Badge showing unread notification count in header (home.tsx and profile.tsx)
   - **Notification Center:** Dropdown menu showing all notifications with timestamps
   - **Mark as Read:** Click checkmark to mark individual notifications as read
@@ -33,6 +42,7 @@ Flux Wallet is a high-fidelity mobile e-commerce application built as a progress
     - `GET /api/notifications/admin` - Get admin notifications
     - `PUT /api/notifications/:id/read` - Mark notification as read
     - `DELETE /api/notifications/:id` - Delete notification
+    - `POST /api/notifications/fcm-token` - Register FCM token for push notifications
 
 - **Discount System Refactoring:**
   - **Moved discounts from separate page to Admin Tab** - Now integrated directly in profile.tsx admin panel
