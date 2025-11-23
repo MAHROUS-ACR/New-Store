@@ -454,13 +454,13 @@ export default function OrderDetailsPage() {
                     <div className="flex-1 min-w-0">
                       <div>
                         <p className="text-xs text-muted-foreground uppercase tracking-wider">{language === "ar" ? "الاسم" : "Name"}</p>
-                        <p className="font-semibold text-sm mb-3" data-testid="text-username">{orderUser.username}</p>
+                        <p className="font-semibold text-sm mb-3" data-testid="text-username">{orderUser?.username || "-"}</p>
                       </div>
                       
-                      {orderUser.email && (
+                      {orderUser?.email && (
                         <div>
                           <p className="text-xs text-muted-foreground uppercase tracking-wider">{language === "ar" ? "البريد الإلكتروني" : "Email"}</p>
-                          <p className="font-medium text-sm text-blue-600 break-all" data-testid="text-email">{orderUser.email}</p>
+                          <p className="font-medium text-sm text-blue-600 break-all" data-testid="text-email">{orderUser?.email}</p>
                         </div>
                       )}
                     </div>
