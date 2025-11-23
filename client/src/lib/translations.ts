@@ -13,6 +13,9 @@ export const translations = {
     products: "Products",
     noProducts: "No products available",
     all: "All",
+    searchPlaceholder: "Search products...",
+    activeDeals: "Active Deals",
+    noActiveDeals: "No active deals",
     
     // Product Card & Details
     addToCart: "Add to Cart",
@@ -276,6 +279,9 @@ export const translations = {
     products: "المنتجات",
     noProducts: "لا توجد منتجات متاحة",
     all: "الكل",
+    searchPlaceholder: "ابحث عن منتجات...",
+    activeDeals: "العروض النشطة",
+    noActiveDeals: "لا توجد عروض نشطة",
     
     // Product Card & Details
     addToCart: "أضف إلى السلة",

@@ -3,6 +3,7 @@ import { MobileWrapper } from "@/components/mobile-wrapper";
 import { BottomNav } from "@/components/bottom-nav";
 import { Search, ShoppingCart, AlertCircle, Globe } from "lucide-react";
 import { PromoBanner } from "@/components/store/promo-banner";
+import { ActiveDealsCarousel } from "@/components/store/active-deals-carousel";
 import { CategoryFilter } from "@/components/store/category-filter";
 import { ProductCard } from "@/components/store/product-card";
 import { useLocation } from "wouter";
@@ -199,7 +200,7 @@ export default function Home() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input 
               type="text" 
-              placeholder="Search..." 
+              placeholder={t("searchPlaceholder", language)}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black/10"
@@ -223,9 +224,9 @@ export default function Home() {
 
         {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto no-scrollbar pb-40 w-full">
-          <div className="w-full px-5 py-4">
-            {/* Promo Banner */}
-            <PromoBanner />
+          <div className="w-full px-0 py-4">
+            {/* Active Deals Carousel */}
+            <ActiveDealsCarousel products={products} discounts={discounts} />
             
             {/* Categories */}
             {categories.length > 0 && (
