@@ -97,47 +97,47 @@ export function ActiveDealsCarousel({ products, discounts }: ActiveDealsCarousel
             alt={discountedProducts[carouselIndex].title || discountedProducts[carouselIndex].name}
             className="absolute inset-0 w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-transparent to-transparent flex flex-col justify-start p-4">
-            {/* Title - Top */}
-            <h3 className="font-bold text-lg line-clamp-1 drop-shadow-lg text-white mb-3">
-              {discountedProducts[carouselIndex].title ||
-                discountedProducts[carouselIndex].name}
-            </h3>
-            
-            {/* Discount and Price Row */}
-            <div className="flex items-start justify-between w-full">
-              {/* Left: Discount Badge */}
-              <div className="flex items-center gap-2">
-                {(() => {
-                  const activeDiscount = getActiveDiscount(
-                    String(discountedProducts[carouselIndex].id),
-                    discounts
-                  );
-                  return activeDiscount ? (
-                    <motion.span 
-                      animate={{ scale: [1, 1.05, 1] }}
-                      transition={{ duration: 2, repeat: Infinity }}
-                      className="inline-block bg-gradient-to-br from-red-500 to-red-600 text-white px-3 py-2 rounded-lg text-base font-black shadow-lg shadow-red-500/50 border-2 border-yellow-300">
-                      -{activeDiscount.discountPercentage}%
-                    </motion.span>
-                  ) : null;
-                })()}
-              </div>
+          <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-transparent to-transparent p-4 flex flex-col justify-between">
+            {/* Top Section: Title + Price */}
+            <div className="flex items-start justify-between">
+              {/* Left: Title */}
+              <h3 className="font-bold text-lg line-clamp-1 drop-shadow-lg text-white flex-1 pr-2">
+                {discountedProducts[carouselIndex].title ||
+                  discountedProducts[carouselIndex].name}
+              </h3>
               
-              {/* Right: Price on one line */}
-              <div className="text-white text-right drop-shadow-lg">
-                <span className="text-sm line-through opacity-70 mr-2">
+              {/* Right: Price */}
+              <div className="text-white text-right drop-shadow-lg whitespace-nowrap">
+                <div className="text-sm line-through opacity-70">
                   ${discountedProducts[carouselIndex].price.toFixed(2)}
-                </span>
-                <span className="text-lg font-bold text-yellow-300">
+                </div>
+                <div className="text-lg font-bold text-yellow-300">
                   $
                   {calculateDiscountedPrice(
                     discountedProducts[carouselIndex].price,
                     getActiveDiscount(String(discountedProducts[carouselIndex].id), discounts)
                       ?.discountPercentage || 0
                   ).toFixed(2)}
-                </span>
+                </div>
               </div>
+            </div>
+            
+            {/* Bottom Section: Discount Badge */}
+            <div className="flex items-end">
+              {(() => {
+                const activeDiscount = getActiveDiscount(
+                  String(discountedProducts[carouselIndex].id),
+                  discounts
+                );
+                return activeDiscount ? (
+                  <motion.span 
+                    animate={{ scale: [1, 1.05, 1] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                    className="inline-block bg-gradient-to-br from-red-500 to-red-600 text-white px-3 py-2 rounded-lg text-base font-black shadow-lg shadow-red-500/50 border-2 border-yellow-300">
+                    -{activeDiscount.discountPercentage}%
+                  </motion.span>
+                ) : null;
+              })()}
             </div>
           </div>
         </motion.div>
