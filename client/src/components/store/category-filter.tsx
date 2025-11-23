@@ -1,6 +1,17 @@
 import { motion } from "framer-motion";
+import { useLanguage } from "@/lib/languageContext";
+import { translations } from "@/lib/translations";
 
 export function CategoryFilter({ active, onChange, categories = ["All"] }: { active: string; onChange: (c: string) => void; categories?: string[] }) {
+  const { language } = useLanguage();
+
+  const getCategoryDisplay = (category: string) => {
+    if (category === "All") {
+      return language === "ar" ? translations.ar.all : translations.en.all;
+    }
+    return category;
+  };
+
   return (
     <div className="flex overflow-x-auto no-scrollbar gap-2 px-6 pb-4">
       {categories.map((category) => (
@@ -21,7 +32,7 @@ export function CategoryFilter({ active, onChange, categories = ["All"] }: { act
               transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
             />
           )}
-          <span className={`relative z-10 block ${active === category ? "text-white" : ""}`}>{category}</span>
+          <span className={`relative z-10 block ${active === category ? "text-white" : ""}`}>{getCategoryDisplay(category)}</span>
         </button>
       ))}
     </div>
