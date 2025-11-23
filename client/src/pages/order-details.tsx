@@ -406,53 +406,30 @@ export default function OrderDetailsPage() {
                 </div>
               </div>
 
-              {/* User Information (Admin View) */}
+              {/* Admin Statistics (Admin View) */}
               {user?.role === 'admin' && (
                 <div className="bg-white rounded-2xl border border-gray-100 p-5">
-                  <h3 className="font-semibold text-sm mb-5">{language === "ar" ? "بيانات المستخدم" : "Customer Information"}</h3>
+                  <h3 className="font-semibold text-sm mb-4">{language === "ar" ? "إحصائيات الطلب" : "Order Statistics"}</h3>
                   
-                  <div className="flex items-center gap-6">
-                    {/* User Avatar */}
-                    <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white text-5xl font-bold flex-shrink-0 shadow-lg ring-4 ring-blue-100" data-testid="avatar-user">
-                      {user?.username?.charAt(0).toUpperCase() || "U"}
+                  {/* Order Statistics */}
+                  <div className="grid grid-cols-2 gap-3 mb-4">
+                    <div className="bg-emerald-50 rounded-xl p-3">
+                      <p className="text-xs text-emerald-600 font-semibold uppercase tracking-wider">{language === "ar" ? "الأوردرات المكتملة" : "Completed Orders"}</p>
+                      <p className="text-2xl font-bold text-emerald-700 mt-1" data-testid="text-completed-orders">{completedOrders}</p>
                     </div>
-                    
-                    {/* User Details and Stats */}
-                    <div className="flex-1 min-w-0">
-                      {/* Name and Email */}
-                      <div className="mb-4">
-                        <p className="text-xs text-muted-foreground uppercase tracking-wider">{language === "ar" ? "الاسم" : "Name"}</p>
-                        <p className="font-semibold text-sm mb-2" data-testid="text-username">{user?.username || "N/A"}</p>
-                        
-                        {user?.email && (
-                          <>
-                            <p className="text-xs text-muted-foreground uppercase tracking-wider">{language === "ar" ? "البريد الإلكتروني" : "Email"}</p>
-                            <p className="font-medium text-sm text-blue-600 break-all" data-testid="text-email">{user.email}</p>
-                          </>
-                        )}
-                      </div>
-                      
-                      {/* Order Statistics */}
-                      <div className="grid grid-cols-2 gap-3 pt-3 border-t border-gray-100">
-                        <div className="bg-emerald-50 rounded-xl p-3">
-                          <p className="text-xs text-emerald-600 font-semibold uppercase tracking-wider">{language === "ar" ? "الأوردرات المكتملة" : "Completed Orders"}</p>
-                          <p className="text-2xl font-bold text-emerald-700 mt-1" data-testid="text-completed-orders">{completedOrders}</p>
-                        </div>
-                        <div className="bg-blue-50 rounded-xl p-3">
-                          <p className="text-xs text-blue-600 font-semibold uppercase tracking-wider">{language === "ar" ? "إجمالي الأوردرات" : "Total Orders"}</p>
-                          <p className="text-2xl font-bold text-blue-700 mt-1" data-testid="text-total-orders">{totalOrders}</p>
-                        </div>
-                      </div>
-
-                      {/* Completed Orders Value */}
-                      {completedOrdersValue > 0 && (
-                        <div className="mt-3 pt-3 border-t border-gray-100">
-                          <p className="text-xs text-muted-foreground uppercase tracking-wider">{language === "ar" ? "قيمة الأوردرات المكتملة" : "Completed Orders Value"}</p>
-                          <p className="text-3xl font-bold text-emerald-600 mt-2" data-testid="text-completed-orders-value">${completedOrdersValue.toFixed(2)}</p>
-                        </div>
-                      )}
+                    <div className="bg-blue-50 rounded-xl p-3">
+                      <p className="text-xs text-blue-600 font-semibold uppercase tracking-wider">{language === "ar" ? "إجمالي الأوردرات" : "Total Orders"}</p>
+                      <p className="text-2xl font-bold text-blue-700 mt-1" data-testid="text-total-orders">{totalOrders}</p>
                     </div>
                   </div>
+
+                  {/* Completed Orders Value */}
+                  {completedOrdersValue > 0 && (
+                    <div className="pt-4 border-t border-gray-100">
+                      <p className="text-xs text-muted-foreground uppercase tracking-wider">{language === "ar" ? "قيمة الأوردرات المكتملة" : "Completed Orders Value"}</p>
+                      <p className="text-3xl font-bold text-emerald-600 mt-2" data-testid="text-completed-orders-value">${completedOrdersValue.toFixed(2)}</p>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
