@@ -2161,11 +2161,13 @@ export default function ProfilePage() {
                                 <button
                                   onClick={() => {
                                     setEditingDiscountId(discount.id);
+                                    const startStr = discount.startDate ? (typeof discount.startDate === 'string' ? discount.startDate.split("T")[0] : new Date(discount.startDate).toISOString().split("T")[0]) : '';
+                                    const endStr = discount.endDate ? (typeof discount.endDate === 'string' ? discount.endDate.split("T")[0] : new Date(discount.endDate).toISOString().split("T")[0]) : '';
                                     setDiscountFormData({
                                       productId: discount.productId,
-                                      discountPercentage: discount.discountPercentage,
-                                      startDate: discount.startDate.split("T")[0],
-                                      endDate: discount.endDate.split("T")[0],
+                                      discountPercentage: String(discount.discountPercentage),
+                                      startDate: startStr,
+                                      endDate: endStr,
                                     });
                                   }}
                                   className="px-3 py-2 bg-amber-100 text-amber-700 rounded-lg text-xs font-semibold hover:bg-amber-200"
