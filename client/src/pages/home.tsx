@@ -57,6 +57,7 @@ export default function Home() {
   const [error, setError] = useState("");
   const [storeName, setStoreName] = useState("Flux Wallet");
   const [storeLogo, setStoreLogo] = useState<string>("");
+  const [isInitialized, setIsInitialized] = useState(false);
 
   const fetchStoreSettings = async () => {
     try {
@@ -109,6 +110,7 @@ export default function Home() {
       setError("");
     } finally {
       setIsLoading(false);
+      setIsInitialized(true);
     }
   };
 
@@ -188,7 +190,7 @@ export default function Home() {
         </div>
 
         {/* Firebase Status Banner */}
-        {!firebaseConfigured && (
+        {!firebaseConfigured && isInitialized && (
           <div className="px-5 py-3 flex-shrink-0 bg-yellow-50 border-b border-yellow-100">
             <div className="flex items-start gap-2">
               <AlertCircle className="w-4 h-4 text-yellow-600 flex-shrink-0 mt-0.5" />
