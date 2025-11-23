@@ -1,3 +1,5 @@
+import { getFirestore, collection, getDocs, query, where } from "firebase/firestore";
+
 export interface Discount {
   id: string;
   productId: string;
@@ -7,11 +9,19 @@ export interface Discount {
   createdAt?: string | Date;
 }
 
-export async function getProductDiscount(productId: string) {
+export async function getProductDiscount(productId: string): Promise<Discount | null> {
   try {
-    const response = await fetch(`/api/discounts/${productId}`);
-    if (response.ok) {
-      return await response.json();
+    const db = getFirestore();
+    const discountsRef = collection(db, "discounts");
+    const q = query(discountsRef, where("productId", "==", productId));
+    const querySnapshot = await getDocs(q);
+    
+    if (querySnapshot.docs.length > 0) {
+      const doc = querySnapshot.docs[0];
+      return {
+        id: doc.id,
+        ...doc.data()
+      } as Discount;
     }
   } catch (error) {
     console.error("Error fetching discount:", error);
@@ -21,10 +31,13 @@ export async function getProductDiscount(productId: string) {
 
 export async function getAllDiscounts(): Promise<Discount[]> {
   try {
-    const response = await fetch("/api/discounts");
-    if (response.ok) {
-      return await response.json();
-    }
+    const db = getFirestore();
+    const discountsRef = collection(db, "discounts");
+    const querySnapshot = await getDocs(discountsRef);
+    return querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    })) as Discount[];
   } catch (error) {
     console.error("Error fetching all discounts:", error);
   }

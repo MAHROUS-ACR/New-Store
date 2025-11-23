@@ -6,6 +6,7 @@ import { useLocation } from "wouter";
 import { useLanguage } from "@/lib/languageContext";
 import { t } from "@/lib/translations";
 import { toast } from "sonner";
+import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from "firebase/firestore";
 
 interface Discount {
   id: string;
@@ -44,16 +45,19 @@ export default function DiscountsPage() {
   const fetchData = async () => {
     setIsLoading(true);
     try {
-      const [discountsRes, productsRes] = await Promise.all([
-        fetch("/api/discounts"),
-        fetch("/api/products"),
-      ]);
+      const db = getFirestore();
+      
+      // Fetch discounts from Firestore
+      const discountsRef = collection(db, "discounts");
+      const discountsSnapshot = await getDocs(discountsRef);
+      const discountsData = discountsSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as Discount[];
+      setDiscounts(discountsData || []);
 
-      if (discountsRes.ok) {
-        const discountsData = await discountsRes.json();
-        setDiscounts(discountsData || []);
-      }
-
+      // Fetch products from API
+      const productsRes = await fetch("/api/products");
       if (productsRes.ok) {
         const productsData = await productsRes.json();
         setProducts(productsData || []);
@@ -76,28 +80,35 @@ export default function DiscountsPage() {
 
     setIsAdding(true);
     try {
-      const url = editingId ? `/api/discounts/${editingId}` : "/api/discounts";
-      const method = editingId ? "PUT" : "POST";
+      const db = getFirestore();
+      const discountData = {
+        productId: formData.productId,
+        discountPercentage: parseFloat(formData.discountPercentage),
+        startDate: new Date(formData.startDate + "T00:00:00Z").toISOString(),
+        endDate: new Date(formData.endDate + "T00:00:00Z").toISOString(),
+      };
 
-      const response = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          productId: formData.productId,
-          discountPercentage: parseFloat(formData.discountPercentage),
-          startDate: new Date(formData.startDate).toISOString(),
-          endDate: new Date(formData.endDate).toISOString(),
-        }),
-      });
-
-      if (response.ok) {
-        toast.success(editingId ? "Discount updated" : "Discount created");
-        setFormData({ productId: "", discountPercentage: "", startDate: "", endDate: "" });
-        setEditingId(null);
-        fetchData();
+      if (editingId) {
+        // Update existing discount
+        const discountDoc = doc(db, "discounts", editingId);
+        await updateDoc(discountDoc, {
+          ...discountData,
+          updatedAt: new Date(),
+        });
+        toast.success("Discount updated");
       } else {
-        toast.error("Failed to save discount");
+        // Add new discount
+        const discountsRef = collection(db, "discounts");
+        await addDoc(discountsRef, {
+          ...discountData,
+          createdAt: new Date(),
+        });
+        toast.success("Discount created");
       }
+
+      setFormData({ productId: "", discountPercentage: "", startDate: "", endDate: "" });
+      setEditingId(null);
+      fetchData();
     } catch (error) {
       console.error("Error:", error);
       toast.error("Error saving discount");
@@ -110,13 +121,11 @@ export default function DiscountsPage() {
     if (!confirm("Delete this discount?")) return;
 
     try {
-      const response = await fetch(`/api/discounts/${id}`, { method: "DELETE" });
-      if (response.ok) {
-        toast.success("Discount deleted");
-        fetchData();
-      } else {
-        toast.error("Failed to delete discount");
-      }
+      const db = getFirestore();
+      const discountDoc = doc(db, "discounts", id);
+      await deleteDoc(discountDoc);
+      toast.success("Discount deleted");
+      fetchData();
     } catch (error) {
       console.error("Error:", error);
       toast.error("Error deleting discount");

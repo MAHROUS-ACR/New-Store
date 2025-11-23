@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { t } from "@/lib/translations";
 import avatarImage from "@assets/generated_images/professional_user_avatar_portrait.png";
 import { saveFirebaseConfig, getFirebaseConfig, clearFirebaseConfig } from "@/lib/firebaseConfig";
-import { getFirestore, doc, updateDoc, getDoc, collection, setDoc } from "firebase/firestore";
+import { getFirestore, doc, updateDoc, getDoc, collection, setDoc, getDocs, addDoc, deleteDoc } from "firebase/firestore";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 
 const getMenuItems = (language: any) => [
@@ -569,18 +569,17 @@ export default function ProfilePage() {
     }
   };
 
-  // Discounts Handlers
+  // Discounts Handlers - Firestore Only
   const fetchDiscounts = async () => {
     try {
-      const [discountsRes, productsRes] = await Promise.all([
-        fetch("/api/discounts"),
-        fetch("/api/products"),
-      ]);
-
-      if (discountsRes.ok) {
-        const discountsData = await discountsRes.json();
-        setDiscounts(discountsData || []);
-      }
+      const db = getFirestore();
+      const discountsRef = collection(db, "discounts");
+      const querySnapshot = await getDocs(discountsRef);
+      const discountsData = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as any[];
+      setDiscounts(discountsData || []);
     } catch (error) {
       console.error("Error fetching discounts:", error);
       toast.error("Failed to fetch discounts");
@@ -601,49 +600,29 @@ export default function ProfilePage() {
         endDate: new Date(discountFormData.endDate + "T00:00:00Z").toISOString(),
       };
 
-      const url = editingDiscountId ? `/api/discounts/${editingDiscountId}` : "/api/discounts";
-      const method = editingDiscountId ? "PUT" : "POST";
-
-      const response = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(discountData),
-      });
-
-      if (response.ok) {
-        // Also save to Firestore
-        try {
-          const db = getFirestore();
-          const discountsRef = collection(db, "discounts");
-          
-          if (editingDiscountId) {
-            // Update in Firestore
-            const discountDoc = doc(db, "discounts", editingDiscountId);
-            await updateDoc(discountDoc, {
-              ...discountData,
-              updatedAt: new Date(),
-            });
-          } else {
-            // Add to Firestore with server-generated ID
-            const resultData = await response.json();
-            const newDocRef = doc(db, "discounts", resultData.id);
-            await setDoc(newDocRef, {
-              ...discountData,
-              id: resultData.id,
-              createdAt: new Date(),
-            });
-          }
-        } catch (firestoreError) {
-          console.error("Warning: Failed to sync to Firestore:", firestoreError);
-        }
-
-        toast.success(editingDiscountId ? "Discount updated!" : "Discount created!");
-        setDiscountFormData({ productId: "", discountPercentage: "", startDate: "", endDate: "" });
-        setEditingDiscountId(null);
-        fetchDiscounts();
+      const db = getFirestore();
+      
+      if (editingDiscountId) {
+        // Update in Firestore
+        const discountDoc = doc(db, "discounts", editingDiscountId);
+        await updateDoc(discountDoc, {
+          ...discountData,
+          updatedAt: new Date(),
+        });
+        toast.success("Discount updated!");
       } else {
-        toast.error("Failed to save discount");
+        // Add to Firestore
+        const discountsRef = collection(db, "discounts");
+        const docRef = await addDoc(discountsRef, {
+          ...discountData,
+          createdAt: new Date(),
+        });
+        toast.success("Discount created!");
       }
+
+      setDiscountFormData({ productId: "", discountPercentage: "", startDate: "", endDate: "" });
+      setEditingDiscountId(null);
+      fetchDiscounts();
     } catch (error) {
       console.error("Error saving discount:", error);
       toast.error("Failed to save discount");
@@ -652,13 +631,11 @@ export default function ProfilePage() {
 
   const handleDeleteDiscount = async (discountId: string) => {
     try {
-      const response = await fetch(`/api/discounts/${discountId}`, { method: "DELETE" });
-      if (response.ok) {
-        toast.success("Discount deleted!");
-        fetchDiscounts();
-      } else {
-        toast.error("Failed to delete discount");
-      }
+      const db = getFirestore();
+      const discountDoc = doc(db, "discounts", discountId);
+      await deleteDoc(discountDoc);
+      toast.success("Discount deleted!");
+      fetchDiscounts();
     } catch (error) {
       console.error("Error deleting discount:", error);
       toast.error("Failed to delete discount");
