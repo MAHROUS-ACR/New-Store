@@ -113,9 +113,14 @@ export function ProductCard({ product, index, discounts = [], onProductClick }: 
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
             />
             {activeDiscount && (
-              <div className="absolute top-2 left-2 bg-red-500 text-white px-1.5 py-0.5 rounded-full text-[9px] font-bold" data-testid={`badge-discount-${product.id}`}>
-                {language === "ar" ? `${activeDiscount.discountPercentage}%` : `${activeDiscount.discountPercentage}%`}
-              </div>
+              <motion.div 
+                animate={{ scale: [1, 1.05, 1] }}
+                transition={{ duration: 2, repeat: Infinity }}
+                className="absolute top-3 left-3 bg-gradient-to-br from-red-500 to-red-600 text-white px-3 py-2 rounded-full text-base font-black shadow-lg shadow-red-500/50 border-2 border-yellow-300" 
+                data-testid={`badge-discount-${product.id}`}
+              >
+                {activeDiscount.discountPercentage}%
+              </motion.div>
             )}
           </div>
         </div>
