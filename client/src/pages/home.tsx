@@ -120,11 +120,6 @@ export default function Home() {
     }
   };
 
-  useEffect(() => {
-    // Run in parallel for faster loading
-    Promise.all([fetchProductsData(), fetchStoreSettings(), fetchDiscounts()]);
-  }, [location]);
-
   const fetchDiscounts = async () => {
     try {
       const data = await getAllDiscounts();
@@ -134,6 +129,19 @@ export default function Home() {
       setDiscounts([]);
     }
   };
+
+  useEffect(() => {
+    // Run in parallel for faster loading
+    Promise.all([fetchProductsData(), fetchStoreSettings()]);
+  }, [location]);
+
+  // Fetch discounts after Firebase is initialized (with a small delay to ensure Firebase is ready)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchDiscounts();
+    }, 500); // Small delay to ensure Firebase client is initialized
+    return () => clearTimeout(timer);
+  }, [location]);
 
   // Extract unique categories from products
   const categories = ["All", ...Array.from(new Set(products
