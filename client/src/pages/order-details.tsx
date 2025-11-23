@@ -411,9 +411,9 @@ export default function OrderDetailsPage() {
                 <div className="bg-white rounded-2xl border border-gray-100 p-5">
                   <h3 className="font-semibold text-sm mb-5">{language === "ar" ? "بيانات المستخدم" : "Customer Information"}</h3>
                   
-                  <div className="flex items-start gap-5">
+                  <div className="flex items-center gap-6">
                     {/* User Avatar */}
-                    <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-3xl font-bold flex-shrink-0 shadow-md">
+                    <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white text-5xl font-bold flex-shrink-0 shadow-lg ring-4 ring-blue-100">
                       {user?.username ? user.username.charAt(0).toUpperCase() : "U"}
                     </div>
                     
