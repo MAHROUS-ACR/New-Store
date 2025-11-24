@@ -20,22 +20,65 @@ import {
 } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 
-// Initialize Firebase with environment variables
-const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
-};
+// Get Firebase config - first from environment variables, can be overridden from Firestore
+function getFirebaseConfig() {
+  return {
+    apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+    appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  };
+}
 
 let db: any = null;
+let currentFirebaseConfig: any = null;
+
+async function loadFirebaseConfigFromFirestore() {
+  try {
+    // Initialize with default config first
+    if (!currentFirebaseConfig) {
+      currentFirebaseConfig = getFirebaseConfig();
+      initializeApp(currentFirebaseConfig);
+    }
+    
+    const database = getFirestore();
+    const configRef = doc(database, "settings", "firebase");
+    const configSnap = await getDoc(configRef);
+    
+    if (configSnap.exists()) {
+      const firestoreConfig = configSnap.data();
+      const newConfig = {
+        apiKey: firestoreConfig.firebaseApiKey || currentFirebaseConfig.apiKey,
+        authDomain: firestoreConfig.firebaseAuthDomain || currentFirebaseConfig.authDomain,
+        projectId: firestoreConfig.firebaseProjectId || currentFirebaseConfig.projectId,
+        storageBucket: firestoreConfig.firebaseStorageBucket || currentFirebaseConfig.storageBucket,
+        messagingSenderId: firestoreConfig.firebaseMessagingSenderId || currentFirebaseConfig.messagingSenderId,
+        appId: firestoreConfig.firebaseAppId || currentFirebaseConfig.appId,
+      };
+      
+      // Only reinitialize if config changed
+      if (JSON.stringify(newConfig) !== JSON.stringify(currentFirebaseConfig)) {
+        console.log("🔄 Updating Firebase config from Firestore");
+        currentFirebaseConfig = newConfig;
+        // Note: In a real app, you'd need to properly reinitialize Firebase
+        // For now, we reload the page to apply new config
+        window.location.reload();
+      }
+    }
+  } catch (error) {
+    console.error("Error loading Firebase config from Firestore:", error);
+  }
+}
 
 function initDb() {
   if (!db) {
     try {
-      initializeApp(firebaseConfig);
+      if (!currentFirebaseConfig) {
+        currentFirebaseConfig = getFirebaseConfig();
+      }
+      initializeApp(currentFirebaseConfig);
     } catch (error: any) {
       if (!error.message?.includes('duplicate-app')) {
         console.error('Firebase initialization error:', error);
@@ -46,9 +89,19 @@ function initDb() {
   return db;
 }
 
+// Check Firebase config on first call
+let configCheckDone = false;
+async function ensureConfigLoaded() {
+  if (!configCheckDone) {
+    configCheckDone = true;
+    await loadFirebaseConfigFromFirestore();
+  }
+}
+
 // ============= PRODUCTS =============
 export async function getProducts() {
   try {
+    await ensureConfigLoaded();
     const db = initDb();
     const productsRef = collection(db, "products");
     const snapshot = await getDocs(productsRef);

@@ -119,6 +119,15 @@ export default function SettingsPage() {
 
       toast.success("All settings saved successfully!");
       console.log("✅ All settings saved to Firestore and localStorage");
+      
+      // If Firebase config changed, reload app to apply new config
+      const currentApiKey = import.meta.env.VITE_FIREBASE_API_KEY;
+      if (firebaseApiKey !== currentApiKey) {
+        toast.info("Firebase project changed. Reloading app...");
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
+      }
     } catch (error: any) {
       console.error("Error saving settings:", error);
       toast.error(`Error: ${error.message || "Failed to save settings"}`);
