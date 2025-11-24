@@ -55,8 +55,8 @@ export function NotificationCenter() {
 
     fetchNotifications();
 
-    // Poll for new notifications every 30 seconds
-    const interval = setInterval(fetchNotifications, 30000);
+    // Poll for new notifications every 10 seconds (improved responsiveness)
+    const interval = setInterval(fetchNotifications, 10000);
     return () => clearInterval(interval);
   }, [user?.id, user?.role]);
 
@@ -99,6 +99,25 @@ export function NotificationCenter() {
       setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
     } catch (error) {
       console.error("❌ Error deleting notification:", error);
+    }
+  };
+
+  const handleClearAll = async () => {
+    try {
+      const db = getFirestore();
+      const notificationsRef = collection(db, "notifications");
+      
+      // Delete all notifications from Firestore
+      for (const notification of notifications) {
+        const notifRef = doc(db, "notifications", notification.id);
+        await deleteDoc(notifRef);
+      }
+      
+      setNotifications([]);
+      setIsOpen(false);
+      console.log("✅ All notifications deleted");
+    } catch (error) {
+      console.error("❌ Error clearing notifications:", error);
     }
   };
 
@@ -231,10 +250,7 @@ export function NotificationCenter() {
           {notifications.length > 0 && (
             <div className="border-t border-gray-200 p-2 bg-gray-50">
               <button
-                onClick={() => {
-                  setNotifications([]);
-                  setIsOpen(false);
-                }}
+                onClick={handleClearAll}
                 className="w-full text-sm text-gray-600 hover:text-gray-900 py-1"
                 data-testid="button-clear-notifications"
               >
