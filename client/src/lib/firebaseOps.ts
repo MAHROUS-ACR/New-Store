@@ -20,29 +20,8 @@ import {
 } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 
-// Get Firebase config - first from localStorage, then environment variables
+// Get Firebase config from environment variables
 function getFirebaseConfig() {
-  // Try to get from localStorage first
-  try {
-    const stored = localStorage.getItem("flux_wallet_firebase_config");
-    if (stored) {
-      const config = JSON.parse(stored);
-      if (config.firebaseApiKey && config.firebaseProjectId && config.firebaseAppId) {
-        return {
-          apiKey: config.firebaseApiKey,
-          authDomain: config.firebaseAuthDomain,
-          projectId: config.firebaseProjectId,
-          storageBucket: config.firebaseStorageBucket || "",
-          messagingSenderId: config.firebaseMessagingSenderId || "",
-          appId: config.firebaseAppId,
-        };
-      }
-    }
-  } catch (e) {
-    // Fallback to env vars if localStorage read fails
-  }
-
-  // Fallback to environment variables
   return {
     apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
     authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,

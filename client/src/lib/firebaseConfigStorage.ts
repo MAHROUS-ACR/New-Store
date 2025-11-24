@@ -1,8 +1,11 @@
 /**
  * Firebase Config Storage
- * Manages reading/writing Firebase config to localStorage
- * This allows first-time setup detection and persistence across sessions
+ * Reads/writes Firebase config from Firestore (settings/firebase doc)
+ * This is cloud-based, so all users see the same config
  */
+
+import { getFirestore, doc, getDoc } from "firebase/firestore";
+import { initializeApp, getApps } from "firebase/app";
 
 export interface FirebaseConfigData {
   firebaseApiKey: string;
@@ -15,70 +18,10 @@ export interface FirebaseConfigData {
   timestamp?: number;
 }
 
-const CONFIG_KEY = "flux_wallet_firebase_config";
-
 /**
- * Check if Firebase config exists in localStorage
+ * Get Firebase config from environment variables (bootstrap config)
  */
-export function hasFirebaseConfig(): boolean {
-  try {
-    const stored = localStorage.getItem(CONFIG_KEY);
-    if (!stored) return false;
-    
-    const config = JSON.parse(stored) as FirebaseConfigData;
-    // Check if required fields exist
-    return !!(config.firebaseApiKey && config.firebaseProjectId && config.firebaseAppId && config.firebaseAuthDomain);
-  } catch (error) {
-    return false;
-  }
-}
-
-/**
- * Get Firebase config from localStorage
- */
-export function getFirebaseConfigFromStorage(): FirebaseConfigData | null {
-  try {
-    const stored = localStorage.getItem(CONFIG_KEY);
-    if (!stored) return null;
-    return JSON.parse(stored) as FirebaseConfigData;
-  } catch (error) {
-    console.error("Error reading Firebase config from storage:", error);
-    return null;
-  }
-}
-
-/**
- * Save Firebase config to localStorage
- */
-export function saveFirebaseConfigToStorage(config: FirebaseConfigData): void {
-  try {
-    const dataToStore = {
-      ...config,
-      timestamp: Date.now(),
-    };
-    localStorage.setItem(CONFIG_KEY, JSON.stringify(dataToStore));
-    console.log("✅ Firebase config saved to localStorage");
-  } catch (error) {
-    console.error("Error saving Firebase config to localStorage:", error);
-  }
-}
-
-/**
- * Clear Firebase config from localStorage
- */
-export function clearFirebaseConfigFromStorage(): void {
-  try {
-    localStorage.removeItem(CONFIG_KEY);
-    console.log("✅ Firebase config cleared from localStorage");
-  } catch (error) {
-    console.error("Error clearing Firebase config from localStorage:", error);
-  }
-}
-
-/**
- * Get config from environment variables
- */
-export function getFirebaseConfigFromEnv(): Partial<FirebaseConfigData> {
+export function getBootstrapFirebaseConfig(): Partial<FirebaseConfigData> {
   return {
     firebaseApiKey: import.meta.env.VITE_FIREBASE_API_KEY,
     firebaseProjectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
@@ -91,12 +34,54 @@ export function getFirebaseConfigFromEnv(): Partial<FirebaseConfigData> {
 }
 
 /**
- * Get effective Firebase config (priority: localStorage > env vars)
+ * Check if Firebase config exists (from env vars)
+ */
+export function hasFirebaseConfig(): boolean {
+  const config = getBootstrapFirebaseConfig();
+  return !!(config.firebaseApiKey && config.firebaseProjectId && config.firebaseAppId && config.firebaseAuthDomain);
+}
+
+/**
+ * Get Firebase config from Firestore if it exists
+ */
+export async function getFirebaseConfigFromFirestore(): Promise<FirebaseConfigData | null> {
+  try {
+    // Need bootstrap config to initialize Firebase first
+    const bootstrapConfig = getBootstrapFirebaseConfig();
+    if (!bootstrapConfig.firebaseApiKey) {
+      return null;
+    }
+
+    // Initialize Firebase if not already initialized
+    if (getApps().length === 0) {
+      initializeApp({
+        apiKey: bootstrapConfig.firebaseApiKey,
+        authDomain: bootstrapConfig.firebaseAuthDomain,
+        projectId: bootstrapConfig.firebaseProjectId,
+        storageBucket: bootstrapConfig.firebaseStorageBucket || "",
+        messagingSenderId: bootstrapConfig.firebaseMessagingSenderId || "",
+        appId: bootstrapConfig.firebaseAppId,
+      });
+    }
+
+    const db = getFirestore();
+    const configRef = doc(db, "settings", "firebase");
+    const configSnap = await getDoc(configRef);
+    
+    if (configSnap.exists()) {
+      return configSnap.data() as FirebaseConfigData;
+    }
+    return null;
+  } catch (error) {
+    console.error("Error reading Firebase config from Firestore:", error);
+    return null;
+  }
+}
+
+/**
+ * Get effective Firebase config (priority: Firestore > env vars)
  */
 export function getEffectiveFirebaseConfig(): Partial<FirebaseConfigData> {
-  const stored = getFirebaseConfigFromStorage();
-  if (stored && stored.firebaseApiKey && stored.firebaseProjectId) {
-    return stored;
-  }
-  return getFirebaseConfigFromEnv();
+  // Always use environment variables as bootstrap
+  return getBootstrapFirebaseConfig();
 }
