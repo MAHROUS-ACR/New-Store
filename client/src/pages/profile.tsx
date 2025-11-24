@@ -1892,15 +1892,12 @@ export default function ProfilePage() {
                                   if (editingItemId === item.id) {
                                     setEditingItemId(null);
                                     setNewItemForm({ title: "", description: "", price: "", category: "", image: "", units: [], sizes: [], colors: [], available: true });
-                                      setUnitInput("");
-                                      setSizeInput("");
-                                      setColorInput("");
-                                      setCurrentColorHex("#000000");
-                                    }
-                                    toast.success("Product deleted!");
-                                  } else {
-                                    toast.error("Failed to delete product");
+                                    setUnitInput("");
+                                    setSizeInput("");
+                                    setColorInput("");
+                                    setCurrentColorHex("#000000");
                                   }
+                                  toast.success("Product deleted!");
                                 } catch (error) {
                                   toast.error("Failed to delete product");
                                 }
