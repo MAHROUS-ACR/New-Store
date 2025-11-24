@@ -5,6 +5,7 @@ import { ArrowLeft, Database, Save, LogOut } from "lucide-react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
 import { saveFirebaseConfig, getFirebaseConfig, clearFirebaseConfig } from "@/lib/firebaseConfig";
+import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
 
 export default function SettingsPage() {
   const [, setLocation] = useLocation();
@@ -31,14 +32,17 @@ export default function SettingsPage() {
   
   const [isLoading, setIsLoading] = useState(false);
 
-  // Load Firebase config and Store settings from server on mount
+  // Load Firebase config and Store settings from Firestore on mount
   useEffect(() => {
     const loadConfig = async () => {
       try {
-        // Fetch Firebase config from server
-        const response = await fetch("/api/firebase/config");
-        if (response.ok) {
-          const serverConfig = await response.json();
+        const db = getFirestore();
+        
+        // Fetch Firebase config from Firestore
+        const firebaseConfigRef = doc(db, "settings", "firebase");
+        const firebaseConfigSnap = await getDoc(firebaseConfigRef);
+        if (firebaseConfigSnap.exists()) {
+          const serverConfig = firebaseConfigSnap.data();
           setProjectId(serverConfig.projectId || "");
           setPrivateKey(serverConfig.privateKey || "");
           setClientEmail(serverConfig.clientEmail || "");
@@ -51,20 +55,21 @@ export default function SettingsPage() {
           setFirebaseMeasurementId(serverConfig.firebaseMeasurementId || "");
         }
 
-        // Fetch Store settings from server
-        const storeResponse = await fetch("/api/store-settings");
-        if (storeResponse.ok) {
-          const storeData = await storeResponse.json();
+        // Fetch Store settings from Firestore
+        const storeConfigRef = doc(db, "settings", "store");
+        const storeConfigSnap = await getDoc(storeConfigRef);
+        if (storeConfigSnap.exists()) {
+          const storeData = storeConfigSnap.data();
           setStoreName(storeData.name || "");
           setStoreAddress(storeData.address || "");
           setStorePhone(storeData.phone || "");
           setStoreEmail(storeData.email || "");
         }
       } catch (error) {
-        console.error("Failed to load config from server:", error);
+        console.error("Failed to load config from Firestore:", error);
       }
 
-      // Also check localStorage for any locally saved config - only if server values are empty
+      // Also check localStorage for any locally saved config - only if Firestore values are empty
       const localConfig = getFirebaseConfig();
       if (localConfig) {
         setFirebaseApiKey(prev => prev || localConfig.apiKey || "");
@@ -83,51 +88,33 @@ export default function SettingsPage() {
   const handleSaveAllSettings = async () => {
     setIsLoading(true);
     try {
-      // Save Firebase config
-      const firebaseResponse = await fetch("/api/firebase/config", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          projectId,
-          privateKey,
-          clientEmail,
-          firebaseApiKey,
-          firebaseProjectId,
-          firebaseAppId,
-          firebaseAuthDomain,
-          firebaseStorageBucket,
-          firebaseMessagingSenderId,
-          firebaseMeasurementId,
-        }),
+      const db = getFirestore();
+      
+      // Save Firebase config to Firestore
+      const firebaseConfigRef = doc(db, "settings", "firebase");
+      await setDoc(firebaseConfigRef, {
+        projectId,
+        privateKey,
+        clientEmail,
+        firebaseApiKey,
+        firebaseProjectId,
+        firebaseAppId,
+        firebaseAuthDomain,
+        firebaseStorageBucket,
+        firebaseMessagingSenderId,
+        firebaseMeasurementId,
+        updatedAt: new Date(),
       });
 
-      if (!firebaseResponse.ok) {
-        const errorData = await firebaseResponse.json();
-        console.error("Firebase config save error:", errorData);
-        toast.error(`Firebase save failed: ${errorData.message || "Unknown error"}`);
-        setIsLoading(false);
-        return;
-      }
-
-      // Save Store settings
-      const storeResponse = await fetch("/api/store-settings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: storeName,
-          address: storeAddress,
-          phone: storePhone,
-          email: storeEmail,
-        }),
+      // Save Store settings to Firestore
+      const storeConfigRef = doc(db, "settings", "store");
+      await setDoc(storeConfigRef, {
+        name: storeName,
+        address: storeAddress,
+        phone: storePhone,
+        email: storeEmail,
+        updatedAt: new Date(),
       });
-
-      if (!storeResponse.ok) {
-        const errorData = await storeResponse.json();
-        console.error("Store settings save error:", errorData);
-        toast.error(`Store settings save failed: ${errorData.message || "Unknown error"}`);
-        setIsLoading(false);
-        return;
-      }
 
       // Also save to localStorage for client-side use
       saveFirebaseConfig({

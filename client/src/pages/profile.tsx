@@ -10,8 +10,9 @@ import { toast } from "sonner";
 import { t } from "@/lib/translations";
 import avatarImage from "@assets/generated_images/professional_user_avatar_portrait.png";
 import { saveFirebaseConfig, getFirebaseConfig, clearFirebaseConfig } from "@/lib/firebaseConfig";
-import { getFirestore, doc, updateDoc, getDoc, collection, setDoc, getDocs, addDoc, deleteDoc } from "firebase/firestore";
+import { getFirestore, doc, updateDoc, getDoc, collection, setDoc, getDocs, addDoc, deleteDoc, query, where } from "firebase/firestore";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
+import { getProducts, getOrders } from "@/lib/firebaseOps";
 
 const getMenuItems = (language: any) => [
   { icon: Package, label: t("myOrders", language), path: "/orders", buttonBg: "bg-purple-50", borderColor: "border-purple-200 hover:border-purple-300", iconColor: "text-purple-600 bg-purple-100", textColor: "text-purple-900" },
@@ -179,16 +180,11 @@ export default function ProfilePage() {
   const fetchUserOrdersStats = async () => {
     if (!user?.id) return;
     try {
-      const response = await fetch("/api/orders", {
-        headers: { "x-user-id": user.id }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        // Only count completed orders
-        const completedOrders = data.filter((o: AdminOrder) => o.status === 'completed');
-        setUserOrdersCount(completedOrders.length);
-        setUserOrdersTotal(completedOrders.reduce((sum: number, o: AdminOrder) => sum + o.total, 0));
-      }
+      const data = await getOrders(user.id);
+      // Only count completed orders
+      const completedOrders = data.filter((o: AdminOrder) => o.status === 'completed');
+      setUserOrdersCount(completedOrders.length);
+      setUserOrdersTotal(completedOrders.reduce((sum: number, o: AdminOrder) => sum + o.total, 0));
     } catch (error) {
       console.error("Error fetching user orders:", error);
     }
@@ -198,11 +194,9 @@ export default function ProfilePage() {
   const fetchAllOrders = async () => {
     setOrdersLoading(true);
     try {
-      const response = await fetch("/api/orders/admin/all");
-      if (response.ok) {
-        const data = await response.json();
-        setOrders(data || []);
-      }
+      // Admin can see all orders - pass undefined to get all
+      const data = await getOrders(undefined);
+      setOrders(data || []);
     } catch (error) {
       console.error("Error fetching orders:", error);
       toast.error("Failed to load orders");
@@ -282,9 +276,11 @@ export default function ProfilePage() {
     const loadConfig = async () => {
       try {
         // Load Firebase config from Firestore
-        const response = await fetch("/api/firebase/config");
-        if (response.ok) {
-          const config = await response.json();
+        const db = getFirestore();
+        const firebaseConfigRef = doc(db, "settings", "firebase");
+        const firebaseConfigSnap = await getDoc(firebaseConfigRef);
+        if (firebaseConfigSnap.exists()) {
+          const config = firebaseConfigSnap.data();
           console.log("Loaded Firebase config from Firestore:", config);
           setProjectId(config.projectId || "");
           setPrivateKey(config.privateKey || "");
@@ -298,7 +294,7 @@ export default function ProfilePage() {
           setFirebaseMeasurementId(config.firebaseMeasurementId || "");
         }
       } catch (error) {
-        console.error("Failed to load Firebase config from server:", error);
+        console.error("Failed to load Firebase config from Firestore:", error);
       }
 
       // Also load from localStorage as fallback
@@ -322,9 +318,11 @@ export default function ProfilePage() {
   useEffect(() => {
     const loadStoreSettings = async () => {
       try {
-        const response = await fetch("/api/store-settings");
-        if (response.ok) {
-          const data = await response.json();
+        const db = getFirestore();
+        const storeConfigRef = doc(db, "settings", "store");
+        const storeConfigSnap = await getDoc(storeConfigRef);
+        if (storeConfigSnap.exists()) {
+          const data = storeConfigSnap.data();
           console.log("Loaded store settings from Firestore:", data);
           
           setStoreName(data.name || "");
@@ -351,32 +349,26 @@ export default function ProfilePage() {
 
     setIsSaving(true);
     try {
-      const response = await fetch("/api/firebase/config", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          projectId,
-          privateKey,
-          clientEmail,
-          firebaseApiKey,
-          firebaseProjectId,
-          firebaseAppId,
-          firebaseAuthDomain,
-          firebaseStorageBucket,
-          firebaseMessagingSenderId,
-          firebaseMeasurementId,
-        }),
+      const db = getFirestore();
+      const firebaseConfigRef = doc(db, "settings", "firebase");
+      await setDoc(firebaseConfigRef, {
+        projectId,
+        privateKey,
+        clientEmail,
+        firebaseApiKey,
+        firebaseProjectId,
+        firebaseAppId,
+        firebaseAuthDomain,
+        firebaseStorageBucket,
+        firebaseMessagingSenderId,
+        firebaseMeasurementId,
+        updatedAt: new Date(),
       });
 
-      if (response.ok) {
-        toast.success("Firebase configuration saved to Firestore successfully!");
-        setClientEmail("");
-      } else {
-        const error = await response.json();
-        toast.error(error.message || "Failed to save configuration");
-      }
+      toast.success("Firebase configuration saved to Firestore successfully!");
+      setClientEmail("");
     } catch (error) {
-      toast.error("Failed to connect to server");
+      toast.error("Failed to save configuration");
     } finally {
       setIsSaving(false);
     }
@@ -441,27 +433,21 @@ export default function ProfilePage() {
 
     setIsSaving(true);
     try {
-      const response = await fetch("/api/store-settings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: storeName,
-          address: storeAddress,
-          phone: storePhone,
-          email: storeEmail,
-          logo: storeLogo,
-        }),
+      const db = getFirestore();
+      const storeConfigRef = doc(db, "settings", "store");
+      await setDoc(storeConfigRef, {
+        name: storeName,
+        address: storeAddress,
+        phone: storePhone,
+        email: storeEmail,
+        logo: storeLogo,
+        updatedAt: new Date(),
       });
 
-      if (response.ok) {
-        toast.success("Store settings saved successfully!");
-      } else {
-        const error = await response.json();
-        toast.error(error.message || "Failed to save settings");
-      }
+      toast.success("Store settings saved successfully!");
     } catch (error) {
       console.error("Save error:", error);
-      toast.error("Failed to connect to server");
+      toast.error("Failed to save settings");
     } finally {
       setIsSaving(false);
     }
@@ -470,11 +456,11 @@ export default function ProfilePage() {
   const fetchAllUsers = async () => {
     setUsersLoading(true);
     try {
-      const response = await fetch("/api/users");
-      if (response.ok) {
-        const data = await response.json();
-        setUsers(data || []);
-      }
+      const db = getFirestore();
+      const usersRef = collection(db, "users");
+      const snapshot = await getDocs(usersRef);
+      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setUsers(data || []);
     } catch (error) {
       console.error("Error fetching users:", error);
       toast.error("Failed to load users");
@@ -485,11 +471,11 @@ export default function ProfilePage() {
 
   const fetchCategories = async () => {
     try {
-      const response = await fetch("/api/categories");
-      if (response.ok) {
-        const data = await response.json();
-        setCategories(data || []);
-      }
+      const db = getFirestore();
+      const categoriesRef = collection(db, "categories");
+      const snapshot = await getDocs(categoriesRef);
+      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setCategories(data || []);
     } catch (error) {
       console.error("Error fetching categories:", error);
     }
@@ -497,11 +483,8 @@ export default function ProfilePage() {
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch("/api/products/admin");
-      if (response.ok) {
-        const data = await response.json();
-        setItems(data || []);
-      }
+      const data = await getProducts();
+      setItems(data || []);
     } catch (error) {
       console.error("Error fetching products:", error);
     }
@@ -509,11 +492,11 @@ export default function ProfilePage() {
 
   const fetchShippingZones = async () => {
     try {
-      const response = await fetch("/api/shipping-zones");
-      if (response.ok) {
-        const data = await response.json();
-        setShippingZones(data || []);
-      }
+      const db = getFirestore();
+      const zonesRef = collection(db, "shippingZones");
+      const snapshot = await getDocs(zonesRef);
+      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setShippingZones(data || []);
     } catch (error) {
       console.error("Error fetching shipping zones:", error);
     }
@@ -526,25 +509,28 @@ export default function ProfilePage() {
     }
 
     try {
-      const response = await fetch("/api/shipping-zones", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: editingZoneId,
-          name: newZoneName,
-          shippingCost: parseFloat(newZoneCost),
-        }),
-      });
+      const db = getFirestore();
+      const zoneData = {
+        name: newZoneName,
+        shippingCost: parseFloat(newZoneCost),
+        updatedAt: new Date(),
+      };
 
-      if (response.ok) {
-        toast.success("Shipping zone saved successfully!");
-        setNewZoneName("");
-        setNewZoneCost("");
-        setEditingZoneId(null);
-        fetchShippingZones();
+      if (editingZoneId) {
+        // Update existing
+        const zoneRef = doc(db, "shippingZones", editingZoneId);
+        await updateDoc(zoneRef, zoneData);
       } else {
-        toast.error("Failed to save shipping zone");
+        // Create new
+        const zonesRef = collection(db, "shippingZones");
+        await addDoc(zonesRef, { ...zoneData, createdAt: new Date() });
       }
+
+      toast.success("Shipping zone saved successfully!");
+      setNewZoneName("");
+      setNewZoneCost("");
+      setEditingZoneId(null);
+      fetchShippingZones();
     } catch (error) {
       console.error("Error saving shipping zone:", error);
       toast.error("Failed to save shipping zone");
@@ -553,16 +539,11 @@ export default function ProfilePage() {
 
   const handleDeleteShippingZone = async (zoneId: string) => {
     try {
-      const response = await fetch(`/api/shipping-zones/${zoneId}`, {
-        method: "DELETE",
-      });
-
-      if (response.ok) {
-        toast.success("Shipping zone deleted!");
-        fetchShippingZones();
-      } else {
-        toast.error("Failed to delete shipping zone");
-      }
+      const db = getFirestore();
+      const zoneRef = doc(db, "shippingZones", zoneId);
+      await deleteDoc(zoneRef);
+      toast.success("Shipping zone deleted!");
+      fetchShippingZones();
     } catch (error) {
       console.error("Error deleting shipping zone:", error);
       toast.error("Failed to delete shipping zone");
@@ -688,20 +669,13 @@ export default function ProfilePage() {
 
   const handleStatusUpdate = async (orderId: string, status: string) => {
     try {
-      const response = await fetch(`/api/orders/${orderId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status }),
-      });
-
-      if (response.ok) {
-        toast.success("Order status updated!");
-        setEditingOrderId(null);
-        setNewStatus("");
-        fetchAllOrders();
-      } else {
-        toast.error("Failed to update order");
-      }
+      const db = getFirestore();
+      const orderRef = doc(db, "orders", orderId);
+      await updateDoc(orderRef, { status });
+      toast.success("Order status updated!");
+      setEditingOrderId(null);
+      setNewStatus("");
+      fetchAllOrders();
     } catch (error) {
       console.error("Error updating order:", error);
       toast.error("Failed to update order");
@@ -710,20 +684,13 @@ export default function ProfilePage() {
 
   const handleUserRoleUpdate = async (userId: string, role: string) => {
     try {
-      const response = await fetch("/api/user/role", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, role }),
-      });
-
-      if (response.ok) {
-        toast.success(`User role updated to ${role}!`);
-        setEditingUserId(null);
-        setNewUserRole("");
-        fetchAllUsers();
-      } else {
-        toast.error("Failed to update user role");
-      }
+      const db = getFirestore();
+      const userRef = doc(db, "users", userId);
+      await updateDoc(userRef, { role });
+      toast.success(`User role updated to ${role}!`);
+      setEditingUserId(null);
+      setNewUserRole("");
+      fetchAllUsers();
     } catch (error) {
       console.error("Error updating user role:", error);
       toast.error("Failed to update user role");
@@ -1445,19 +1412,12 @@ export default function ProfilePage() {
                         onClick={async () => {
                           if (newCategoryName.trim()) {
                             try {
-                              const response = await fetch("/api/categories", {
-                                method: "POST",
-                                headers: { "Content-Type": "application/json" },
-                                body: JSON.stringify({ name: newCategoryName }),
-                              });
-                              if (response.ok) {
-                                const data = await response.json();
-                                setCategories([...categories, { id: data.id, name: data.name }]);
-                                setNewCategoryName("");
-                                toast.success("Category added!");
-                              } else {
-                                toast.error("Failed to add category");
-                              }
+                              const db = getFirestore();
+                              const catsRef = collection(db, "categories");
+                              const docRef = await addDoc(catsRef, { name: newCategoryName });
+                              setCategories([...categories, { id: docRef.id, name: newCategoryName }]);
+                              setNewCategoryName("");
+                              toast.success("Category added!");
                             } catch (error) {
                               toast.error("Failed to add category");
                             }
@@ -1497,19 +1457,13 @@ export default function ProfilePage() {
                                 onClick={async () => {
                                   if (newCategoryName.trim()) {
                                     try {
-                                      const response = await fetch("/api/categories", {
-                                        method: "POST",
-                                        headers: { "Content-Type": "application/json" },
-                                        body: JSON.stringify({ id: cat.id, name: newCategoryName }),
-                                      });
-                                      if (response.ok) {
-                                        setCategories(categories.map(c => c.id === cat.id ? { ...c, name: newCategoryName } : c));
-                                        setEditingCategoryId(null);
-                                        setNewCategoryName("");
-                                        toast.success("Category updated!");
-                                      } else {
-                                        toast.error("Failed to update category");
-                                      }
+                                      const db = getFirestore();
+                                      const catRef = doc(db, "categories", cat.id);
+                                      await updateDoc(catRef, { name: newCategoryName });
+                                      setCategories(categories.map(c => c.id === cat.id ? { ...c, name: newCategoryName } : c));
+                                      setEditingCategoryId(null);
+                                      setNewCategoryName("");
+                                      toast.success("Category updated!");
                                     } catch (error) {
                                       toast.error("Failed to update category");
                                     }
@@ -1548,15 +1502,11 @@ export default function ProfilePage() {
                                 <button
                                   onClick={async () => {
                                     try {
-                                      const response = await fetch(`/api/categories/${cat.id}`, {
-                                        method: "DELETE",
-                                      });
-                                      if (response.ok) {
-                                        setCategories(categories.filter(c => c.id !== cat.id));
-                                        toast.success("Category deleted!");
-                                      } else {
-                                        toast.error("Failed to delete category");
-                                      }
+                                      const db = getFirestore();
+                                      const catRef = doc(db, "categories", cat.id);
+                                      await deleteDoc(catRef);
+                                      setCategories(categories.filter(c => c.id !== cat.id));
+                                      toast.success("Category deleted!");
                                     } catch (error) {
                                       toast.error("Failed to delete category");
                                     }
@@ -1799,40 +1749,36 @@ export default function ProfilePage() {
                           onClick={async () => {
                             if (newItemForm.title && newItemForm.price && newItemForm.category) {
                               try {
-                                const response = await fetch("/api/products/admin", {
-                                  method: "POST",
-                                  headers: { "Content-Type": "application/json" },
-                                  body: JSON.stringify({
-                                    id: editingItemId || undefined,
-                                    title: newItemForm.title,
-                                    description: newItemForm.description || null,
-                                    price: parseFloat(newItemForm.price),
-                                    category: newItemForm.category,
-                                    image: newItemForm.image || null,
-                                    units: newItemForm.units.length > 0 ? newItemForm.units : null,
-                                    sizes: newItemForm.sizes.length > 0 ? newItemForm.sizes : null,
-                                    colors: newItemForm.colors.length > 0 ? newItemForm.colors : null,
-                                    available: newItemForm.available,
-                                  }),
-                                });
-                                if (response.ok) {
-                                  const data = await response.json();
-                                  if (editingItemId) {
-                                    setItems(items.map(i => i.id === editingItemId ? { ...data } : i));
-                                    toast.success("Product updated!");
-                                    setEditingItemId(null);
-                                  } else {
-                                    setItems([...items, { ...data }]);
-                                    toast.success("Product added!");
-                                  }
-                                  setNewItemForm({ title: "", description: "", price: "", category: "", image: "", units: [], sizes: [], colors: [], available: true });
-                                  setUnitInput("");
-                                  setSizeInput("");
-                                  setColorInput("");
-                                  setCurrentColorHex("#000000");
+                                const db = getFirestore();
+                                const productData = {
+                                  title: newItemForm.title,
+                                  description: newItemForm.description || null,
+                                  price: parseFloat(newItemForm.price),
+                                  category: newItemForm.category,
+                                  image: newItemForm.image || null,
+                                  units: newItemForm.units.length > 0 ? newItemForm.units : null,
+                                  sizes: newItemForm.sizes.length > 0 ? newItemForm.sizes : null,
+                                  colors: newItemForm.colors.length > 0 ? newItemForm.colors : null,
+                                  available: newItemForm.available,
+                                };
+                                
+                                if (editingItemId) {
+                                  const itemRef = doc(db, "products", editingItemId);
+                                  await updateDoc(itemRef, productData);
+                                  setItems(items.map(i => i.id === editingItemId ? { id: editingItemId, ...productData } : i));
+                                  toast.success("Product updated!");
+                                  setEditingItemId(null);
                                 } else {
-                                  toast.error("Failed to save product");
+                                  const productsRef = collection(db, "products");
+                                  const docRef = await addDoc(productsRef, productData);
+                                  setItems([...items, { id: docRef.id, ...productData }]);
+                                  toast.success("Product added!");
                                 }
+                                setNewItemForm({ title: "", description: "", price: "", category: "", image: "", units: [], sizes: [], colors: [], available: true });
+                                setUnitInput("");
+                                setSizeInput("");
+                                setColorInput("");
+                                setCurrentColorHex("#000000");
                               } catch (error) {
                                 toast.error("Failed to save product");
                               }
@@ -1939,14 +1885,13 @@ export default function ProfilePage() {
                             <button
                               onClick={async () => {
                                 try {
-                                  const response = await fetch(`/api/products/admin/${item.id}`, {
-                                    method: "DELETE",
-                                  });
-                                  if (response.ok) {
-                                    setItems(items.filter(i => i.id !== item.id));
-                                    if (editingItemId === item.id) {
-                                      setEditingItemId(null);
-                                      setNewItemForm({ title: "", description: "", price: "", category: "", image: "", units: [], sizes: [], colors: [], available: true });
+                                  const db = getFirestore();
+                                  const itemRef = doc(db, "products", item.id);
+                                  await deleteDoc(itemRef);
+                                  setItems(items.filter(i => i.id !== item.id));
+                                  if (editingItemId === item.id) {
+                                    setEditingItemId(null);
+                                    setNewItemForm({ title: "", description: "", price: "", category: "", image: "", units: [], sizes: [], colors: [], available: true });
                                       setUnitInput("");
                                       setSizeInput("");
                                       setColorInput("");

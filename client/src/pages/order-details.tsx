@@ -7,6 +7,8 @@ import { useUser } from "@/lib/userContext";
 import { useLanguage } from "@/lib/languageContext";
 import { t } from "@/lib/translations";
 import { toast } from "sonner";
+import { getFirestore, doc, getDoc, updateDoc } from "firebase/firestore";
+import { getOrders } from "@/lib/firebaseOps";
 
 interface CartItem {
   id: string;
@@ -81,45 +83,26 @@ export default function OrderDetailsPage() {
     setIsLoading(true);
     const fetchOrder = async () => {
       try {
-        const headers: any = {};
-        if (user?.id) {
-          headers["x-user-id"] = user.id;
-        }
-        if (user?.role) {
-          headers["x-user-role"] = user.role;
+        // First try localStorage (fastest)
+        const savedOrders = localStorage.getItem("orders");
+        if (savedOrders) {
+          const allOrders = JSON.parse(savedOrders);
+          const foundOrder = allOrders.find((o: Order) => o.id === orderId);
+          if (foundOrder && ((user && user.role === 'admin') || foundOrder.userId === user?.id || !foundOrder.userId)) {
+            setOrder(foundOrder);
+            setIsLoading(false);
+            return;
+          }
         }
 
-        const response = await fetch(`/api/orders/${orderId}`, { headers });
-        
-        if (response.ok) {
-          const fetchedOrder = await response.json();
-          setOrder(fetchedOrder);
-        } else {
-          // If API fails, fallback to localStorage
-          const savedOrders = localStorage.getItem("orders");
-          if (savedOrders) {
-            const allOrders = JSON.parse(savedOrders);
-            const foundOrder = allOrders.find((o: Order) => o.id === orderId);
-            if (foundOrder && ((user && user.role === 'admin') || foundOrder.userId === user?.id || !foundOrder.userId)) {
-              setOrder(foundOrder);
-            }
-          }
+        // Fallback to Firebase
+        const orders = await getOrders(user?.role === 'admin' ? undefined : user?.id);
+        const foundOrder = orders?.find((o: any) => o.id === orderId);
+        if (foundOrder) {
+          setOrder(foundOrder as Order);
         }
       } catch (error) {
         console.error("Error loading order:", error);
-        // Fallback to localStorage on error
-        try {
-          const savedOrders = localStorage.getItem("orders");
-          if (savedOrders) {
-            const allOrders = JSON.parse(savedOrders);
-            const foundOrder = allOrders.find((o: Order) => o.id === orderId);
-            if (foundOrder && ((user && user.role === 'admin') || foundOrder.userId === user?.id || !foundOrder.userId)) {
-              setOrder(foundOrder);
-            }
-          }
-        } catch (e) {
-          console.error("Error loading from localStorage:", e);
-        }
       } finally {
         setIsLoading(false);
       }
@@ -136,22 +119,19 @@ export default function OrderDetailsPage() {
     const fetchUserData = async () => {
       try {
         setUserLoading(true);
-        console.log("Fetching user data for userId:", order.userId);
-        const response = await fetch(`/api/users/${order.userId}`);
-        console.log("User fetch response status:", response.status);
-        if (response.ok) {
-          const userData = await response.json();
-          console.log("User data fetched:", userData);
+        const db = getFirestore();
+        const userRef = doc(db, "users", order.userId);
+        const userSnap = await getDoc(userRef);
+        
+        if (userSnap.exists()) {
+          const userData = userSnap.data();
           setOrderUser({
-            username: userData.username,
+            username: userData.username || userData.email?.split("@")[0],
             email: userData.email
           });
           if (userData.profileImage) {
             setUserProfileImage(userData.profileImage);
-            console.log("User profile image set");
           }
-        } else {
-          console.log("User fetch failed:", response.statusText);
         }
       } catch (error) {
         console.error("Error fetching user data:", error);
@@ -200,19 +180,12 @@ export default function OrderDetailsPage() {
     if (!newSts || !order) return;
     
     try {
-      // First update Firebase/Server
-      const response = await fetch(`/api/orders/${order.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: newSts }),
-      });
+      // Update Firebase
+      const db = getFirestore();
+      const orderRef = doc(db, "orders", order.id);
+      await updateDoc(orderRef, { status: newSts });
 
-      if (!response.ok) {
-        toast.error("Failed to update order status on server");
-        return;
-      }
-
-      // Then update localStorage
+      // Update localStorage
       const savedOrders = localStorage.getItem("orders");
       if (savedOrders) {
         const allOrders = JSON.parse(savedOrders);

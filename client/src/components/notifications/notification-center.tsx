@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Bell, Trash2, Check } from "lucide-react";
 import { useUser } from "@/lib/userContext";
 import { useLanguage } from "@/lib/languageContext";
+import { getFirestore, collection, getDocs, query, where, doc, updateDoc, deleteDoc } from "firebase/firestore";
 
 interface Notification {
   id: string;
@@ -31,18 +32,16 @@ export function NotificationCenter() {
 
     try {
       setLoading(true);
-      const endpoint = user.role === "admin" ? "/api/notifications/admin" : "/api/notifications";
-      const response = await fetch(endpoint, {
-        headers: {
-          "x-user-id": user.id,
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setNotifications(data || []);
-        console.log(`✅ Fetched ${data?.length || 0} notifications`);
-      }
+      const db = getFirestore();
+      const notificationsRef = collection(db, "notifications");
+      const q = user.role === "admin" 
+        ? query(notificationsRef)
+        : query(notificationsRef, where("userId", "==", user.id));
+      
+      const snapshot = await getDocs(q);
+      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Notification[];
+      setNotifications(data || []);
+      console.log(`✅ Fetched ${data?.length || 0} notifications`);
     } catch (error) {
       console.error("❌ Error fetching notifications:", error);
     } finally {
@@ -79,16 +78,13 @@ export function NotificationCenter() {
 
   const handleMarkAsRead = async (notificationId: string) => {
     try {
-      const response = await fetch(`/api/notifications/${notificationId}/read`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-      });
-
-      if (response.ok) {
-        setNotifications((prev) =>
-          prev.map((n) => (n.id === notificationId ? { ...n, read: true } : n))
-        );
-      }
+      const db = getFirestore();
+      const notifRef = doc(db, "notifications", notificationId);
+      await updateDoc(notifRef, { read: true });
+      
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === notificationId ? { ...n, read: true } : n))
+      );
     } catch (error) {
       console.error("❌ Error marking notification as read:", error);
     }
@@ -96,13 +92,11 @@ export function NotificationCenter() {
 
   const handleDelete = async (notificationId: string) => {
     try {
-      const response = await fetch(`/api/notifications/${notificationId}`, {
-        method: "DELETE",
-      });
-
-      if (response.ok) {
-        setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
-      }
+      const db = getFirestore();
+      const notifRef = doc(db, "notifications", notificationId);
+      await deleteDoc(notifRef);
+      
+      setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
     } catch (error) {
       console.error("❌ Error deleting notification:", error);
     }

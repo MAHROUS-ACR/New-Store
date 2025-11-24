@@ -7,6 +7,7 @@ import { useLanguage } from "@/lib/languageContext";
 import { t } from "@/lib/translations";
 import { toast } from "sonner";
 import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from "firebase/firestore";
+import { getProducts } from "@/lib/firebaseOps";
 
 interface Discount {
   id: string;
@@ -56,15 +57,12 @@ export default function DiscountsPage() {
       })) as Discount[];
       setDiscounts(discountsData || []);
 
-      // Fetch products from API
-      const productsRes = await fetch("/api/products");
-      if (productsRes.ok) {
-        const productsData = await productsRes.json();
-        setProducts(productsData || []);
-      }
+      // Fetch products from Firebase
+      const productsData = await getProducts();
+      setProducts(productsData || []);
     } catch (error) {
       console.error("Error fetching data:", error);
-      toast.error(t("failedToCheckout", language));
+      toast.error("Failed to load data");
     } finally {
       setIsLoading(false);
     }
