@@ -144,10 +144,10 @@ export default function Home() {
   return (
     <div className="w-full h-full relative flex flex-col overflow-hidden bg-white">
       {/* Header */}
-      <div className="px-6 pt-8 pb-10 flex-shrink-0 border-b border-gray-100">
+      <div className="px-8 pt-8 pb-10 flex-shrink-0 border-b border-gray-100">
           <div className="flex items-center justify-between gap-6 mb-10">
             {storeName ? (
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-6">
                 {storeLogo ? (
                   <img src={storeLogo} alt={storeName} className="w-11 h-11 rounded-lg object-cover" />
                 ) : (
@@ -160,7 +160,7 @@ export default function Home() {
             ) : (
               <div className="w-24 h-6 bg-gray-200 rounded animate-pulse" />
             )}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-6">
               <NotificationCenter />
               <button 
                 onClick={() => setLanguage(language === "en" ? "ar" : "en")}
@@ -214,7 +214,7 @@ export default function Home() {
 
         {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto no-scrollbar pb-40 w-full">
-          <div className="w-full px-6 py-10">
+          <div className="w-full px-8 py-10">
             {/* Active Deals Carousel */}
             <div className="mb-12">
               <h3 className="text-lg font-bold text-gray-900 mb-6">{t("activeDeals", language) || "Active Deals"}</h3>
@@ -231,7 +231,7 @@ export default function Home() {
 
             {/* Products */}
             {isLoading ? (
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-8">
                 {[1, 2, 3, 4].map((i) => (
                   <div key={i} className="bg-white rounded-lg border border-gray-100 overflow-hidden">
                     <div className="aspect-square bg-gray-200 animate-pulse" />
@@ -243,7 +243,7 @@ export default function Home() {
                 ))}
               </div>
             ) : filteredProducts.length > 0 ? (
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-8">
                 {filteredProducts.map((product, index) => (
                   <ProductCard 
                     key={product.id} 

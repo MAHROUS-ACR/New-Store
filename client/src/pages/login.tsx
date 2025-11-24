@@ -66,7 +66,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="w-full h-full flex flex-col items-center justify-center px-6 pb-20">
+    <div className="w-full h-full flex flex-col items-center justify-center px-8 pb-20">
         <div className="text-center mb-16">
           <h1 className="text-4xl font-bold mb-4">Flux Wallet</h1>
           <p className="text-muted-foreground text-base">
@@ -125,7 +125,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={formLoading}
-            className="w-full bg-black text-white py-4 rounded-2xl font-semibold flex items-center justify-center gap-2 hover:bg-neutral-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-black text-white py-4 rounded-2xl font-semibold flex items-center justify-center gap-4 hover:bg-neutral-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             data-testid={`button-${isSignup ? "signup" : "login"}`}
           >
             {formLoading ? (

@@ -153,7 +153,7 @@ export default function SettingsPage() {
     <MobileWrapper>
       <div className="w-full flex-1 flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="px-6 pb-6 pt-4 flex items-center gap-4 border-b border-gray-100 flex-shrink-0">
+        <div className="px-8 pb-6 pt-4 flex items-center gap-8 border-b border-gray-100 flex-shrink-0">
           <button
             onClick={() => setLocation("/")}
             className="w-11 h-11 rounded-full bg-white border border-gray-100 flex items-center justify-center hover:bg-gray-50"
@@ -169,7 +169,7 @@ export default function SettingsPage() {
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto no-scrollbar pb-40 w-full">
-          <div className="w-full px-6 py-6">
+          <div className="w-full px-8 py-6">
 
             {/* Firebase Configuration Section */}
             <div className="mb-10">
@@ -361,7 +361,7 @@ export default function SettingsPage() {
               <button
                 onClick={handleSaveAllSettings}
                 disabled={isLoading}
-                className="w-full bg-emerald-600 text-white py-4 rounded-2xl font-semibold flex items-center justify-center gap-2 hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-emerald-600 text-white py-4 rounded-2xl font-semibold flex items-center justify-center gap-4 hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 data-testid="button-save-all-settings"
               >
                 {isLoading ? (
