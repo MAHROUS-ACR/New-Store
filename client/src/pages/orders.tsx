@@ -172,7 +172,7 @@ export default function OrdersPage() {
                   <button
                     onClick={() => setSelectedOrder(selectedOrder?.id === order.id ? null : order)}
                     className="w-full p-4 bg-white rounded-2xl border border-gray-100 hover:border-primary hover:shadow-sm transition-all text-left"
-                    data-testid={`order-L.E {order.id}`}
+                    data-testid={`order-${order.id}`}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
@@ -182,14 +182,14 @@ export default function OrdersPage() {
                         </p>
                       </div>
                       <div className="flex flex-col items-end gap-2">
-                        <p className="font-bold text-lg" data-testid={`total-L.E {order.id}`}>
+                        <p className="font-bold text-lg" data-testid={`total-${order.id}`}>
                           L.E {order.total.toFixed(2)}
                         </p>
                         <span
-                          className={`text-xs font-semibold px-5 py-1 rounded-full border L.E {getStatusColor(
+                          className={`text-xs font-semibold px-5 py-1 rounded-full border ${getStatusColor(
                             order.status
                           )}`}
-                          data-testid={`status-L.E {order.id}`}
+                          data-testid={`status-${order.id}`}
                         >
                           {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                         </span>
@@ -218,13 +218,13 @@ export default function OrdersPage() {
                         <p className="text-xs font-semibold text-gray-500 mb-2">{t("items", language)}</p>
                         <div className="space-y-2">
                           {selectedOrder.items.map((item, idx) => (
-                            <div key={`L.E {item.id}-L.E {idx}`} className="flex flex-col gap-1">
+                            <div key={`${item.id}-${idx}`} className="flex flex-col gap-1">
                               <div className="flex justify-between text-sm">
                                 <span className="text-gray-700">
                                   {item.quantity}x {item.title}
                                 </span>
                                 <span className="font-semibold text-gray-900">
-                                  L.E {(item.quantity * item.price).toFixed(2)}
+                                  {(item.quantity * item.price).toFixed(2)}
                                 </span>
                               </div>
                               {(item.selectedColor || item.selectedSize || item.selectedUnit) && (
@@ -272,7 +272,7 @@ export default function OrdersPage() {
                             {selectedOrder.shippingCost !== undefined && selectedOrder.shippingCost > 0 && (
                               <div>
                                 <p className="text-xs text-gray-500">{t("shippingCost", language)}</p>
-                                <p className="text-xs font-medium text-gray-900">L.E {selectedOrder.shippingCost.toFixed(2)}</p>
+                                <p className="text-xs font-medium text-gray-900">{selectedOrder.shippingCost.toFixed(2)}</p>
                               </div>
                             )}
                           </div>
@@ -281,30 +281,30 @@ export default function OrdersPage() {
 
                       {/* Order Summary */}
                       <div className="mt-3 pt-3 border-t border-gray-100">
-                        <p className="text-xs font-semibold text-gray-500 mb-2">{t("orderSummary", language)}</p>
+                        <p className="text-xs font-semibold text-gray-500 mb-2">{t("orderSummary", language)} (L.E)</p>
                         <div className="space-y-1 text-xs">
                           {selectedOrder.subtotal !== undefined && (
                             <div className="flex justify-between">
                               <span className="text-gray-500">{t("subtotal", language)}</span>
-                              <span className="font-medium text-gray-900">L.E {selectedOrder.subtotal.toFixed(2)}</span>
+                              <span className="font-medium text-gray-900">{selectedOrder.subtotal.toFixed(2)}</span>
                             </div>
                           )}
                           {selectedOrder.discountedTotal !== undefined && selectedOrder.subtotal !== undefined && selectedOrder.discountedTotal < selectedOrder.subtotal && (
                             <>
                               <div className="flex justify-between text-green-600 font-semibold">
                                 <span>{language === "ar" ? "الخصم" : "Discount"}</span>
-                                <span>-L.E {(selectedOrder.subtotal - selectedOrder.discountedTotal).toFixed(2)}</span>
+                                <span>-{(selectedOrder.subtotal - selectedOrder.discountedTotal).toFixed(2)}</span>
                               </div>
                               <div className="flex justify-between text-green-600 font-semibold">
                                 <span>{language === "ar" ? "بعد الخصم" : "After Discount"}</span>
-                                <span>L.E {selectedOrder.discountedTotal.toFixed(2)}</span>
+                                <span>{selectedOrder.discountedTotal.toFixed(2)}</span>
                               </div>
                             </>
                           )}
                           {selectedOrder.shippingCost !== undefined && selectedOrder.shippingCost > 0 && (
                             <div className="flex justify-between">
                               <span className="text-gray-500">{t("shipping", language)}</span>
-                              <span className="font-medium text-gray-900">L.E {selectedOrder.shippingCost.toFixed(2)}</span>
+                              <span className="font-medium text-gray-900">{selectedOrder.shippingCost.toFixed(2)}</span>
                             </div>
                           )}
                           <div className="flex justify-between font-semibold text-gray-900 pt-2 border-t border-gray-100">
