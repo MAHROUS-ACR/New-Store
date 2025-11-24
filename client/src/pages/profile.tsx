@@ -755,7 +755,7 @@ export default function ProfilePage() {
     <MobileWrapper>
       <div className="w-full flex-1 flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="px-6 pb-4 pt-2 flex items-center justify-between gap-4 border-b border-gray-100 flex-shrink-0">
+        <div className="px-2 pb-4 pt-2 flex items-center justify-between gap-4 border-b border-gray-100 flex-shrink-0">
           <h1 className="text-xl font-bold">{t("profile", language)}</h1>
           <NotificationCenter />
           <div className="flex items-center gap-2">
@@ -771,7 +771,7 @@ export default function ProfilePage() {
 
         {/* Tabs */}
         {user && (
-          <div className="flex gap-0 border-b border-gray-100 flex-shrink-0 px-6 bg-white">
+          <div className="flex gap-0 border-b border-gray-100 flex-shrink-0 px-2 bg-white">
             <button
               onClick={() => setActiveTab("profile")}
               className={`py-3 px-4 font-semibold text-sm border-b-2 transition-colors ${
@@ -808,7 +808,7 @@ export default function ProfilePage() {
             // Profile Tab
             <>
               {user && (
-                <div className="px-6 py-4 space-y-3">
+                <div className="px-2 py-4 space-y-3">
                   <div className="bg-gradient-to-br from-primary to-purple-600 rounded-3xl p-4 text-white shadow-lg">
                     <div className="flex items-start gap-3">
                       {/* Profile Image with Edit */}
@@ -859,7 +859,7 @@ export default function ProfilePage() {
                 </div>
               )}
 
-              <div className="w-full px-6 py-4 space-y-3">
+              <div className="w-full px-2 py-4 space-y-3">
                 {getMenuItems(language).map((item) => (
                   <button
                     key={item.label}

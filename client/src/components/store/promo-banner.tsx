@@ -3,7 +3,7 @@ import promoImage from "@assets/generated_images/minimalist_sneaker_promo_banner
 
 export function PromoBanner() {
   return (
-    <div className="px-6 mb-6">
+    <div className="px-2 mb-6">
       <motion.div 
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
