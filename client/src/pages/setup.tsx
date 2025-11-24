@@ -4,6 +4,7 @@ import { Save, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { getFirestore, doc, setDoc } from "firebase/firestore";
 import { useLanguage } from "@/lib/languageContext";
+import { saveFirebaseConfigToStorage } from "@/lib/firebaseConfigStorage";
 
 export default function SetupPage() {
   const [, setLocation] = useLocation();
@@ -28,10 +29,8 @@ export default function SetupPage() {
 
     setIsLoading(true);
     try {
-      const db = getFirestore();
-      const configRef = doc(db, "settings", "firebase");
-      
-      await setDoc(configRef, {
+      // 1. Save to localStorage immediately
+      saveFirebaseConfigToStorage({
         firebaseApiKey,
         firebaseProjectId,
         firebaseAppId,
@@ -39,8 +38,26 @@ export default function SetupPage() {
         firebaseStorageBucket,
         firebaseMessagingSenderId,
         firebaseMeasurementId,
-        updatedAt: new Date(),
       });
+
+      // 2. Try to save to Firestore (may fail if not initialized yet, that's ok)
+      try {
+        const db = getFirestore();
+        const configRef = doc(db, "settings", "firebase");
+        
+        await setDoc(configRef, {
+          firebaseApiKey,
+          firebaseProjectId,
+          firebaseAppId,
+          firebaseAuthDomain,
+          firebaseStorageBucket,
+          firebaseMessagingSenderId,
+          firebaseMeasurementId,
+          updatedAt: new Date(),
+        });
+      } catch (firestoreError) {
+        console.log("Note: Firestore save skipped on first setup", firestoreError);
+      }
 
       toast.success(language === "ar" ? "تم حفظ الإعدادات بنجاح!" : "Settings saved successfully!");
       

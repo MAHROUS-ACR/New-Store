@@ -20,6 +20,7 @@ import LoginPage from "@/pages/login";
 import DiscountsPage from "@/pages/discounts";
 import NotificationSetupPage from "@/pages/notification-setup";
 import SetupPage from "@/pages/setup";
+import { hasFirebaseConfig } from "@/lib/firebaseConfigStorage";
 
 function Router() {
   const [location] = useLocation();
@@ -27,14 +28,9 @@ function Router() {
   const [isChecking, setIsChecking] = useState(true);
 
   useEffect(() => {
-    // Check if Firebase is configured
-    const apiKey = import.meta.env.VITE_FIREBASE_API_KEY;
-    const projectId = import.meta.env.VITE_FIREBASE_PROJECT_ID;
-    const appId = import.meta.env.VITE_FIREBASE_APP_ID;
-    const authDomain = import.meta.env.VITE_FIREBASE_AUTH_DOMAIN;
-
-    const hasFirebaseConfig = !!(apiKey && projectId && appId && authDomain);
-    setNeedsSetup(!hasFirebaseConfig);
+    // Check if Firebase is configured (from localStorage or env vars)
+    const hasConfig = hasFirebaseConfig();
+    setNeedsSetup(!hasConfig);
     setIsChecking(false);
   }, []);
 
