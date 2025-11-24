@@ -169,6 +169,69 @@ After deployment, you can change Firebase project without redeployment:
 
 ---
 
+## GitHub Secrets (Important for GitHub Deployment)
+
+**If you're pushing to GitHub (Vercel, Netlify, GitHub Pages), you MUST add secrets there!**
+
+### ⚠️ Important Rule
+- ❌ **DON'T** commit `.env` file with secrets
+- ✅ **DO** add secrets to GitHub Secrets settings
+- The app will read secrets from GitHub during deployment
+
+### How to Add Secrets to GitHub
+
+1. **Open your repository on GitHub**
+
+2. **Go to Settings → Secrets and variables → Actions**
+   ```
+   Your repo → Settings → Secrets and variables → Actions
+   ```
+
+3. **Click "New repository secret"** and add these 6 secrets:
+
+   | Secret Name | Where to Get It |
+   |-------------|-----------------|
+   | `VITE_FIREBASE_API_KEY` | Firebase Console → Project Settings |
+   | `VITE_FIREBASE_AUTH_DOMAIN` | Firebase Console → Project Settings |
+   | `VITE_FIREBASE_PROJECT_ID` | Firebase Console → Project Settings |
+   | `VITE_FIREBASE_STORAGE_BUCKET` | Firebase Console → Project Settings |
+   | `VITE_FIREBASE_MESSAGING_SENDER_ID` | Firebase Console → Project Settings |
+   | `VITE_FIREBASE_APP_ID` | Firebase Console → Project Settings |
+
+4. **Get values from Firebase Console:**
+   - Go to https://console.firebase.google.com
+   - Select your project
+   - Click ⚙️ (Settings) → Project Settings
+   - Copy each value exactly as shown
+
+5. **Add each secret to GitHub:**
+   - Secret name (exact match above)
+   - Secret value (from Firebase)
+   - Click "Add secret"
+
+### Visual Guide
+
+```
+GitHub Repository
+    ↓
+Settings tab
+    ↓
+Secrets and variables (left menu)
+    ↓
+Actions (tab)
+    ↓
+New repository secret (green button)
+    ↓
+Add 6 secrets (VITE_FIREBASE_*)
+    ↓
+Done! Vercel/Netlify can now read them
+```
+
+### For Replit Users
+If you're on Replit, secrets are already configured. When you push to GitHub, GitHub needs its own copy!
+
+---
+
 ## Step-by-Step: Build & Upload
 
 ### For Most Hosting Services:
