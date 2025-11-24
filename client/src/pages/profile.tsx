@@ -182,7 +182,7 @@ export default function ProfilePage() {
     try {
       const data = await getOrders(user.id);
       // Only count completed orders
-      const completedOrders = data.filter((o: AdminOrder) => o.status === 'completed');
+      const completedOrders = (data as AdminOrder[]).filter((o: AdminOrder) => o.status === 'completed');
       setUserOrdersCount(completedOrders.length);
       setUserOrdersTotal(completedOrders.reduce((sum: number, o: AdminOrder) => sum + o.total, 0));
     } catch (error) {
@@ -196,7 +196,7 @@ export default function ProfilePage() {
     try {
       // Admin can see all orders - pass undefined to get all
       const data = await getOrders(undefined);
-      setOrders(data || []);
+      setOrders((data as AdminOrder[]) || []);
     } catch (error) {
       console.error("Error fetching orders:", error);
       toast.error("Failed to load orders");
