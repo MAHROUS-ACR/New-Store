@@ -7,6 +7,30 @@ let appInitialized = false;
 
 export async function initializeNotifications(firebaseConfig: any) {
   try {
+    // Initialize Firebase messaging only if not already done
+    if (!appInitialized && firebaseConfig) {
+      try {
+        const app = initializeApp(firebaseConfig);
+        messaging = getMessaging(app);
+        appInitialized = true;
+        console.log('✅ Firebase Messaging initialized');
+      } catch (error: any) {
+        if (error.code === 'app/duplicate-app') {
+          // App already initialized, get messaging from default app
+          try {
+            messaging = getMessaging();
+            appInitialized = true;
+            console.log('✅ Firebase Messaging retrieved from existing app');
+          } catch (e) {
+            console.warn('⚠️ Could not initialize messaging:', e);
+          }
+        } else {
+          console.error('❌ Firebase initialization error:', error);
+          throw error;
+        }
+      }
+    }
+
     // Register Service Worker
     if ('serviceWorker' in navigator) {
       try {
@@ -23,19 +47,11 @@ export async function initializeNotifications(firebaseConfig: any) {
           });
         }
       } catch (error) {
-        console.error('❌ Service Worker registration failed:', error);
+        console.log('⚠️ Service Worker registration skipped:', error);
       }
     }
-
-    // Initialize Firebase app if not already done
-    if (firebaseConfig && !appInitialized) {
-      const app = initializeApp(firebaseConfig);
-      messaging = getMessaging(app);
-      appInitialized = true;
-      console.log('✅ Firebase Messaging initialized');
-    }
   } catch (error) {
-    console.error('❌ Error initializing notifications:', error);
+    console.error('❌ Error in notifications setup:', error);
   }
 }
 

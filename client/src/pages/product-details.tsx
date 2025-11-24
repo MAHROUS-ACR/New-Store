@@ -8,6 +8,7 @@ import { useLanguage } from "@/lib/languageContext";
 import { t } from "@/lib/translations";
 import { toast } from "sonner";
 import { getAllDiscounts, getActiveDiscount, calculateDiscountedPrice, type Discount } from "@/lib/discountUtils";
+import { getProducts, getProductById } from "@/lib/firebaseOps";
 
 export default function ProductDetailsPage() {
   const [, setLocation] = useLocation();
@@ -31,24 +32,20 @@ export default function ProductDetailsPage() {
         const discountData = await getAllDiscounts();
         setDiscounts(discountData || []);
 
-        // Load product
-        const response = await fetch(`/api/products/${params?.id}`);
-        if (response.ok) {
-          const data = await response.json();
-          setProduct(data);
+        // Load product from Firestore
+        let product = await getProductById(params?.id);
+        
+        // If not found, try searching in all products
+        if (!product) {
+          const allProducts = await getProducts();
+          product = allProducts.find((p: any) => String(p.id) === String(params?.id));
+        }
+
+        if (product) {
+          setProduct(product);
         } else {
-          // Try to load from products list as fallback
-          const productsResponse = await fetch("/api/products");
-          if (productsResponse.ok) {
-            const products = await productsResponse.json();
-            const found = products.find((p: any) => String(p.id) === String(params?.id));
-            if (found) {
-              setProduct(found);
-            } else {
-              toast.error("Product not found");
-              setLocation("/");
-            }
-          }
+          toast.error("Product not found");
+          setLocation("/");
         }
       } catch (error) {
         console.error("Error loading product:", error);
