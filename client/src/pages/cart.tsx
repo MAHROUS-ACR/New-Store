@@ -1,4 +1,3 @@
-import { MobileWrapper } from "@/components/mobile-wrapper";
 import { BottomNav } from "@/components/bottom-nav";
 import { ArrowLeft, Trash2, Minus, Plus } from "lucide-react";
 import { useLocation } from "wouter";
@@ -51,7 +50,7 @@ export default function CartPage() {
 
   if (items.length === 0) {
     return (
-      <MobileWrapper>
+      <div className="w-full h-full relative flex flex-col overflow-hidden bg-white">
         <div className="flex-1 flex flex-col items-center justify-center px-6">
           <span className="text-6xl mb-4">🛒</span>
           <h2 className="text-lg font-bold mb-2">{t("cartIsEmpty", language)}</h2>
@@ -67,12 +66,12 @@ export default function CartPage() {
         <div className="absolute bottom-0 left-0 right-0">
           <BottomNav />
         </div>
-      </MobileWrapper>
+      </div>
     );
   }
 
   return (
-    <MobileWrapper>
+    <div className="w-full h-full relative flex flex-col overflow-hidden bg-white">
       <div className="w-full flex-1 flex flex-col overflow-hidden">
         {/* Header */}
         <div className="px-6 pb-4 pt-2 flex items-center gap-4 border-b border-gray-100 flex-shrink-0">
@@ -200,6 +199,6 @@ export default function CartPage() {
       <div className="absolute bottom-0 left-0 right-0">
         <BottomNav />
       </div>
-    </MobileWrapper>
+    </div>
   );
 }

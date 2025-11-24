@@ -6,7 +6,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { CartProvider } from "@/lib/cartContext";
 import { UserProvider } from "@/lib/userContext";
 import { LanguageProvider } from "@/lib/languageContext";
-import { MobileWrapper } from "@/components/mobile-wrapper";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 import ProfilePage from "@/pages/profile";
@@ -48,9 +47,7 @@ function App() {
           <CartProvider>
             <TooltipProvider>
               <Toaster />
-              <MobileWrapper>
-                <Router />
-              </MobileWrapper>
+              <Router />
             </TooltipProvider>
           </CartProvider>
         </UserProvider>

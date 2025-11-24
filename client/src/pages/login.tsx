@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { MobileWrapper } from "@/components/mobile-wrapper";
 import { useLocation } from "wouter";
 import { useUser } from "@/lib/userContext";
 import { toast } from "sonner";
@@ -60,17 +59,14 @@ export default function LoginPage() {
 
   if (isLoading) {
     return (
-      <MobileWrapper>
-        <div className="w-full flex-1 flex items-center justify-center">
-          <div className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
-        </div>
-      </MobileWrapper>
+      <div className="w-full h-full flex items-center justify-center">
+        <div className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+      </div>
     );
   }
 
   return (
-    <MobileWrapper>
-      <div className="w-full flex-1 flex flex-col items-center justify-center px-6 pb-20">
+    <div className="w-full h-full flex flex-col items-center justify-center px-6 pb-20">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold mb-2">Flux Wallet</h1>
           <p className="text-muted-foreground">
@@ -159,7 +155,6 @@ export default function LoginPage() {
             ? "Already have an account? Sign in"
             : "Don't have an account? Sign up"}
         </button>
-      </div>
-    </MobileWrapper>
+    </div>
   );
 }
