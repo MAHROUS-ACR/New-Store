@@ -11,11 +11,6 @@ import { setupFirebaseSettingsFromEnv } from "@/lib/setupFirebaseSettings";
 export default function SettingsPage() {
   const [, setLocation] = useLocation();
   
-  // Server-side Firebase config
-  const [projectId, setProjectId] = useState("");
-  const [privateKey, setPrivateKey] = useState("");
-  const [clientEmail, setClientEmail] = useState("");
-  
   // Client-side Firebase Auth config
   const [firebaseApiKey, setFirebaseApiKey] = useState("");
   const [firebaseProjectId, setFirebaseProjectId] = useState("");
@@ -49,9 +44,6 @@ export default function SettingsPage() {
         
         if (firebaseConfigSnap.exists()) {
           const serverConfig = firebaseConfigSnap.data();
-          setProjectId(serverConfig.projectId || "");
-          setPrivateKey(serverConfig.privateKey || "");
-          setClientEmail(serverConfig.clientEmail || "");
           setFirebaseApiKey(serverConfig.firebaseApiKey || "");
           setFirebaseProjectId(serverConfig.firebaseProjectId || "");
           setFirebaseAppId(serverConfig.firebaseAppId || "");
@@ -94,9 +86,6 @@ export default function SettingsPage() {
       // Save Firebase config to Firestore
       const firebaseConfigRef = doc(db, "settings", "firebase");
       await setDoc(firebaseConfigRef, {
-        projectId,
-        privateKey,
-        clientEmail,
         firebaseApiKey,
         firebaseProjectId,
         firebaseAppId,
@@ -172,77 +161,9 @@ export default function SettingsPage() {
         {/* Content */}
         <div className="flex-1 overflow-y-auto no-scrollbar pb-40 w-full">
           <div className="w-full px-6 py-6">
-            {/* Firebase Data Configuration Section */}
+
+            {/* Firebase Configuration Section */}
             <div className="mb-8">
-              <h2 className="text-lg font-bold mb-4">Firebase Data Configuration</h2>
-              <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-6">
-                <div className="flex items-start gap-3">
-                  <Database className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                  <div className="text-sm">
-                    <p className="font-semibold text-blue-900 mb-1">Setup Instructions</p>
-                    <ol className="text-blue-800 space-y-1 list-decimal list-inside text-xs leading-relaxed">
-                      <li>Go to Firebase Console → Project Settings</li>
-                      <li>Navigate to Service Accounts tab</li>
-                      <li>Click "Generate New Private Key"</li>
-                      <li>Copy the values from the JSON file below</li>
-                    </ol>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-semibold mb-2" htmlFor="projectId">
-                    Project ID
-                  </label>
-                  <input
-                    id="projectId"
-                    type="text"
-                    value={projectId}
-                    onChange={(e) => setProjectId(e.target.value)}
-                    placeholder="your-project-id"
-                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                    data-testid="input-project-id"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold mb-2" htmlFor="clientEmail">
-                    Client Email
-                  </label>
-                  <input
-                    id="clientEmail"
-                    type="email"
-                    value={clientEmail}
-                    onChange={(e) => setClientEmail(e.target.value)}
-                    placeholder="firebase-adminsdk-xxxxx@your-project.iam.gserviceaccount.com"
-                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                    data-testid="input-client-email"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold mb-2" htmlFor="privateKey">
-                    Private Key
-                  </label>
-                  <textarea
-                    id="privateKey"
-                    value={privateKey}
-                    onChange={(e) => setPrivateKey(e.target.value)}
-                    placeholder="-----BEGIN PRIVATE KEY-----&#10;...&#10;-----END PRIVATE KEY-----"
-                    rows={6}
-                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-mono text-xs resize-none"
-                    data-testid="input-private-key"
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Include the full key with BEGIN and END markers
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Firebase Authentication Section */}
-            <div className="mb-8 pt-8 border-t border-gray-200">
               <h2 className="text-lg font-bold mb-4">Firebase Authentication</h2>
               <p className="text-sm text-muted-foreground mb-6">
                 Configure your Firebase project for client-side authentication (sign up/login)
