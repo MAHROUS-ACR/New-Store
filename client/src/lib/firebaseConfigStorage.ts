@@ -1,11 +1,11 @@
 /**
- * Firebase Config Storage
- * Reads/writes Firebase config from Firestore (settings/firebase doc)
- * This is cloud-based, so all users see the same config
+ * Firebase Config Storage - Firestore Only
+ * Checks Firestore for config. If not found, shows setup page.
+ * No separate files needed - everything in Firestore.
  */
 
-import { getFirestore, doc, getDoc } from "firebase/firestore";
 import { initializeApp, getApps } from "firebase/app";
+import { getFirestore, doc, getDoc } from "firebase/firestore";
 
 export interface FirebaseConfigData {
   firebaseApiKey: string;
@@ -15,13 +15,12 @@ export interface FirebaseConfigData {
   firebaseStorageBucket?: string;
   firebaseMessagingSenderId?: string;
   firebaseMeasurementId?: string;
-  timestamp?: number;
 }
 
 /**
- * Get Firebase config from environment variables (bootstrap config)
+ * Get Firebase config from environment variables (bootstrap only)
  */
-export function getBootstrapFirebaseConfig(): Partial<FirebaseConfigData> {
+function getBootstrapConfig(): Partial<FirebaseConfigData> {
   return {
     firebaseApiKey: import.meta.env.VITE_FIREBASE_API_KEY,
     firebaseProjectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
@@ -34,36 +33,70 @@ export function getBootstrapFirebaseConfig(): Partial<FirebaseConfigData> {
 }
 
 /**
- * Check if Firebase config exists (from env vars)
+ * Check if Firebase has a valid config (env vars only, for initial check)
  */
-export function hasFirebaseConfig(): boolean {
-  const config = getBootstrapFirebaseConfig();
+export function hasBootstrapConfig(): boolean {
+  const config = getBootstrapConfig();
   return !!(config.firebaseApiKey && config.firebaseProjectId && config.firebaseAppId && config.firebaseAuthDomain);
 }
 
 /**
- * Get Firebase config from Firestore if it exists
+ * Initialize Firebase with bootstrap config
+ */
+function initializeBootstrapFirebase() {
+  try {
+    if (getApps().length === 0) {
+      const config = getBootstrapConfig();
+      if (config.firebaseApiKey && config.firebaseProjectId) {
+        initializeApp({
+          apiKey: config.firebaseApiKey,
+          authDomain: config.firebaseAuthDomain,
+          projectId: config.firebaseProjectId,
+          storageBucket: config.firebaseStorageBucket || "",
+          messagingSenderId: config.firebaseMessagingSenderId || "",
+          appId: config.firebaseAppId,
+        });
+      }
+    }
+  } catch (error: any) {
+    if (!error.message?.includes('duplicate-app')) {
+      console.error("Error initializing Firebase:", error);
+    }
+  }
+}
+
+/**
+ * Check if config exists in Firestore (settings/firebase)
+ */
+export async function hasFirebaseConfigInFirestore(): Promise<boolean> {
+  try {
+    // Need bootstrap to read from Firestore
+    if (!hasBootstrapConfig()) {
+      return false;
+    }
+
+    initializeBootstrapFirebase();
+    const db = getFirestore();
+    const configRef = doc(db, "settings", "firebase");
+    const configSnap = await getDoc(configRef);
+    
+    return configSnap.exists();
+  } catch (error) {
+    console.error("Error checking Firestore config:", error);
+    return false;
+  }
+}
+
+/**
+ * Get config from Firestore (settings/firebase document)
  */
 export async function getFirebaseConfigFromFirestore(): Promise<FirebaseConfigData | null> {
   try {
-    // Need bootstrap config to initialize Firebase first
-    const bootstrapConfig = getBootstrapFirebaseConfig();
-    if (!bootstrapConfig.firebaseApiKey) {
+    if (!hasBootstrapConfig()) {
       return null;
     }
 
-    // Initialize Firebase if not already initialized
-    if (getApps().length === 0) {
-      initializeApp({
-        apiKey: bootstrapConfig.firebaseApiKey,
-        authDomain: bootstrapConfig.firebaseAuthDomain,
-        projectId: bootstrapConfig.firebaseProjectId,
-        storageBucket: bootstrapConfig.firebaseStorageBucket || "",
-        messagingSenderId: bootstrapConfig.firebaseMessagingSenderId || "",
-        appId: bootstrapConfig.firebaseAppId,
-      });
-    }
-
+    initializeBootstrapFirebase();
     const db = getFirestore();
     const configRef = doc(db, "settings", "firebase");
     const configSnap = await getDoc(configRef);
@@ -76,12 +109,4 @@ export async function getFirebaseConfigFromFirestore(): Promise<FirebaseConfigDa
     console.error("Error reading Firebase config from Firestore:", error);
     return null;
   }
-}
-
-/**
- * Get effective Firebase config (priority: Firestore > env vars)
- */
-export function getEffectiveFirebaseConfig(): Partial<FirebaseConfigData> {
-  // Always use environment variables as bootstrap
-  return getBootstrapFirebaseConfig();
 }

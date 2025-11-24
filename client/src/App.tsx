@@ -20,7 +20,7 @@ import LoginPage from "@/pages/login";
 import DiscountsPage from "@/pages/discounts";
 import NotificationSetupPage from "@/pages/notification-setup";
 import SetupPage from "@/pages/setup";
-import { hasFirebaseConfig } from "@/lib/firebaseConfigStorage";
+import { hasBootstrapConfig, hasFirebaseConfigInFirestore } from "@/lib/firebaseConfigStorage";
 
 function Router() {
   const [location] = useLocation();
@@ -28,13 +28,25 @@ function Router() {
   const [isChecking, setIsChecking] = useState(true);
 
   useEffect(() => {
-    // Check if Firebase is configured (from localStorage or env vars)
-    const hasConfig = hasFirebaseConfig();
-    setNeedsSetup(!hasConfig);
-    setIsChecking(false);
+    const checkConfig = async () => {
+      // 1. Check if bootstrap config exists (env vars)
+      const hasBootstrap = hasBootstrapConfig();
+      
+      if (hasBootstrap) {
+        // 2. If bootstrap exists, check if config exists in Firestore
+        const hasFirestoreConfig = await hasFirebaseConfigInFirestore();
+        setNeedsSetup(!hasFirestoreConfig);
+      } else {
+        // 3. No bootstrap config, so show setup
+        setNeedsSetup(true);
+      }
+
+      setIsChecking(false);
+    };
+
+    checkConfig();
   }, []);
 
-  // Show setup page if Firebase is not configured
   if (isChecking) {
     return (
       <div className="w-full h-full flex items-center justify-center">
@@ -61,7 +73,6 @@ function Router() {
       <Route path="/product/:id" component={ProductDetailsPage} />
       <Route path="/discounts" component={DiscountsPage} />
       <Route path="/notification-setup" component={NotificationSetupPage} />
-      {/* Fallback to 404 */}
       <Route component={NotFound} />
     </Switch>
   );
