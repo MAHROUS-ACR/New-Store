@@ -344,13 +344,13 @@ export default function CheckoutPage() {
           <div className="w-full px-5 py-4">
           {/* Order Summary */}
           <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-6">
-            <h3 className="font-semibold text-sm mb-3">{t("orderSummary", language)}</h3>
+            <h3 className="font-semibold text-sm mb-3">{t("orderSummary", language)} (L.E)</h3>
             <div className="space-y-2 text-sm">
               {items.map((item, idx) => (
                 <div key={`${item.id}-${idx}`} className="flex flex-col gap-1">
                   <div className="flex justify-between">
                     <span>{item.quantity}x {item.title}</span>
-                    <span>L.E {(item.price * item.quantity).toFixed(2)}</span>
+                    <span>{(item.price * item.quantity).toFixed(2)}</span>
                   </div>
                   {(item.selectedColor || item.selectedSize || item.selectedUnit) && (
                     <div className="flex flex-wrap gap-1 ml-2">
@@ -376,27 +376,27 @@ export default function CheckoutPage() {
               <div className="border-t border-blue-200 pt-2 space-y-2">
                 <div className="flex justify-between text-sm">
                   <span>{t("subtotal", language)}</span>
-                  <span>L.E {total.toFixed(2)}</span>
+                  <span>{total.toFixed(2)}</span>
                 </div>
                 {calculateTotalWithDiscounts() < total && (
                   <div className="flex justify-between text-sm text-green-600 font-semibold">
                     <span>{t("discount", language)}</span>
-                    <span>-L.E {(total - calculateTotalWithDiscounts()).toFixed(2)}</span>
+                    <span>-{(total - calculateTotalWithDiscounts()).toFixed(2)}</span>
                   </div>
                 )}
                 {calculateTotalWithDiscounts() < total && (
                   <div className="flex justify-between text-sm font-semibold">
                     <span>{t("afterDiscount", language)}</span>
-                    <span className="text-green-600">L.E {calculateTotalWithDiscounts().toFixed(2)}</span>
+                    <span className="text-green-600">{calculateTotalWithDiscounts().toFixed(2)}</span>
                   </div>
                 )}
                 {shippingCost > 0 && (
                   <div className="flex justify-between text-sm">
                     <span>{t("shipping", language)}</span>
-                    <span>L.E {shippingCost.toFixed(2)}</span>
+                    <span>{shippingCost.toFixed(2)}</span>
                   </div>
                 )}
-                <div className="flex justify-between font-bold text-base">
+                <div className="flex justify-between font-bold text-base border-t border-blue-200 pt-2">
                   <span>{t("total", language)}</span>
                   <span>L.E {(calculateTotalWithDiscounts() + shippingCost).toFixed(2)}</span>
                 </div>
@@ -529,7 +529,7 @@ export default function CheckoutPage() {
                   >
                     <option value="">{t("selectZone", language)}</option>
                     {shippingZones.map((zone) => (
-                      <option key={zone.id} value={zone.name}>{zone.name} (L.E {zone.shippingCost})</option>
+                      <option key={zone.id} value={zone.name}>{zone.name} ({zone.shippingCost})</option>
                     ))}
                   </select>
                 </div>
@@ -572,7 +572,7 @@ export default function CheckoutPage() {
                 <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3 mb-4 text-sm">
                   <div className="flex justify-between font-semibold">
                     <span>{t("shippingCost", language)}:</span>
-                    <span>L.E {shippingCost}</span>
+                    <span>{shippingCost}</span>
                   </div>
                 </div>
               )}
