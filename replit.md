@@ -16,6 +16,7 @@ Flux Wallet is a high-fidelity mobile e-commerce application built as a progress
 - Product variant selection (units, sizes, colors with hex codes)
 - Complete discount/promotions system
 - Push Notifications with Firebase Cloud Messaging
+- Dynamic Firebase project switching (change Firebase credentials anytime)
 
 ## Architecture Changes (Nov 24, 2025)
 
@@ -27,6 +28,7 @@ Flux Wallet is a high-fidelity mobile e-commerce application built as a progress
 - ✅ **Added:** Direct Firebase Firestore operations from client
 - ✅ **New File:** `client/src/lib/firebaseOps.ts` - All Firebase CRUD operations
 - ✅ **Updated:** All pages to use `firebaseOps` instead of REST API calls
+- ✅ **Dynamic Firebase Config:** Settings page allows switching Firebase projects anytime
 
 **Key Benefits:**
 - No server maintenance needed
@@ -34,8 +36,23 @@ Flux Wallet is a high-fidelity mobile e-commerce application built as a progress
 - Simpler deployment (frontend-only on Replit)
 - Real-time data sync with Firestore listeners
 - Reduced latency and complexity
+- **Can switch Firebase projects without code changes** ⭐
 
 ## Recent Changes (Nov 24, 2025)
+
+### Firebase Configuration Management
+- **Settings Page (`settings.tsx`):** Now displays all 7 Firebase credentials
+- **Dynamic Firebase Switching:** Edit credentials in Settings and app automatically reconnects to new project
+- **Firestore-Backed Config:** Firebase settings are stored in `settings/firebase` doc in Firestore
+- **Auto-Reload:** App reloads when Firebase project credentials change
+- **Credentials Required (7 fields):**
+  1. Firebase API Key
+  2. Firebase Project ID
+  3. Firebase App ID
+  4. Auth Domain
+  5. Storage Bucket
+  6. Messaging Sender ID
+  7. Measurement ID
 
 ### Firebase-Only Migration Complete
 - **Removed Express Server:** All `/api/*` endpoints replaced with direct Firestore calls
@@ -48,7 +65,7 @@ Flux Wallet is a high-fidelity mobile e-commerce application built as a progress
   - `saveOrder()` - Create new orders
   - `updateUser()` - Update user profiles
   - And more...
-- **Updated Pages:** home.tsx, checkout.tsx now use firebaseOps
+- **Updated Pages:** home.tsx, checkout.tsx, profile.tsx all use firebaseOps
 - **Workflow:** Now runs `vite dev` only (no Express server)
 
 ## System Architecture
@@ -73,6 +90,7 @@ Flux Wallet is a high-fidelity mobile e-commerce application built as a progress
 - `CartProvider`: Global cart state with localStorage persistence
 - `NotificationCenter`: Real-time notification bell with dropdown
 - **Admin Panel (profile.tsx)**: Tab-based interface for all admin functions
+- **Settings Page (settings.tsx)**: Manage Firebase project credentials, store info, branding
 
 ### Data Storage
 
@@ -83,6 +101,7 @@ Flux Wallet is a high-fidelity mobile e-commerce application built as a progress
 - `shippingZones` - Shipping cost configuration
 - `notifications` - Order and system notifications
 - `fcmTokens` - Firebase Cloud Messaging tokens for push notifications
+- `settings/firebase` - Firebase project credentials (editable via Settings page)
 - `settings/store` - Store branding and configuration
 - `users` - User profiles and roles
 
@@ -108,6 +127,17 @@ Flux Wallet is a high-fidelity mobile e-commerce application built as a progress
 - **Build:** Vite ESBuild
 - **Port:** 5000
 
+## How to Switch Firebase Projects
+
+1. Navigate to Settings page (`/settings`)
+2. Locate "Firebase Configuration" section with 7 input fields
+3. Get credentials from your new Firebase project:
+   - Firebase Console → Project Settings → General tab
+   - Copy: API Key, Project ID, App ID, Auth Domain, Storage Bucket, Messaging Sender ID, Measurement ID
+4. Update the fields in Settings page
+5. Click "Save All Settings"
+6. App automatically reloads and connects to new Firebase project ✅
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
@@ -116,6 +146,19 @@ Preferred communication style: Simple, everyday language.
 
 - **No Backend Server:** Application runs entirely on Firebase and client-side
 - **Direct Firestore Calls:** All data operations are in `firebaseOps.ts`
+- **Dynamic Configuration:** Firebase credentials can be changed anytime via Settings page
+- **Firestore-Backed Settings:** All settings (Firebase config, store info) are saved in Firestore
 - **Workflow:** Uses `npm run dev` (Vite dev server) only
 - **Deployment:** Frontend-only, can be deployed to any static host or Replit Publishing
 - **Future Enhancement:** Can add Cloud Functions for complex operations
+
+## Completed Features (Nov 24, 2025)
+
+✅ Complete migration to Firebase-only architecture  
+✅ Removed all Express API endpoints  
+✅ Removed database (PostgreSQL) completely  
+✅ Dynamic Firebase project switching  
+✅ Settings page with Firebase credential management  
+✅ Store branding and configuration management  
+✅ Zero backend server  
+✅ All CRUD operations via Firestore
