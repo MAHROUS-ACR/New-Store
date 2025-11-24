@@ -112,6 +112,39 @@ export async function getFCMToken(): Promise<string | null> {
   }
 }
 
+export function playNotificationSound() {
+  try {
+    // Play notification sound
+    const audio = new Audio('data:audio/wav;base64,UklGRiYAAABXQVZFZm10IBAAAAABAAEAQB8AAAB9AAACABAAZGF0YQIAAAAAAA==');
+    audio.play().catch(e => console.log('Could not play sound:', e));
+    
+    // Alternative: Use Web Audio API to create a beep if audio fails
+    if (!audio.canPlayType('audio/wav')) {
+      try {
+        const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.frequency.value = 800;
+        oscillator.type = 'sine';
+        
+        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+        
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.5);
+      } catch (e) {
+        console.log('Web Audio API not available');
+      }
+    }
+  } catch (error) {
+    console.log('⚠️ Could not play notification sound:', error);
+  }
+}
+
 export function setupOnMessageListener(callback: (payload: any) => void) {
   try {
     if (!messaging) {
@@ -122,6 +155,9 @@ export function setupOnMessageListener(callback: (payload: any) => void) {
     // Handle foreground messages
     onMessage(messaging, (payload) => {
       console.log('📬 Foreground message received:', payload);
+      
+      // Play notification sound
+      playNotificationSound();
       
       // Show notification even in foreground
       if (payload.notification) {

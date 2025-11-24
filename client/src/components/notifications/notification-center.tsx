@@ -3,6 +3,7 @@ import { Bell, Trash2, Check } from "lucide-react";
 import { useUser } from "@/lib/userContext";
 import { useLanguage } from "@/lib/languageContext";
 import { getFirestore, collection, getDocs, query, where, doc, updateDoc, deleteDoc } from "firebase/firestore";
+import { playNotificationSound } from "@/lib/notificationUtils";
 
 interface Notification {
   id: string;
@@ -40,6 +41,16 @@ export function NotificationCenter() {
       
       const snapshot = await getDocs(q);
       const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Notification[];
+      
+      // Check if there are new unread notifications and play sound
+      const previousUnreadCount = notifications.filter((n) => !n.read).length;
+      const newUnreadCount = (data || []).filter((n) => !n.read).length;
+      
+      if (newUnreadCount > previousUnreadCount && previousUnreadCount > 0) {
+        // New unread notifications detected - play sound
+        playNotificationSound();
+      }
+      
       setNotifications(data || []);
       console.log(`✅ Fetched ${data?.length || 0} notifications`);
     } catch (error) {
