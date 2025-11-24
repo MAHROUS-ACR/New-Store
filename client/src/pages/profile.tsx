@@ -1860,40 +1860,49 @@ export default function ProfilePage() {
                         <div
                           key={item.id}
                           className="bg-white border border-gray-200 rounded-2xl p-4 hover:border-gray-300 transition-colors"
-                          data-testid={`card-product-L.E item.id}`}
+                          data-testid={`card-product-${item.id}`}
                         >
-                          <div className="flex items-start justify-between mb-2">
-                            <div className="flex-1 flex gap-3">
-                              {/* Product Image */}
-                              {item.image ? (
-                                <img src={item.image} alt={item.title} className="w-16 h-16 rounded-lg object-cover border border-gray-200 flex-shrink-0" />
-                              ) : (
-                                <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400 border border-gray-200 flex-shrink-0">
-                                  <span className="text-xs">No image</span>
-                                </div>
-                              )}
-                              <div className="flex-1">
-                                <p className="text-sm font-bold text-gray-900">{item.title}</p>
-                                <p className="text-xs text-gray-500">{item.category}</p>
-                                <div className="flex flex-wrap gap-1 mt-1">
-                                  {item.units && item.units.map((u: string) => <span key={u} className="inline-block px-5 py-1 bg-blue-100 text-blue-700 rounded text-xs">{u}</span>)}
-                                  {item.sizes && item.sizes.map((s: string) => <span key={s} className="inline-block px-5 py-1 bg-green-100 text-green-700 rounded text-xs">{s}</span>)}
-                                  {item.colors && item.colors.map((c: string) => {
-                                    const colorName = typeof c === 'string' ? c.split('|')[0] : c;
-                                    const colorHex = typeof c === 'string' ? c.split('|')[1] || '#000000' : '#000000';
-                                    return (
-                                      <span key={colorName} className="inline-block px-5 py-1 bg-red-100 text-red-700 rounded text-xs flex items-center gap-1 border" style={{borderColor: colorHex}}>
-                                        <span style={{width: '8px', height: '8px', backgroundColor: colorHex, borderRadius: '2px'}}></span>
-                                        {colorName}
-                                      </span>
-                                    );
-                                  })}
-                                  {!item.available && <span className="inline-block px-5 py-1 bg-red-100 text-red-700 rounded text-xs">{t("notAvailable", language)}</span>}
-                                </div>
+                          {/* Product Header: Image + Info + Price */}
+                          <div className="flex items-start gap-4 mb-4 pb-4 border-b border-gray-100">
+                            {/* Product Image */}
+                            {item.image ? (
+                              <img src={item.image} alt={item.title} className="w-20 h-20 rounded-lg object-cover border border-gray-200 flex-shrink-0" />
+                            ) : (
+                              <div className="w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400 border border-gray-200 flex-shrink-0">
+                                <span className="text-xs">No image</span>
+                              </div>
+                            )}
+                            {/* Title, Category and Price */}
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-bold text-gray-900 line-clamp-2">{item.title}</p>
+                              <p className="text-xs text-gray-500 mb-2">{item.category}</p>
+                              <p className="text-base font-bold text-emerald-600">L.E {item.price.toFixed(2)}</p>
+                            </div>
+                          </div>
+
+                          {/* Variants */}
+                          {(item.units?.length > 0 || item.sizes?.length > 0 || item.colors?.length > 0 || !item.available) && (
+                            <div className="mb-4 pb-4 border-b border-gray-100">
+                              <p className="text-xs font-semibold text-gray-500 mb-2">Options:</p>
+                              <div className="flex flex-wrap gap-2">
+                                {item.units && item.units.map((u: string) => <span key={u} className="inline-block px-2 py-1 bg-blue-100 text-blue-700 rounded text-[10px] font-medium">{u}</span>)}
+                                {item.sizes && item.sizes.map((s: string) => <span key={s} className="inline-block px-2 py-1 bg-green-100 text-green-700 rounded text-[10px] font-medium">{s}</span>)}
+                                {item.colors && item.colors.map((c: string) => {
+                                  const colorName = typeof c === 'string' ? c.split('|')[0] : c;
+                                  const colorHex = typeof c === 'string' ? c.split('|')[1] || '#000000' : '#000000';
+                                  return (
+                                    <span key={colorName} className="inline-block px-2 py-1 rounded text-[10px] font-medium text-white flex items-center gap-1 border" style={{backgroundColor: colorHex, borderColor: colorHex}}>
+                                      <span style={{width: '6px', height: '6px', backgroundColor: 'white', borderRadius: '1px'}}></span>
+                                      {colorName}
+                                    </span>
+                                  );
+                                })}
+                                {!item.available && <span className="inline-block px-2 py-1 bg-red-100 text-red-700 rounded text-[10px] font-medium">{t("notAvailable", language)}</span>}
                               </div>
                             </div>
-                            <p className="text-sm font-semibold text-gray-900">L.E {item.price.toFixed(2)}</p>
-                          </div>
+                          )}
+
+                          {/* Action Buttons */}
                           <div className="flex gap-2">
                             <button
                               onClick={() => {
@@ -1914,8 +1923,8 @@ export default function ProfilePage() {
                                 setColorInput("");
                                 setCurrentColorHex("#000000");
                               }}
-                              className="flex-1 px-3 py-2 bg-amber-100 text-amber-700 rounded-lg flex items-center justify-center gap-1 hover:bg-amber-200 transition-colors text-xs font-semibold"
-                              data-testid={`button-edit-item-L.E item.id}`}
+                              className="flex-1 px-3 py-2 bg-amber-100 text-amber-700 rounded-lg flex items-center justify-center gap-2 hover:bg-amber-200 transition-colors text-xs font-semibold"
+                              data-testid={`button-edit-item-${item.id}`}
                             >
                               <Edit2 className="w-3 h-3" />
                               {t("editButton", language)}
@@ -1940,8 +1949,8 @@ export default function ProfilePage() {
                                   toast.error("Failed to delete product");
                                 }
                               }}
-                              className="flex-1 px-3 py-2 bg-red-100 text-red-700 rounded-lg flex items-center justify-center gap-1 hover:bg-red-200 transition-colors text-xs font-semibold"
-                              data-testid={`button-delete-item-L.E item.id}`}
+                              className="flex-1 px-3 py-2 bg-red-100 text-red-700 rounded-lg flex items-center justify-center gap-2 hover:bg-red-200 transition-colors text-xs font-semibold"
+                              data-testid={`button-delete-item-${item.id}`}
                             >
                               <Trash2 className="w-3 h-3" />
                               {t("deleteButton", language)}
