@@ -33,12 +33,12 @@ export default function ProductDetailsPage() {
         setDiscounts(discountData || []);
 
         // Load product from Firestore
-        let product = await getProductById(params?.id);
+        let product = params?.id ? await getProductById(params.id) : null;
         
         // If not found, try searching in all products
-        if (!product) {
+        if (!product && params?.id) {
           const allProducts = await getProducts();
-          product = allProducts.find((p: any) => String(p.id) === String(params?.id));
+          product = allProducts.find((p: any) => String(p.id) === String(params.id)) || null;
         }
 
         if (product) {
@@ -187,7 +187,7 @@ export default function ProductDetailsPage() {
                   <p className="text-3xl font-bold text-green-600" data-testid="text-price">L.E {discountedPrice.toFixed(2)}</p>
                   <p className="text-lg text-gray-400 line-through">L.E {product.price.toFixed(2)}</p>
                   <p className="px-5 py-1 bg-red-100 text-red-700 rounded text-xs font-bold">
-                    {language === "ar" ? `وفر L.E {activeDiscount.discountPercentage}%` : `Save L.E {activeDiscount.discountPercentage}%`}
+                    {language === "ar" ? `وفر ${activeDiscount.discountPercentage}%` : `Save ${activeDiscount.discountPercentage}%`}
                   </p>
                 </div>
               ) : (
@@ -261,12 +261,12 @@ export default function ProductDetailsPage() {
                           <button
                             key={colorName}
                             onClick={() => setSelectedColor(color || '')}
-                            className={`flex items-center gap-2 px-3 py-2 rounded-lg border-2 transition-all L.E {
+                            className={`flex items-center gap-2 px-3 py-2 rounded-lg border-2 transition-all ${
                               selectedColor === color
                                 ? 'border-gray-800 bg-gray-50'
                                 : 'border-gray-200 bg-white hover:border-gray-300'
                             }`}
-                            data-testid={`button-color-L.E {colorName}`}
+                            data-testid={`button-color-${colorName}`}
                           >
                             <span 
                               style={{width: '20px', height: '20px', backgroundColor: colorHex, borderRadius: '4px', border: '1px solid rgba(0,0,0,0.1)'}}
