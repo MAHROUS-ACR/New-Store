@@ -35,12 +35,12 @@ jobs:
           VITE_FIREBASE_MEASUREMENT_ID: ${{ secrets.VITE_FIREBASE_MEASUREMENT_ID }}
       
       - name: Setup 404.html for SPA routing
-        run: cp dist/public/index.html dist/public/404.html && echo "✅ 404.html created from built index.html"
+        run: cp dist/index.html dist/404.html && echo "✅ 404.html created from built index.html"
       
       - name: Deploy to GitHub Pages
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
-          cd dist/public
+          cd dist
           git init
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git config user.name "github-actions[bot]"
