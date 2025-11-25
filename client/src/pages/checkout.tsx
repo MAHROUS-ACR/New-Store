@@ -493,7 +493,15 @@ export default function CheckoutPage() {
               </button>
             </div>
           ) : (
-            <form onSubmit={handlePaymentSubmit} className="space-y-4">
+            <form 
+              onSubmit={(e) => {
+                console.log("🔷🔷🔷 FORM SUBMIT EVENT TRIGGERED 🔷🔷🔷");
+                console.log("📋 Event:", e);
+                console.log("📋 paymentMethod:", paymentMethod);
+                handlePaymentSubmit(e);
+              }} 
+              className="space-y-4"
+            >
               <div className="flex items-center gap-2 mb-6">
                 <button
                   type="button"
