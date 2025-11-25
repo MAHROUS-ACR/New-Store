@@ -9,6 +9,7 @@ import { t } from "@/lib/translations";
 import { toast } from "sonner";
 import { getFirestore, doc, getDoc, updateDoc } from "firebase/firestore";
 import { getOrders } from "@/lib/firebaseOps";
+import { sendNotification } from "@/lib/notificationAPI";
 
 interface CartItem {
   id: string;
@@ -193,6 +194,15 @@ export default function OrderDetailsPage() {
           o.id === order.id ? { ...o, status: newSts } : o
         );
         localStorage.setItem("orders", JSON.stringify(updatedOrders));
+      }
+
+      // Send notification to customer about status change
+      if (order.userId) {
+        await sendNotification({
+          userIds: [order.userId],
+          title: "Order Status Updated",
+          body: `Order #${order.orderNumber} status changed to ${newSts}`
+        });
       }
 
       setOrder({ ...order, status: newSts });

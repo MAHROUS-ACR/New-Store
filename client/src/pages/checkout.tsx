@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { getFirestore, doc, getDoc } from "firebase/firestore";
 import { getAllDiscounts, getActiveDiscount, calculateDiscountedPrice, type Discount } from "@/lib/discountUtils";
 import { getShippingZones, saveOrder } from "@/lib/firebaseOps";
+import { sendNotificationToAdmins } from "@/lib/notificationAPI";
 
 export default function CheckoutPage() {
   const [, setLocation] = useLocation();
@@ -218,9 +219,13 @@ export default function CheckoutPage() {
         console.warn("Failed to save to localStorage:", e);
       }
 
-      // Save to Firebase
+      // Save to Firebase and send notification
       try {
         await saveOrder(orderData);
+        await sendNotificationToAdmins(
+          "New Order",
+          `Order #${orderData.orderNumber} placed for ${orderData.total.toFixed(2)}`
+        );
       } catch (error) {
         console.warn("Failed to save to Firebase:", error);
       }
@@ -287,9 +292,13 @@ export default function CheckoutPage() {
         console.warn("Failed to save to localStorage:", e);
       }
 
-      // Save to Firebase
+      // Save to Firebase and send notification
       try {
         await saveOrder(orderData);
+        await sendNotificationToAdmins(
+          "New Order",
+          `Order #${orderData.orderNumber} placed for ${orderData.total.toFixed(2)}`
+        );
       } catch (error) {
         console.warn("Failed to save to Firebase:", error);
       }
