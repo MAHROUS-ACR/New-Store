@@ -18,6 +18,7 @@ import ProductDetailsPage from "@/pages/product-details";
 import LoginPage from "@/pages/login";
 import DiscountsPage from "@/pages/discounts";
 import NotificationSetupPage from "@/pages/notification-setup";
+import AdminNotificationsPage from "@/pages/admin-notifications";
 
 function AppRouter() {
   return (
@@ -33,6 +34,7 @@ function AppRouter() {
       <Route path="/product/:id" component={ProductDetailsPage} />
       <Route path="/discounts" component={DiscountsPage} />
       <Route path="/notification-setup" component={NotificationSetupPage} />
+      <Route path="/admin-notifications" component={AdminNotificationsPage} />
       {/* Fallback to 404 */}
       <Route component={NotFound} />
     </Switch>

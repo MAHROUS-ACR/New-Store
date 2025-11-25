@@ -988,6 +988,21 @@ export default function ProfilePage() {
                 <ChevronRight className={`w-5 h-5 text-purple-400 transition-transform L.E showOrders ? "rotate-90" : ""}`} />
               </button>
 
+              {/* Real-time Notifications Button */}
+              <button
+                onClick={() => setLocation('/admin-notifications')}
+                className="w-full flex items-center justify-between p-4 bg-blue-50 rounded-2xl border border-blue-200 hover:border-blue-300 transition-colors mb-6"
+                data-testid="button-admin-notifications"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-blue-100 text-blue-600">
+                    <Bell className="w-6 h-6" />
+                  </div>
+                  <span className="font-semibold text-sm text-blue-900">Real-time Notifications</span>
+                </div>
+                <ChevronRight className="w-5 h-5 text-blue-400 transition-transform" />
+              </button>
+
               {/* Orders Content */}
               {showOrders && (
                 <div className="mb-6">
