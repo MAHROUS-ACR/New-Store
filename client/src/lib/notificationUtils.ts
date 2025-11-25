@@ -42,13 +42,27 @@ export async function initializeNotifications(firebaseConfig: any) {
         });
         console.log('✅ Service Worker registered at:', swPath);
 
-        // Send Firebase config to Service Worker
-        if (registration.active) {
-          registration.active.postMessage({
-            type: 'INIT_FIREBASE',
-            config: firebaseConfig
-          });
-        }
+        // Wait a bit for Service Worker to activate, then send Firebase config
+        setTimeout(() => {
+          if (registration.active) {
+            registration.active.postMessage({
+              type: 'INIT_FIREBASE',
+              config: firebaseConfig
+            });
+            console.log('✅ Firebase config sent to Service Worker');
+          } else if (registration.installing) {
+            console.log('⚠️ Service Worker still installing, waiting...');
+            registration.installing.addEventListener('statechange', function() {
+              if (this.state === 'activated' && registration.active) {
+                registration.active.postMessage({
+                  type: 'INIT_FIREBASE',
+                  config: firebaseConfig
+                });
+                console.log('✅ Firebase config sent to Service Worker (after activation)');
+              }
+            });
+          }
+        }, 100);
       } catch (error) {
         console.log('⚠️ Service Worker registration skipped:', error);
       }
