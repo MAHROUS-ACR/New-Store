@@ -733,17 +733,6 @@ export default function CheckoutPage() {
               <button
                 type="submit"
                 disabled={isProcessing}
-                onClick={(e) => {
-                  console.log("🎯🎯🎯 BUTTON CLICK DETECTED 🎯🎯🎯");
-                  console.log("⏸️ isProcessing:", isProcessing);
-                  console.log("⏸️ paymentMethod:", paymentMethod);
-                  console.log("⏸️ shippingType:", shippingType);
-                  console.log("⏸️ selectedZone:", selectedZone);
-                  if (isProcessing) {
-                    console.log("❌ Button is disabled (isProcessing=true)");
-                    e.preventDefault();
-                  }
-                }}
                 className="w-full bg-black text-white py-4 rounded-2xl font-semibold hover:bg-neutral-800 disabled:opacity-50 flex items-center justify-center gap-2"
                 data-testid="button-pay"
               >
@@ -760,6 +749,9 @@ export default function CheckoutPage() {
           )}
           </div>
         </div>
+      </div>
+      <div className="absolute bottom-0 left-0 right-0">
+        <BottomNav />
       </div>
     </MobileWrapper>
   );
