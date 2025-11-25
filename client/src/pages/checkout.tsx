@@ -21,12 +21,18 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     console.log("🛒 Checkout page - Current cart items:", items, "Total:", total);
+    console.log("🛒 Auth state - isLoggedIn:", isLoggedIn, "authLoading:", authLoading);
     if (!authLoading && !isLoggedIn) {
       setLocation("/login");
     }
   }, [isLoggedIn, authLoading, setLocation, items, total]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<"card" | "delivery" | null>(null);
+  
+  // Log payment method changes
+  useEffect(() => {
+    console.log("💳 Payment method changed to:", paymentMethod);
+  }, [paymentMethod]);
 
   // Shipping data
   const [shippingZones, setShippingZones] = useState<any[]>([]);
@@ -733,6 +739,10 @@ export default function CheckoutPage() {
               <button
                 type="submit"
                 disabled={isProcessing}
+                onClick={(e) => {
+                  console.log("🔵 BUTTON CLICK - type:", e.type, "disabled:", isProcessing, "shippingType:", shippingType, "selectedZone:", selectedZone);
+                  console.log("🔵 Button element:", e.currentTarget);
+                }}
                 className="w-full bg-black text-white py-4 rounded-2xl font-semibold hover:bg-neutral-800 disabled:opacity-50 flex items-center justify-center gap-2"
                 data-testid="button-pay"
               >
