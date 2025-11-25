@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { MobileWrapper } from "@/components/mobile-wrapper";
 import { BottomNav } from "@/components/bottom-nav";
-import { Settings, Database, Package, Bell, HelpCircle, LogOut, ChevronRight, Edit2, Check, X, Save, Plus, Trash2, TrendingUp, Globe, ShoppingBag, Store, Users, Truck, BarChart3, MapPin, Zap } from "lucide-react";
+import { Settings, Database, Package, Bell, LogOut, ChevronRight, Edit2, Check, X, Save, Plus, Trash2, TrendingUp, Globe, ShoppingBag, Store, Users, Truck, BarChart3, MapPin, Zap } from "lucide-react";
 import { NotificationCenter } from "@/components/notifications/notification-center";
 import { useLocation } from "wouter";
 import { useUser } from "@/lib/userContext";
@@ -16,7 +16,6 @@ import { getProducts, getOrders } from "@/lib/firebaseOps";
 
 const getMenuItems = (language: any) => [
   { icon: Package, label: t("myOrders", language), path: "/orders", buttonBg: "bg-purple-50", borderColor: "border-purple-200 hover:border-purple-300", iconColor: "text-purple-600 bg-purple-100", textColor: "text-purple-900" },
-  { icon: HelpCircle, label: t("helpSupport", language), path: "/help", buttonBg: "bg-green-50", borderColor: "border-green-200 hover:border-green-300", iconColor: "text-green-600 bg-green-100", textColor: "text-green-900" },
 ];
 
 interface OrderItem {
