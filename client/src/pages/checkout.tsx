@@ -107,6 +107,26 @@ export default function CheckoutPage() {
       return;
     }
 
+    // Validate card payment fields if card selected
+    if (paymentMethod === "card") {
+      if (!formData.cardNumber || formData.cardNumber.replace(/\s/g, "").length !== 16) {
+        toast.error(t("invalidCardNumber", language));
+        return;
+      }
+      if (!formData.expiryDate || formData.expiryDate.length !== 5) {
+        toast.error(t("invalidExpiryDate", language));
+        return;
+      }
+      if (!formData.cvv || formData.cvv.length !== 3) {
+        toast.error(t("invalidCVV", language));
+        return;
+      }
+      if (!formData.cardHolder.trim()) {
+        toast.error(t("enterCardholderName", language));
+        return;
+      }
+    }
+
     setIsProcessing(true);
     try {
       const totalWithDiscounts = calculateTotalWithDiscounts();
@@ -381,6 +401,79 @@ export default function CheckoutPage() {
                     <span>L.E {shippingCost}</span>
                   </div>
                 </div>
+              )}
+
+              {/* Card Payment Form */}
+              {paymentMethod === "card" && (
+                <>
+                  <div>
+                    <label className="block text-sm font-semibold mb-2">{t("cardNumber", language)}</label>
+                    <input
+                      type="text"
+                      placeholder="4532 1234 5678 9010"
+                      value={formData.cardNumber}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/\s/g, "").slice(0, 16);
+                        const formatted = value.replace(/(\d{4})/g, "$1 ").trim();
+                        setFormData(prev => ({ ...prev, cardNumber: formatted }));
+                      }}
+                      className="w-full px-5 py-3 bg-white border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                      data-testid="input-card-number"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold mb-2">{t("cardholderName", language)}</label>
+                    <input
+                      type="text"
+                      placeholder="John Doe"
+                      value={formData.cardHolder}
+                      onChange={(e) => setFormData(prev => ({ ...prev, cardHolder: e.target.value }))}
+                      className="w-full px-5 py-3 bg-white border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                      data-testid="input-cardholder"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold mb-2">{t("expiry", language)}</label>
+                      <input
+                        type="text"
+                        placeholder="MM/YY"
+                        value={formData.expiryDate}
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/\D/g, "").slice(0, 4);
+                          if (value.length >= 2) {
+                            setFormData(prev => ({ ...prev, expiryDate: `${value.slice(0, 2)}/${value.slice(2)}` }));
+                          } else {
+                            setFormData(prev => ({ ...prev, expiryDate: value }));
+                          }
+                        }}
+                        className="w-full px-5 py-3 bg-white border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                        data-testid="input-expiry"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold mb-2">{t("cvv", language)}</label>
+                      <input
+                        type="text"
+                        placeholder="123"
+                        value={formData.cvv}
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/\D/g, "").slice(0, 3);
+                          setFormData(prev => ({ ...prev, cvv: value }));
+                        }}
+                        className="w-full px-5 py-3 bg-white border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                        data-testid="input-cvv"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="bg-green-50 border border-green-200 rounded-2xl p-3 flex items-start gap-2">
+                    <Lock className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    <p className="text-xs text-green-800">{t("securePayment", language)}</p>
+                  </div>
+                </>
               )}
 
               {/* Final CTA */}
