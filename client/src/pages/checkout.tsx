@@ -139,10 +139,17 @@ export default function CheckoutPage() {
         shippingPhone = newPhone;
       }
 
-      // Get sequential order number from Firebase
-      const existingOrders = await getOrders();
-      const maxOrderNum = Math.max(...existingOrders.map((o: any) => o.orderNumber || 0), 0);
-      const orderNumber = maxOrderNum + 1;
+      // Get sequential order number from Firebase (with fallback)
+      let orderNumber = 1;
+      try {
+        const existingOrders = await getOrders();
+        const maxOrderNum = Math.max(...existingOrders.map((o: any) => o.orderNumber || 0), 0);
+        orderNumber = maxOrderNum + 1;
+      } catch (error) {
+        console.warn("Could not fetch existing orders for numbering, using timestamp:", error);
+        // Fallback: use timestamp-based number if Firebase fails
+        orderNumber = Math.floor(Date.now() / 1000);
+      }
 
       const now = new Date();
       const orderData = {
@@ -323,7 +330,17 @@ export default function CheckoutPage() {
                   )}
                   <button
                     type="button"
-                    onClick={() => setShippingType("new")}
+                    onClick={() => {
+                      console.log("📝 New address selected, zones:", shippingZones);
+                      setShippingType("new");
+                      // Auto-set first zone
+                      if (shippingZones.length > 0) {
+                        const zoneName = shippingZones[0].name;
+                        console.log("✅ Setting zone to:", zoneName);
+                        setSelectedZone(zoneName);
+                        setShippingCost(shippingZones[0].shippingCost);
+                      }
+                    }}
                     className="w-full p-3 bg-white border border-cyan-300 rounded-xl text-left hover:bg-cyan-100"
                     data-testid="button-new-address"
                   >
