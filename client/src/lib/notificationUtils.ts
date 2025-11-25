@@ -7,6 +7,11 @@ let appInitialized = false;
 
 export async function initializeNotifications(firebaseConfig: any) {
   try {
+    // Ensure firebase config has all required fields for messaging
+    if (firebaseConfig && !firebaseConfig.messagingSenderId) {
+      console.warn('⚠️ messagingSenderId missing from config - notifications may not work');
+    }
+    
     // Initialize Firebase messaging only if not already done
     if (!appInitialized && firebaseConfig) {
       try {

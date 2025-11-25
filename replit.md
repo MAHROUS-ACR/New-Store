@@ -38,7 +38,30 @@ Flux Wallet is a high-fidelity mobile e-commerce application built as a progress
 - Reduced latency and complexity
 - **Can switch Firebase projects without code changes** ⭐
 
-## Recent Changes (Nov 24, 2025)
+## Recent Changes (Nov 25, 2025)
+
+### Push Notifications Implementation ✅ COMPLETE
+- **Express Server:** Running on port 3001 with Firebase Admin SDK
+- **FCM Token Generation:** Firebase Cloud Messaging tokens generation ready
+- **VAPID Key:** Added `VITE_FIREBASE_VAPID_KEY` environment variable for web push
+- **Notification API Endpoints:**
+  - `POST /api/notifications/send-to-admins` - Send notification to all admin users
+  - `POST /api/notifications/send` - Send notification to specific users
+- **Checkout Integration:** Orders automatically trigger admin notifications
+- **Backend Status:** ✅ FULLY WORKING - API endpoints tested and responding
+- **Frontend Status:** ⏳ Awaiting Firebase Authorization - one-time setup required
+
+**To Complete Setup:**
+1. Add authorized domains in Firebase Console (Authentication → Settings → Authorized domains)
+2. Add: `localhost:5000`, production domain
+3. Refresh app to generate FCM tokens
+4. Test by placing an order - admin should receive notification
+
+**Documentation Files:**
+- `QUICK_START_NOTIFICATIONS.md` - Simple setup guide
+- `NOTIFICATIONS_SETUP.md` - Complete technical documentation
+
+## Previous Changes (Nov 24, 2025)
 
 ### Firebase Configuration Management
 - **Settings Page (`settings.tsx`):** Now displays all 7 Firebase credentials

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Test Notifications</title>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    .section { margin: 20px 0; padding: 20px; border: 1px solid #ccc; }
+    button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+    input { padding: 8px; margin: 5px; width: 300px; }
+    .log { background: #f0f0f0; padding: 10px; margin: 10px 0; max-height: 200px; overflow-y: auto; }
+  </style>
+</head>
+<body>
+  <h1>Notifications Testing</h1>
+  
+  <div class="section">
+    <h2>1. Send Test Notification</h2>
+    <p>Make sure you're logged in first and browser notifications are enabled!</p>
+    <button onclick="testNotification()">Send Test Notification</button>
+    <div id="log1" class="log"></div>
+  </div>
+
+  <div class="section">
+    <h2>2. Simulate Order Placement</h2>
+    <input type="text" id="orderAmount" placeholder="Order Amount (e.g., 100)" value="100">
+    <button onclick="simulateOrder()">Place Test Order</button>
+    <div id="log2" class="log"></div>
+  </div>
+
+  <script>
+    const API_URL = "http://localhost:3001";
+
+    function log(elementId, message) {
+      const el = document.getElementById(elementId);
+      el.innerHTML += new Date().toLocaleTimeString() + ": " + message + "<br>";
+      el.scrollTop = el.scrollHeight;
+    }
+
+    async function testNotification() {
+      log("log1", "Sending test notification...");
+      try {
+        const response = await fetch(API_URL + "/api/notifications/send-to-admins", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: "🧪 Test Notification",
+            body: "This is a test from the notification testing page"
+          })
+        });
+        
+        const data = await response.json();
+        log("log1", "Response: " + JSON.stringify(data));
+        
+        if (data.sent > 0) {
+          log("log1", "✅ Notification sent to " + data.sent + " users!");
+        } else if (data.error) {
+          log("log1", "❌ Error: " + data.error);
+        } else {
+          log("log1", "⚠️ No admins found or no tokens available");
+        }
+      } catch (error) {
+        log("log1", "❌ Error: " + error.message);
+      }
+    }
+
+    async function simulateOrder() {
+      const amount = document.getElementById("orderAmount").value;
+      if (!amount) {
+        log("log2", "❌ Please enter an amount");
+        return;
+      }
+
+      log("log2", "Simulating order placement...");
+      try {
+        const response = await fetch(API_URL + "/api/notifications/send-to-admins", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: "📦 New Order",
+            body: "Order placed for " + amount + " EGP"
+          })
+        });
+        
+        const data = await response.json();
+        log("log2", "Order notification sent: " + JSON.stringify(data));
+        
+        if (data.sent > 0) {
+          log("log2", "✅ Admin notification sent!");
+        }
+      } catch (error) {
+        log("log2", "❌ Error: " + error.message);
+      }
+    }
+
+    // Test on page load
+    window.addEventListener('load', () => {
+      log("log1", "Page loaded. API URL: " + API_URL);
+    });
+  </script>
+</body>
+</html>

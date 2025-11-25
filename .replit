@@ -24,10 +24,6 @@ localPort = 5001
 externalPort = 3003
 
 [[ports]]
-localPort = 33725
-externalPort = 6800
-
-[[ports]]
 localPort = 35413
 externalPort = 5173
 
@@ -125,3 +121,4 @@ VITE_FIREBASE_AUTH_DOMAIN = "myapp-d9024.firebaseapp.com"
 VITE_FIREBASE_STORAGE_BUCKET = "myapp-d9024.firebasestorage.app"
 VITE_FIREBASE_MESSAGING_SENDER_ID = "985459317658"
 VITE_FIREBASE_MEASUREMENT_ID = "G-17B5K4J0P0"
+VITE_FIREBASE_VAPID_KEY = "O4y0eN55wbSySTSTmch7kA09JUTbhKJ0H-uY1zD61SI"
