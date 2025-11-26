@@ -45,7 +45,8 @@ export default function OrderDetailsPage() {
   const [order, setOrder] = useState<Order | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [editingStatus, setEditingStatus] = useState(false);
-  const [newStatus, setNewStatus] = useState("");
+  const [newStatus, setNewStatus] = useState("pending");
+  const [isProcessing, setIsProcessing] = useState(false);
   const [totalOrders, setTotalOrders] = useState(0);
   const [completedOrders, setCompletedOrders] = useState(0);
   const [completedOrdersValue, setCompletedOrdersValue] = useState(0);
@@ -205,21 +206,30 @@ export default function OrderDetailsPage() {
                   </div>
                   {editingStatus ? (
                     <div className="flex gap-1 items-center">
-                      <select value={newStatus || order.status} onChange={(e) => setNewStatus(e.target.value)} className="px-2 py-1 border rounded text-xs">
-                        <option value="pending">{t("pending", language)}</option>
-                        <option value="confirmed">{t("confirmed", language)}</option>
-                        <option value="processing">{t("processing", language)}</option>
-                        <option value="shipped">{t("shipped", language)}</option>
-                        <option value="completed">{t("completed", language)}</option>
-                        <option value="cancelled">{t("cancelled", language)}</option>
+                      <select value={newStatus} onChange={(e) => setNewStatus(e.target.value)} className="px-2 py-1 border rounded text-xs" data-testid="select-status">
+                        <option value="pending">Pending</option>
+                        <option value="confirmed">Confirmed</option>
+                        <option value="processing">Processing</option>
+                        <option value="shipped">Shipped</option>
+                        <option value="completed">Completed</option>
+                        <option value="cancelled">Cancelled</option>
                       </select>
-                      <button type="button" onClick={() => handleStatusUpdate(newStatus || order.status)} disabled={isProcessing} className="px-3 py-1 bg-green-600 text-white rounded font-bold hover:bg-green-700 disabled:bg-gray-400">Save</button>
-                      <button type="button" onClick={() => { setEditingStatus(false); setNewStatus(""); }} className="px-3 py-1 bg-gray-400 text-white rounded hover:bg-gray-500">✕</button>
+                      <button type="button" onClick={() => {
+                        if (newStatus && newStatus !== order.status) {
+                          handleStatusUpdate(newStatus);
+                        } else {
+                          toast.error("Select different status");
+                        }
+                      }} disabled={isProcessing} className="px-3 py-1 bg-green-600 text-white rounded font-bold hover:bg-green-700 disabled:bg-gray-400" data-testid="button-save-status">✓</button>
+                      <button type="button" onClick={() => { setEditingStatus(false); setNewStatus(order?.status || "pending"); }} className="px-3 py-1 bg-gray-400 text-white rounded hover:bg-gray-500" data-testid="button-cancel-status">✕</button>
                     </div>
                   ) : (
                     <div className="flex items-center gap-2">
-                      <span className={`text-xs font-semibold px-2 py-1 rounded border ${getStatusColor(order.status)}`}>{order.status}</span>
-                      <button type="button" onClick={() => { setEditingStatus(true); setNewStatus(order.status); }} className="px-2 py-1 text-primary hover:bg-gray-100 rounded"><Edit2 className="w-3 h-3" /></button>
+                      <span className={`text-xs font-semibold px-2 py-1 rounded border ${getStatusColor(order?.status || "pending")}`}>{order?.status || "pending"}</span>
+                      <button type="button" onClick={() => { 
+                        setEditingStatus(true); 
+                        setNewStatus(order?.status || "pending"); 
+                      }} className="px-2 py-1 text-primary hover:bg-gray-100 rounded" data-testid="button-edit-status"><Edit2 className="w-3 h-3" /></button>
                     </div>
                   )}
                 </div>
