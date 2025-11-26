@@ -431,11 +431,11 @@ export default function CheckoutPage() {
               )}
 
               {/* Shipping Cost Display */}
-              {shippingType && selectedZone && shippingCost > 0 && (
+              {shippingType && selectedZone && (
                 <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3">
                   <div className="flex justify-between font-semibold text-sm">
                     <span>{t("shippingCost", language)}</span>
-                    <span>L.E {shippingCost}</span>
+                    <span>L.E {shippingCost.toFixed(2)}</span>
                   </div>
                 </div>
               )}
@@ -516,7 +516,7 @@ export default function CheckoutPage() {
               {/* Final CTA */}
               <button
                 onClick={handlePlaceOrder}
-                disabled={isProcessing || !shippingType || !selectedZone}
+                disabled={isProcessing || !paymentMethod || !shippingType || !selectedZone}
                 className="w-full bg-black text-white py-4 rounded-2xl font-semibold hover:bg-neutral-800 disabled:opacity-50 flex items-center justify-center gap-2"
                 data-testid="button-pay"
               >
