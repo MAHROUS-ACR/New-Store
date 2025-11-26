@@ -141,27 +141,29 @@ export default function OrderDetailsPage() {
 
   const handleStatusUpdate = async (status: string) => {
     if (!order?.id || !status) { toast.error("Invalid data"); return; }
-    console.log("🔄 Updating order", order.id, "to status:", status);
+    console.log("🔄 Updating order", order.id, "status from", order.status, "to:", status);
     setIsProcessing(true);
     try {
       const success = await updateOrder(order.id, { status });
-      console.log("✅ Update result:", success);
+      console.log("✅ Firebase update result:", success);
       if (success) {
-        console.log("📝 Setting new order state with status:", status);
-        setOrder({ ...order, status });
+        // Create NEW object to force React re-render
+        const updatedOrder = Object.assign({}, order, { status });
+        console.log("📝 New order object:", updatedOrder);
+        setOrder(updatedOrder);
         setEditingStatus(false);
         setNewStatus("pending");
-        toast.success("Status updated!");
+        toast.success("✅ Status updated to: " + status);
         if (order.userId) {
           await sendNotification({ userIds: [order.userId], title: "Order Status Updated", body: `Status: ${status}` });
         }
       } else {
-        console.error("❌ Update failed - Firebase returned false");
-        toast.error("Update failed");
+        console.error("❌ Firebase returned false");
+        toast.error("❌ Update failed - check console");
       }
     } catch (error) {
-      console.error("❌ Error updating:", error);
-      toast.error("Error updating order");
+      console.error("❌ Exception:", error);
+      toast.error("❌ Error: " + (error as any)?.message);
     } finally {
       setIsProcessing(false);
     }
