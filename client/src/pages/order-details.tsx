@@ -241,13 +241,16 @@ export default function OrderDetailsPage() {
                     <p className="font-semibold text-lg font-mono">#{order.orderNumber || order.id.slice(0, 8).toUpperCase()}</p>
                   </div>
                   {editingStatus ? (
-                    <div className="flex gap-1">
+                    <div className="flex gap-1 items-center">
                       <select
                         value={newStatus}
-                        onChange={(e) => setNewStatus(e.target.value)}
-                        className="px-5 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-primary/20"
+                        onChange={(e) => {
+                          console.log("📝 Status dropdown changed to:", e.target.value);
+                          setNewStatus(e.target.value);
+                        }}
+                        className="px-3 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-primary/20"
+                        data-testid="select-order-status"
                       >
-                        <option value="">{t("selectStatus", language)}</option>
                         <option value="pending">{t("pending", language)}</option>
                         <option value="confirmed">{t("confirmed", language)}</option>
                         <option value="processing">{t("processing", language)}</option>
@@ -256,17 +259,24 @@ export default function OrderDetailsPage() {
                         <option value="cancelled">{t("cancelled", language)}</option>
                       </select>
                       <button
-                        onClick={() => handleStatusUpdate(newStatus)}
-                        className="p-1 bg-green-600 text-white rounded hover:bg-green-700"
+                        onClick={() => {
+                          console.log("🟢 Confirm button clicked with status:", newStatus);
+                          handleStatusUpdate(newStatus);
+                        }}
+                        disabled={!newStatus}
+                        className={`p-1 rounded transition ${newStatus ? 'bg-green-600 text-white hover:bg-green-700 cursor-pointer' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
+                        data-testid="button-confirm-status"
                       >
                         <Check className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => {
+                          console.log("❌ Cancel button clicked");
                           setEditingStatus(false);
                           setNewStatus("");
                         }}
-                        className="p-1 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
+                        className="p-1 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 transition"
+                        data-testid="button-cancel-status"
                       >
                         <X className="w-4 h-4" />
                       </button>
@@ -279,10 +289,12 @@ export default function OrderDetailsPage() {
                       {user?.role === 'admin' && (
                         <button
                           onClick={() => {
+                            console.log("✏️ Edit button clicked, opening dropdown");
                             setEditingStatus(true);
                             setNewStatus(order.status);
                           }}
-                          className="p-1 text-primary hover:bg-primary/10 rounded"
+                          className="p-1 text-primary hover:bg-primary/10 rounded transition"
+                          data-testid="button-edit-status"
                         >
                           <Edit2 className="w-4 h-4" />
                         </button>
