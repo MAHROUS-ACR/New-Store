@@ -572,10 +572,21 @@ export default function CheckoutPage() {
 
               {/* Final CTA */}
               <button
-                onClick={handlePlaceOrder}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  const now = new Date().toISOString();
+                  console.log(`[${now}] BUTTON CLICKED - Processing: ${isProcessing}`);
+                  if (!isProcessing) {
+                    handlePlaceOrder();
+                  } else {
+                    toast.error("Already processing...");
+                  }
+                }}
                 disabled={isProcessing || !paymentMethod || !shippingType || !selectedZone}
                 className="w-full bg-black text-white py-4 rounded-2xl font-semibold hover:bg-neutral-800 disabled:opacity-50 flex items-center justify-center gap-2"
                 data-testid="button-pay"
+                type="button"
               >
                 {isProcessing ? (
                   <>
