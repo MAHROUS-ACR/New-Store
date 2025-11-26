@@ -138,33 +138,25 @@ export default function OrderDetailsPage() {
     }
   };
 
-  const handleStatusUpdate = async (newSts: string) => {
-    console.log("✅ BUTTON CLICKED - Status:", newSts);
-    if (!newSts || !order?.id) {
-      console.warn("Missing data");
-      return;
-    }
+  const handleStatusUpdate = async (status: string) => {
+    if (!order?.id) { toast.error("No order"); return; }
+    setIsProcessing(true);
     try {
-      const success = await updateOrder(order.id, { status: newSts });
-      console.log("Firebase result:", success);
+      const success = await updateOrder(order.id, { status });
       if (success) {
-        setOrder({ ...order, status: newSts });
+        setOrder({ ...order, status });
         setEditingStatus(false);
         setNewStatus("");
-        toast.success("Status updated!");
-      } else {
-        toast.error("Update failed");
-      }
-      if (order.userId) {
-        await sendNotification({
-          userIds: [order.userId],
-          title: "Order Status Updated",
-          body: `Order #${order.orderNumber} status: ${newSts}`
-        });
+        toast.success("✅ Status updated!");
+        if (order.userId) {
+          await sendNotification({ userIds: [order.userId], title: "Order Updated", body: `Status: ${status}` });
+        }
       }
     } catch (error) {
       console.error("Error:", error);
-      toast.error("Failed");
+      toast.error("Failed to update");
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -212,8 +204,8 @@ export default function OrderDetailsPage() {
                     <p className="font-semibold text-lg font-mono">#{order.orderNumber || order.id.slice(0, 8).toUpperCase()}</p>
                   </div>
                   {editingStatus ? (
-                    <div className="flex gap-2 items-center">
-                      <select value={newStatus} onChange={(e) => setNewStatus(e.target.value)} className="px-2 py-1 border rounded text-xs" data-testid="select-order-status">
+                    <div className="flex gap-1 items-center">
+                      <select value={newStatus || order.status} onChange={(e) => setNewStatus(e.target.value)} className="px-2 py-1 border rounded text-xs">
                         <option value="pending">{t("pending", language)}</option>
                         <option value="confirmed">{t("confirmed", language)}</option>
                         <option value="processing">{t("processing", language)}</option>
@@ -221,13 +213,13 @@ export default function OrderDetailsPage() {
                         <option value="completed">{t("completed", language)}</option>
                         <option value="cancelled">{t("cancelled", language)}</option>
                       </select>
-                      <button type="button" onClick={() => { console.log("GREEN BUTTON CLICKED"); handleStatusUpdate(newStatus); }} className="px-4 py-1 bg-green-600 text-white rounded text-xs font-bold hover:bg-green-700 cursor-pointer" data-testid="button-confirm-status">✓ Save</button>
-                      <button type="button" onClick={() => { setEditingStatus(false); setNewStatus(""); }} className="px-4 py-1 bg-gray-300 text-gray-700 rounded text-xs font-bold hover:bg-gray-400 cursor-pointer" data-testid="button-cancel-status">✕ Cancel</button>
+                      <button type="button" onClick={() => handleStatusUpdate(newStatus || order.status)} disabled={isProcessing} className="px-3 py-1 bg-green-600 text-white rounded font-bold hover:bg-green-700 disabled:bg-gray-400">Save</button>
+                      <button type="button" onClick={() => { setEditingStatus(false); setNewStatus(""); }} className="px-3 py-1 bg-gray-400 text-white rounded hover:bg-gray-500">✕</button>
                     </div>
                   ) : (
                     <div className="flex items-center gap-2">
-                      <span className={`text-xs font-semibold px-3 py-1 rounded-full border ${getStatusColor(order.status)}`}>{order.status.charAt(0).toUpperCase() + order.status.slice(1)}</span>
-                      <button type="button" onClick={() => { setEditingStatus(true); setNewStatus(order.status); }} className="p-1 text-primary hover:bg-primary/10 rounded cursor-pointer" data-testid="button-edit-status"><Edit2 className="w-4 h-4" /></button>
+                      <span className={`text-xs font-semibold px-2 py-1 rounded border ${getStatusColor(order.status)}`}>{order.status}</span>
+                      <button type="button" onClick={() => { setEditingStatus(true); setNewStatus(order.status); }} className="px-2 py-1 text-primary hover:bg-gray-100 rounded"><Edit2 className="w-3 h-3" /></button>
                     </div>
                   )}
                 </div>
