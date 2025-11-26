@@ -111,6 +111,7 @@ export default function CheckoutPage() {
       console.log("✅ SaveOrder returned:", savedId);
 
       if (!savedId) {
+        setIsSubmitting(false);
         throw new Error("saveOrder returned null");
       }
 
@@ -130,11 +131,14 @@ export default function CheckoutPage() {
         `L.E ${grandTotal.toFixed(2)}`
       ).catch(() => {});
 
+      // RESET: Allow next order
+      setIsSubmitting(false);
+
       // FIFTH: Redirect after delay
       console.log("🔄 Redirecting to /cart");
       setTimeout(() => {
         setLocation("/cart");
-      }, 800);
+      }, 1200);
     } catch (error) {
       console.error("❌ Order error:", error);
       toast.error("خطأ في الطلب");
