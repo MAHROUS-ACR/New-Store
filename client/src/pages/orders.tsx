@@ -8,6 +8,7 @@ import { useLanguage } from "@/lib/languageContext";
 import { t } from "@/lib/translations";
 import { toast } from "sonner";
 import { getOrders } from "@/lib/firebaseOps";
+import { getStatusColor } from "@/lib/statusColors";
 
 interface CartItem {
   id: string;
@@ -85,20 +86,6 @@ export default function OrdersPage() {
     return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
   }, [location, user?.id]);
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "completed":
-        return "bg-emerald-50 text-emerald-700 border-emerald-200";
-      case "confirmed":
-        return "bg-blue-50 text-blue-700 border-blue-200";
-      case "pending":
-        return "bg-amber-50 text-amber-700 border-amber-200";
-      case "cancelled":
-        return "bg-red-50 text-red-700 border-red-200";
-      default:
-        return "bg-gray-50 text-gray-700 border-gray-200";
-    }
-  };
 
   return (
     <MobileWrapper>
@@ -146,7 +133,8 @@ export default function OrdersPage() {
         ) : (
           <div className="flex-1 overflow-y-auto no-scrollbar pb-40 w-full">
             <div className="w-full px-5 py-4 space-y-3">
-              {orders.filter(order => !user || !(order as any).userId || (order as any).userId === user.id)
+              {orders
+                .filter(order => !user || !(order as any).userId || (order as any).userId === user.id)
                 .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
                 .map((order) => (
                 <div key={order.id}>

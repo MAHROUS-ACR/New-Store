@@ -9,6 +9,7 @@ import { t } from "@/lib/translations";
 import { toast } from "sonner";
 import { getOrders, updateOrder } from "@/lib/firebaseOps";
 import { sendNotification } from "@/lib/notificationAPI";
+import { getStatusColor } from "@/lib/statusColors";
 
 interface CartItem {
   id: string;
@@ -137,20 +138,6 @@ export default function OrderDetailsPage() {
     }
   }, [order, user?.role]);
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "completed":
-        return "bg-emerald-50 text-emerald-700 border-emerald-200";
-      case "confirmed":
-        return "bg-blue-50 text-blue-700 border-blue-200";
-      case "pending":
-        return "bg-amber-50 text-amber-700 border-amber-200";
-      case "cancelled":
-        return "bg-red-50 text-red-700 border-red-200";
-      default:
-        return "bg-gray-50 text-gray-700 border-gray-200";
-    }
-  };
 
   const handleStatusUpdate = async (status: string) => {
     if (!order?.id || !status || status === order.status) return;
