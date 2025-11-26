@@ -226,19 +226,18 @@ export async function updateOrder(id: string, updates: any) {
     const db = initDb();
     const orderRef = doc(db, "orders", id);
     
-    console.log("🟠 updateOrder CALLED");
-    console.log("   Firestore Doc ID:", id);
-    console.log("   Updates:", JSON.stringify(updates));
+    console.log("🟠 updateOrder START");
+    console.log("   ID:", id);
+    console.log("   Updates:", updates);
     
-    // MUST use updateDoc - never creates new document, only updates existing
-    await updateDoc(orderRef, updates);
-    console.log("✅ updateOrder SUCCESS - Document updated");
+    // Use setDoc with merge - safer for Firestore rules
+    await setDoc(orderRef, updates, { merge: true });
+    
+    console.log("✅ updateOrder SUCCESS");
     return true;
   } catch (error: any) {
     console.error("❌ updateOrder FAILED");
-    console.error("   Code:", error?.code);
-    console.error("   Message:", error?.message);
-    console.error("   THIS MEANS: Document not found with ID:", id);
+    console.error("   Error:", error?.message);
     return false;
   }
 }

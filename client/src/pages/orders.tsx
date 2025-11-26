@@ -104,46 +104,26 @@ export default function OrdersPage() {
   };
 
   const handleStatusUpdate = async () => {
-    console.log("🔵 BUTTON CLICKED - handleStatusUpdate");
-    console.log("   selectedOrder:", selectedOrder);
-    console.log("   newStatus:", newStatus);
-    
-    if (!selectedOrder?.id || !newStatus || newStatus === selectedOrder.status) {
-      console.warn("❌ Validation failed - returning early");
-      return;
-    }
+    if (!selectedOrder?.id || !newStatus || newStatus === selectedOrder.status) return;
     
     setIsUpdating(true);
     try {
-      console.log("🔵 STARTING UPDATE");
-      console.log("   Order ID:", selectedOrder.id);
-      console.log("   New Status:", newStatus);
-      
-      const success = await updateOrder(selectedOrder.id, { 
-        status: newStatus,
-        updatedAt: new Date().toISOString()
-      });
-      
-      console.log("   Update result:", success);
+      const success = await updateOrder(selectedOrder.id, { status: newStatus });
       
       if (success) {
-        console.log("✅ FIRESTORE UPDATE SUCCESS");
-        toast.success("✅ تم تحديث الحالة بنجاح!");
+        toast.success("✅ تم تحديث الحالة!");
         
-        // Update local state immediately
+        // Update UI immediately
         setSelectedOrder(prev => prev ? { ...prev, status: newStatus } : null);
-        const updatedOrders = orders.map(o => 
+        setOrders(orders.map(o => 
           o.id === selectedOrder.id ? { ...o, status: newStatus } : o
-        );
-        setOrders(updatedOrders);
+        ));
         setEditingStatus(false);
         setNewStatus("");
       } else {
-        console.error("🔴 FIRESTORE UPDATE FAILED");
-        toast.error("❌ فشل تحديث الحالة - تحقق من Console");
+        toast.error("❌ فشل التحديث");
       }
     } catch (error: any) {
-      console.error("❌ CATCH ERROR:", error);
       toast.error("خطأ: " + error?.message);
     } finally {
       setIsUpdating(false);
