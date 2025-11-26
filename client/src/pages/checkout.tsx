@@ -39,13 +39,17 @@ export default function CheckoutPage() {
       setIsLoadingZones(true);
       try {
         const zones = await getShippingZones();
-        setZonesList(
-          (zones || []).map((z: any) => ({
-            id: z.id,
-            name: z.name,
-            shippingCost: Number(z.shippingCost) || 0,
-          }))
-        );
+        const mappedZones = (zones || []).map((z: any) => ({
+          id: z.id,
+          name: z.name,
+          shippingCost: Number(z.shippingCost) || 0,
+        }));
+        setZonesList(mappedZones);
+        
+        // Auto-select first zone for "saved" shipping
+        if (shippingSelected === "saved" && mappedZones.length > 0 && !zoneSelected) {
+          setZoneSelected(mappedZones[0]);
+        }
       } catch (err) {
         console.error("Failed to load zones:", err);
         toast.error("Failed to load zones");
@@ -54,7 +58,16 @@ export default function CheckoutPage() {
       }
     };
     loadZones();
-  }, []);
+  }, [shippingSelected]);
+  
+  // Auto-select first zone when "saved" is selected
+  useEffect(() => {
+    if (shippingSelected === "saved" && zonesList.length > 0 && !zoneSelected) {
+      setZoneSelected(zonesList[0]);
+    } else if (shippingSelected === "new") {
+      setZoneSelected(null);
+    }
+  }, [shippingSelected]);
 
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const shipping = zoneSelected?.shippingCost || 0;
@@ -114,9 +127,9 @@ export default function CheckoutPage() {
 
       setIsSubmitting(false);
       
-      // Refresh page after 2 seconds to reset all values and Firebase state
+      // Go to home page after 2 seconds - this resets ALL state
       setTimeout(() => {
-        window.location.reload();
+        setLocation("/");
       }, 2000);
     } catch (error: any) {
       console.error("❌ Order error:", error?.message || error);

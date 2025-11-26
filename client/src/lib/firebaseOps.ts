@@ -34,23 +34,10 @@ function getFirebaseConfig() {
 }
 
 function initDb() {
-  // Always use environment config
   const config = getFirebaseConfig();
-
-  // Initialize app if not already done
   if (!getApps().length) {
-    try {
-      initializeApp(config);
-      console.log("✅ Firebase app initialized");
-    } catch (error: any) {
-      console.error("❌ Firebase app init error:", error?.message);
-      if (!error.message?.includes('duplicate-app')) {
-        throw error;
-      }
-    }
+    initializeApp(config);
   }
-
-  // Get fresh Firestore instance each time
   return getFirestore();
 }
 
