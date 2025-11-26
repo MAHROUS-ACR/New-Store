@@ -70,6 +70,8 @@ export default function CheckoutPage() {
 
   // Handle place order
   const handlePlaceOrder = async () => {
+    console.log("🛒 Checking items before place order:", items.length, "items:", items);
+    
     if (!paymentMethod) {
       toast.error("اختر طريقة الدفع - Select payment method");
       return;
@@ -82,6 +84,10 @@ export default function CheckoutPage() {
       toast.error("اختر المنطقة - Select shipping zone");
       return;
     }
+    if (items.length === 0) {
+      toast.error("السلة فارغة - Cart is empty");
+      return;
+    }
 
     setIsPlacing(true);
 
@@ -90,7 +96,7 @@ export default function CheckoutPage() {
         id: `order-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
         orderNumber: Math.floor(Date.now() / 1000),
         userId: user?.id,
-        items,
+        items: items,
         subtotal,
         shippingCost,
         total,
@@ -101,7 +107,9 @@ export default function CheckoutPage() {
         createdAt: new Date().toISOString(),
       };
 
+      console.log("💾 Saving order:", orderData.id, "Items count:", items.length);
       const savedId = await saveOrder(orderData);
+      console.log("✅ SaveOrder returned:", savedId);
 
       if (savedId) {
         toast.success("✅ تم الطلب - Order placed!");
@@ -113,12 +121,14 @@ export default function CheckoutPage() {
           `New order: L.E ${total.toFixed(2)}`
         ).catch(() => {});
 
-        setTimeout(() => setLocation("/cart"), 1000);
+        setTimeout(() => setLocation("/cart"), 1500);
       } else {
-        throw new Error("No order ID returned");
+        console.error("❌ saveOrder returned null/undefined");
+        toast.error("فشل حفظ الطلب - Failed to save order");
+        setIsPlacing(false);
       }
     } catch (error) {
-      console.error("Error:", error);
+      console.error("❌ Error in handlePlaceOrder:", error);
       toast.error("خطأ في الطلب - Error placing order");
       setIsPlacing(false);
     }
