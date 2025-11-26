@@ -113,15 +113,26 @@ export default function CheckoutPage() {
 
       if (savedId) {
         toast.success("✅ تم الطلب - Order placed!");
-        clearCart();
-        localStorage.removeItem("cart");
-
+        
+        // Send notification first (don't wait for it)
         sendNotificationToAdmins(
           "New Order",
           `New order: L.E ${total.toFixed(2)}`
         ).catch(() => {});
 
-        setTimeout(() => setLocation("/cart"), 1500);
+        // Wait 500ms THEN clear cart to allow state to settle
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        console.log("🧹 Clearing cart and localStorage");
+        clearCart();
+        localStorage.removeItem("cart");
+        
+        // Navigate back
+        console.log("🔄 Navigating back to cart");
+        setTimeout(() => {
+          setLocation("/cart");
+          setIsPlacing(false);
+        }, 500);
       } else {
         console.error("❌ saveOrder returned null/undefined");
         toast.error("فشل حفظ الطلب - Failed to save order");
@@ -278,15 +289,19 @@ export default function CheckoutPage() {
         </div>
 
         {/* Bottom Button */}
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-5 max-w-[390px] mx-auto">
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-5 max-w-[390px] mx-auto z-50">
           <button
-            onClick={handlePlaceOrder}
-            disabled={isPlacing || !paymentMethod || !shippingType || !selectedZone}
+            onClick={() => {
+              console.log("🔘 Button click - isPlacing:", isPlacing, "payment:", paymentMethod, "shipping:", shippingType, "zone:", selectedZone);
+              handlePlaceOrder();
+            }}
+            disabled={isPlacing}
             className={`w-full py-4 rounded-2xl font-bold text-lg transition ${
-              isPlacing || !paymentMethod || !shippingType || !selectedZone
-                ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+              isPlacing
+                ? "bg-gray-300 text-gray-600 cursor-not-allowed opacity-60"
                 : "bg-black text-white hover:bg-gray-900 active:scale-95"
             }`}
+            type="button"
           >
             {isPlacing ? "⏳ جاري..." : `✅ اطلب الآن - Place Order`}
           </button>
