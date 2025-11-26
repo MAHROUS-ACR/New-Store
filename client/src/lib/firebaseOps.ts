@@ -222,8 +222,8 @@ export async function updateOrder(id: string, updates: any) {
     const orderRef = doc(db, "orders", id);
     console.log("🟠 updateOrder - ID:", id, "updates:", updates);
     
-    // Use setDoc with merge to update fields
-    await setDoc(orderRef, updates, { merge: true });
+    // Use updateDoc ONLY - this updates existing document without creating new one
+    await updateDoc(orderRef, updates);
     console.log("🟢 updateOrder SUCCESS:", id);
     return true;
   } catch (error: any) {
