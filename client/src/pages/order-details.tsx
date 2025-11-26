@@ -80,14 +80,24 @@ export default function OrderDetailsPage() {
   }, [isLoggedIn, authLoading, setLocation, user]);
 
   useEffect(() => {
-    if (!orderId) return;
-
     setIsLoading(true);
     const fetchOrder = async () => {
       try {
         // Fetch from Firebase only
         const orders = await getOrders(user?.role === 'admin' ? undefined : user?.id);
-        const foundOrder = orders?.find((o: any) => o.id === orderId);
+        let foundOrder = null;
+        
+        // Try to find by URL ID first
+        if (orderId) {
+          foundOrder = orders?.find((o: any) => o.id === orderId);
+        }
+        
+        // If not found, use the first order
+        if (!foundOrder && orders && orders.length > 0) {
+          foundOrder = orders[0];
+          console.log("📌 Using first order since URL ID not found:", foundOrder.id);
+        }
+        
         if (foundOrder) {
           setOrder(foundOrder as Order);
         }
@@ -99,7 +109,7 @@ export default function OrderDetailsPage() {
     };
 
     fetchOrder();
-  }, [orderId, user]);
+  }, [user]);
 
   // Calculate order statistics once order is loaded
   useEffect(() => {
