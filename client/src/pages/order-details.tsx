@@ -139,45 +139,32 @@ export default function OrderDetailsPage() {
   };
 
   const handleStatusUpdate = async (newSts: string) => {
-    console.log("🔧 handleStatusUpdate called with status:", newSts);
-    console.log("📦 Order ID:", order?.id);
-    
-    if (!newSts || !order) {
-      console.warn("⚠️ Missing status or order:", { newSts, order: order?.id });
+    console.log("✅ BUTTON CLICKED - Status:", newSts);
+    if (!newSts || !order?.id) {
+      console.warn("Missing data");
       return;
     }
-    
     try {
-      console.log("🔄 Updating order status in Firebase...");
-      // Update Firebase using the proper updateOrder function
       const success = await updateOrder(order.id, { status: newSts });
-      
-      console.log("✅ Firebase update result:", success);
-      
-      if (!success) {
-        toast.error("Failed to update order status");
-        console.error("❌ Firebase update failed");
-        return;
+      console.log("Firebase result:", success);
+      if (success) {
+        setOrder({ ...order, status: newSts });
+        setEditingStatus(false);
+        setNewStatus("");
+        toast.success("Status updated!");
+      } else {
+        toast.error("Update failed");
       }
-
-      // Send notification to customer about status change
       if (order.userId) {
-        console.log("📢 Sending notification to user:", order.userId);
         await sendNotification({
           userIds: [order.userId],
           title: "Order Status Updated",
-          body: `Order #${order.orderNumber} status changed to ${newSts}`
+          body: `Order #${order.orderNumber} status: ${newSts}`
         });
       }
-
-      setOrder({ ...order, status: newSts });
-      setEditingStatus(false);
-      setNewStatus("");
-      toast.success("Order status updated successfully!");
-      console.log("✅ Order status updated to:", newSts);
     } catch (error) {
-      toast.error("Failed to update order status");
-      console.error("Status update error:", error);
+      console.error("Error:", error);
+      toast.error("Failed");
     }
   };
 
@@ -225,8 +212,8 @@ export default function OrderDetailsPage() {
                     <p className="font-semibold text-lg font-mono">#{order.orderNumber || order.id.slice(0, 8).toUpperCase()}</p>
                   </div>
                   {editingStatus ? (
-                    <div className="flex gap-2">
-                      <select value={newStatus} onChange={(e) => setNewStatus(e.target.value)} className="px-2 py-1 border rounded text-xs">
+                    <div className="flex gap-2 items-center">
+                      <select value={newStatus} onChange={(e) => setNewStatus(e.target.value)} className="px-2 py-1 border rounded text-xs" data-testid="select-order-status">
                         <option value="pending">{t("pending", language)}</option>
                         <option value="confirmed">{t("confirmed", language)}</option>
                         <option value="processing">{t("processing", language)}</option>
@@ -234,13 +221,13 @@ export default function OrderDetailsPage() {
                         <option value="completed">{t("completed", language)}</option>
                         <option value="cancelled">{t("cancelled", language)}</option>
                       </select>
-                      <button onClick={() => handleStatusUpdate(newStatus)} className="px-3 py-1 bg-green-600 text-white rounded text-xs hover:bg-green-700" data-testid="button-confirm-status">✓</button>
-                      <button onClick={() => { setEditingStatus(false); setNewStatus(""); }} className="px-3 py-1 bg-gray-300 text-gray-700 rounded text-xs hover:bg-gray-400" data-testid="button-cancel-status">✕</button>
+                      <button type="button" onClick={() => { console.log("GREEN BUTTON CLICKED"); handleStatusUpdate(newStatus); }} className="px-4 py-1 bg-green-600 text-white rounded text-xs font-bold hover:bg-green-700 cursor-pointer" data-testid="button-confirm-status">✓ Save</button>
+                      <button type="button" onClick={() => { setEditingStatus(false); setNewStatus(""); }} className="px-4 py-1 bg-gray-300 text-gray-700 rounded text-xs font-bold hover:bg-gray-400 cursor-pointer" data-testid="button-cancel-status">✕ Cancel</button>
                     </div>
                   ) : (
                     <div className="flex items-center gap-2">
                       <span className={`text-xs font-semibold px-3 py-1 rounded-full border ${getStatusColor(order.status)}`}>{order.status.charAt(0).toUpperCase() + order.status.slice(1)}</span>
-                      <button onClick={() => { setEditingStatus(true); setNewStatus(order.status); }} className="p-1 text-primary hover:bg-primary/10 rounded" data-testid="button-edit-status"><Edit2 className="w-4 h-4" /></button>
+                      <button type="button" onClick={() => { setEditingStatus(true); setNewStatus(order.status); }} className="p-1 text-primary hover:bg-primary/10 rounded cursor-pointer" data-testid="button-edit-status"><Edit2 className="w-4 h-4" /></button>
                     </div>
                   )}
                 </div>
