@@ -122,8 +122,10 @@ export default function CheckoutPage() {
       // SECOND: Clear cart
       clearCart();
       
-      // THIRD: Clear only cart from localStorage (NOT everything!)
-      localStorage.removeItem("cart");
+      // THIRD: Clear all cart items from localStorage (but keep Firebase config!)
+      Object.keys(localStorage)
+        .filter((k) => k.startsWith("cart"))
+        .forEach((k) => localStorage.removeItem(k));
       
       // FOURTH: Send notification (async, don't wait)
       sendNotificationToAdmins(
