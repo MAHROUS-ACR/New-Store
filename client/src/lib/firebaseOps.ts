@@ -226,14 +226,16 @@ export async function updateOrder(id: string, updates: any) {
     const db = initDb();
     const orderRef = doc(db, "orders", id);
     
-    console.log("🟠 updateOrder - ID:", id, "Updates:", Object.keys(updates));
+    console.log("🟠 updateOrder - Updating ID:", id);
     
-    // Use setDoc with merge - this works even if updateDoc is restricted by rules
-    await setDoc(orderRef, updates, { merge: true });
+    // Use updateDoc ONLY - never creates new document, only updates existing
+    await updateDoc(orderRef, updates);
     console.log("✅ updateOrder SUCCESS");
     return true;
   } catch (error: any) {
-    console.error("❌ updateOrder ERROR:", error?.code, error?.message);
+    console.error("❌ updateOrder ERROR - Code:", error?.code);
+    console.error("   Message:", error?.message);
+    console.error("   Checked ID:", id);
     return false;
   }
 }

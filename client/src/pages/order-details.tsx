@@ -157,7 +157,9 @@ export default function OrderDetailsPage() {
     
     setIsProcessing(true);
     try {
-      console.log("🔵 Updating order status - ID:", order.id, "New Status:", status);
+      console.log("🔵 HANDLER: order.id =", order.id);
+      console.log("🔵 HANDLER: new status =", status);
+      console.log("🔵 HANDLER: order object =", order);
       
       // Update the same document with new status
       const success = await updateOrder(order.id, { 
@@ -174,6 +176,7 @@ export default function OrderDetailsPage() {
         setEditingStatus(false);
         setNewStatus("pending");
       } else {
+        console.error("🔴 updateOrder returned false - check Firestore");
         toast.error("Failed to update order");
       }
     } catch (error: any) {
