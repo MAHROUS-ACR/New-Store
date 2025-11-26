@@ -195,6 +195,25 @@ export default function CheckoutPage() {
 
         toast.success("Order placed successfully!");
         clearCart();
+        
+        // Reset form state completely
+        setPaymentMethod(null);
+        setShippingType(null);
+        setSelectedZone("");
+        setShippingCost(0);
+        setNewAddress("");
+        setNewPhone("");
+        setFormData({
+          cardNumber: "",
+          cardHolder: "",
+          expiryDate: "",
+          cvv: "",
+          email: "",
+          address: "",
+          city: "",
+          zipCode: "",
+        });
+        
         // Wait longer for Firestore to sync before redirecting
         await new Promise(resolve => setTimeout(resolve, 3000));
         console.log("🔵 Redirecting to orders page");
