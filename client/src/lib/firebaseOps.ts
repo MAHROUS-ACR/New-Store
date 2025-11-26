@@ -224,17 +224,22 @@ export async function saveOrder(order: any) {
 export async function updateOrder(id: string, updates: any) {
   try {
     const db = initDb();
+    
+    // First verify document exists
     const orderRef = doc(db, "orders", id);
+    const existingDoc = await getDoc(orderRef);
     
-    console.log("🟠 updateOrder - ID:", id);
+    if (!existingDoc.exists()) {
+      console.error("❌ updateOrder FAILED - Document not found with ID:", id);
+      return false;
+    }
     
-    // Use updateDoc - only updates existing document, never creates new one
+    // Document exists, now update it safely
     await updateDoc(orderRef, updates);
-    
-    console.log("✅ updateOrder SUCCESS");
+    console.log("✅ updateOrder SUCCESS - Document updated");
     return true;
   } catch (error: any) {
-    console.error("❌ updateOrder FAILED - Document not found with ID:", id);
+    console.error("❌ updateOrder ERROR:", error?.message);
     return false;
   }
 }
