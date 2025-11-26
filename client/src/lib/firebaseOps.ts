@@ -242,28 +242,28 @@ export async function updateOrder(id: string, updates: any) {
   try {
     const db = initDb();
     const orderRef = doc(db, "orders", id);
-    console.log("🔴 FIREBASE: updateOrder called with id:", id, "updates:", JSON.stringify(updates));
+    console.log("🟠 Checking if order exists:", id);
     
-    // Use updateDoc to update existing document fields only (don't create new)
+    // First verify the document exists
+    const docSnapshot = await getDoc(orderRef);
+    if (!docSnapshot.exists()) {
+      console.error("🔴 Document not found with ID:", id);
+      console.error("Available orders in system:", await getOrders());
+      return false;
+    }
+    
+    console.log("✅ Document found, updating now...");
+    console.log("🟠 updateOrder - id:", id, "updates:", updates);
+    
+    // Update existing document
     await updateDoc(orderRef, { 
       ...updates, 
       updatedAt: new Date().toISOString() 
     });
-    console.log("🟢 FIREBASE: updateDoc success for order:", id);
+    console.log("✅ updateOrder SUCCESS for:", id);
     return true;
   } catch (error: any) {
-    console.error("🔴 FIREBASE ERROR updating order:", id);
-    console.error("Code:", error?.code);
-    console.error("Message:", error?.message);
-    
-    if (error?.code === "permission-denied") {
-      console.error("🔒 PERMISSION DENIED - Check Firestore Security Rules!");
-      console.error("🔒 User must have write access to 'orders' collection");
-      console.error("🔒 Go to Firebase Console → Firestore → Rules");
-      console.error("🔒 Add this rule: allow write: if request.auth != null;");
-    }
-    
-    console.error("Full error:", JSON.stringify(error));
+    console.error("❌ updateOrder ERROR:", error?.code, error?.message);
     return false;
   }
 }
