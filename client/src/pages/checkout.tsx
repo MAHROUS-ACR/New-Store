@@ -181,23 +181,18 @@ export default function CheckoutPage() {
       console.log("🔵 saveOrder returned:", savedOrderId);
 
       if (savedOrderId) {
-        console.log("✅ ORDER SAVED SUCCESSFULLY");
-        try {
-          console.log("🔔 SENDING NOTIFICATION");
-          await sendNotificationToAdmins(
-            "New Order",
-            `Order #${orderNumber} placed for L.E ${finalTotal.toFixed(2)}`
-          );
-          console.log("✅ Notification sent");
-        } catch (e) {
-          console.warn("Notification failed:", e);
-        }
+        console.log("✅ ORDER SAVED SUCCESSFULLY - ID:", savedOrderId);
+        
+        // Send notification in background
+        sendNotificationToAdmins(
+          "New Order",
+          `Order #${orderNumber} placed for L.E ${finalTotal.toFixed(2)}`
+        ).catch(e => console.warn("Notification failed:", e));
 
         toast.success("Order placed successfully!");
-        clearCart();
-        setIsProcessing(false);
         
-        // Reset form state completely
+        // Reset ALL state FIRST - before redirect
+        setIsProcessing(false);
         setPaymentMethod(null);
         setShippingType(null);
         setSelectedZone("");
@@ -215,19 +210,21 @@ export default function CheckoutPage() {
           zipCode: "",
         });
         
-        // Wait longer for Firestore to sync before redirecting
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        // Clear cart after state reset
+        clearCart();
+        
+        // Redirect to orders page
         console.log("🔵 Redirecting to orders page");
-        setLocation("/orders?refresh=" + Date.now());
+        setTimeout(() => setLocation("/orders?refresh=" + Date.now()), 500);
       } else {
         console.error("❌ saveOrder returned null");
-        toast.error("Failed to save order");
         setIsProcessing(false);
+        toast.error("Failed to save order");
       }
     } catch (error) {
       console.error("❌ ERROR IN PLACE ORDER:", error);
-      toast.error("Failed to place order");
       setIsProcessing(false);
+      toast.error("Failed to place order");
     }
   };
 
