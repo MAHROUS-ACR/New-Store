@@ -190,19 +190,21 @@ export async function getOrderById(id: string) {
 }
 
 export async function saveOrder(order: any) {
-  console.log("🔵 [saveOrder] START - Ensuring config loaded...");
+  console.log("🔵 [saveOrder] START");
   try {
-    // CRITICAL: Load config first - ensures Firebase is properly initialized
+    // CRITICAL: Reset connections for fresh connection on every order
+    db = null;
+    appInitialized = false;
+    
+    // Load config first - ensures Firebase is properly initialized
     await ensureConfigLoaded();
     console.log("✅ [saveOrder] Config loaded");
     
     // Get fresh DB connection
-    console.log("🔵 [saveOrder] Getting DB connection...");
-    const db = initDb();
+    const dbInstance = initDb();
     console.log("✅ [saveOrder] DB ready");
 
     // Validate required fields
-    console.log("🔵 [saveOrder] Validating order data...");
     if (!order.userId) {
       throw new Error("User ID is required");
     }
@@ -212,34 +214,28 @@ export async function saveOrder(order: any) {
     if (!order.items || order.items.length === 0) {
       throw new Error("Order must have items");
     }
-    console.log("✅ [saveOrder] Validation OK");
 
-    // Prepare order data
+    // Prepare and write order
     const orderData = {
       ...order,
       createdAt: new Date().toISOString(),
     };
 
-    console.log("📝 [saveOrder] Writing order to Firestore:", order.id);
-    const orderRef = doc(db, "orders", order.id);
-    
-    // Write to Firestore
+    const orderRef = doc(dbInstance, "orders", order.id);
     await setDoc(orderRef, orderData, { merge: false });
     console.log("✅ [saveOrder] Write complete");
 
     // Verify save
-    console.log("🔍 [saveOrder] Verifying...");
     const saved = await getDoc(orderRef);
-    
     if (saved.exists()) {
-      console.log("✅ [saveOrder] SUCCESS - Order saved and verified");
+      console.log("✅ [saveOrder] SUCCESS");
       return order.id;
     }
 
     console.error("❌ [saveOrder] Verification failed");
     return null;
   } catch (error: any) {
-    console.error("❌ [saveOrder] ERROR:", error?.message || error);
+    console.error("❌ [saveOrder] ERROR:", error?.message);
     return null;
   }
 }
