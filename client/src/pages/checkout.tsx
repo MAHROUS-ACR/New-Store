@@ -196,8 +196,8 @@ export default function CheckoutPage() {
               {shippingZones && shippingZones.length > 0 ? (
                 <div className="space-y-2">
                   {shippingZones.map((zone) => {
-                    const zoneCost = zone.cost !== undefined ? zone.cost : (zone.price !== undefined ? zone.price : 0);
-                    console.log("🚚 Rendering zone:", zone.name, "Cost field:", zoneCost);
+                    const zoneCost = parseFloat(zone.cost || zone.price || 0);
+                    console.log("🚚 Rendering zone:", zone.name, "Cost:", zoneCost, "Type:", typeof zoneCost, "Raw:", zone.cost);
                     return (
                       <button
                         key={zone.id || zone.name}
@@ -208,7 +208,7 @@ export default function CheckoutPage() {
                         }}
                         className={`w-full p-4 rounded-xl border-2 font-semibold text-base ${selectedZone === zone.name ? "border-black bg-black text-white" : "border-gray-200 bg-white"}`}
                       >
-                        {zone.name} - L.E {zoneCost}
+                        {zone.name} - L.E {zoneCost.toFixed(2)}
                       </button>
                     );
                   })}
