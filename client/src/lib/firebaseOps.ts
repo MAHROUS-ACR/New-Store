@@ -37,47 +37,27 @@ let db: any = null;
 let currentFirebaseConfig: any = null;
 let appInitialized = false;
 
-let configLoadPromise: Promise<void> | null = null;
-
 async function loadFirebaseConfigFromFirestore() {
   try {
-    // initialize with default config if missing
-    if (!currentFirebaseConfig) {
-      currentFirebaseConfig = getFirebaseConfig();
-      if (!appInitialized) {
-        if (!getApps().length) {
-          initializeApp(currentFirebaseConfig);
-        }
-        appInitialized = true;
-      }
-    }
-
-    // Get database with retry
-    let database;
-    try {
-      database = getFirestore();
-    } catch (err) {
-      // If getFirestore fails, initialize DB
-      const db = initDb();
-      database = db;
-    }
-
+    // Ensure DB is initialized first
+    const database = initDb();
+    
     const configRef = doc(database, "settings", "firebase");
     const configSnap = await getDoc(configRef);
 
     if (configSnap.exists()) {
       const firestoreConfig = configSnap.data();
       const newConfig = {
-        apiKey: firestoreConfig.firebaseApiKey || currentFirebaseConfig.apiKey,
-        authDomain: firestoreConfig.firebaseAuthDomain || currentFirebaseConfig.authDomain,
-        projectId: firestoreConfig.firebaseProjectId || currentFirebaseConfig.projectId,
-        storageBucket: firestoreConfig.firebaseStorageBucket || currentFirebaseConfig.storageBucket,
-        messagingSenderId: firestoreConfig.firebaseMessagingSenderId || currentFirebaseConfig.messagingSenderId,
-        appId: firestoreConfig.firebaseAppId || currentFirebaseConfig.appId,
+        apiKey: firestoreConfig.firebaseApiKey || currentFirebaseConfig?.apiKey,
+        authDomain: firestoreConfig.firebaseAuthDomain || currentFirebaseConfig?.authDomain,
+        projectId: firestoreConfig.firebaseProjectId || currentFirebaseConfig?.projectId,
+        storageBucket: firestoreConfig.firebaseStorageBucket || currentFirebaseConfig?.storageBucket,
+        messagingSenderId: firestoreConfig.firebaseMessagingSenderId || currentFirebaseConfig?.messagingSenderId,
+        appId: firestoreConfig.firebaseAppId || currentFirebaseConfig?.appId,
       };
 
       if (JSON.stringify(newConfig) !== JSON.stringify(currentFirebaseConfig)) {
-        console.log("🔄 Firebase config changed in Firestore. Updating local config (no reload).");
+        console.log("🔄 Firebase config updated from Firestore");
         currentFirebaseConfig = newConfig;
       }
     }
@@ -88,22 +68,26 @@ async function loadFirebaseConfigFromFirestore() {
 
 function initDb() {
   if (!db) {
-    try {
-      if (!currentFirebaseConfig) {
-        currentFirebaseConfig = getFirebaseConfig();
-      }
-
-      if (!appInitialized) {
-        if (!getApps().length) {
-          initializeApp(currentFirebaseConfig);
-        }
-        appInitialized = true;
-      }
-    } catch (error: any) {
-      // إذا كان الخطأ duplicate-app، نتجاهل لأننا نستخدم getApps() الآن
-      console.error("Failed to initialize Firebase:", error);
-      throw error;
+    // Set config if not already set
+    if (!currentFirebaseConfig) {
+      currentFirebaseConfig = getFirebaseConfig();
     }
+
+    // Initialize app if not already initialized
+    if (!appInitialized) {
+      if (!getApps().length) {
+        try {
+          initializeApp(currentFirebaseConfig);
+        } catch (error: any) {
+          if (!error.message?.includes('duplicate-app')) {
+            throw error;
+          }
+        }
+      }
+      appInitialized = true;
+    }
+
+    // Get Firestore instance
     db = getFirestore();
   }
   return db;
@@ -206,15 +190,19 @@ export async function getOrderById(id: string) {
 }
 
 export async function saveOrder(order: any) {
-  console.log("🔵 [saveOrder] START - received order:", order.id);
+  console.log("🔵 [saveOrder] START - Ensuring config loaded...");
   try {
-    // Initialize DB first
-    console.log("🔵 [saveOrder] Initializing DB...");
+    // CRITICAL: Load config first - ensures Firebase is properly initialized
+    await ensureConfigLoaded();
+    console.log("✅ [saveOrder] Config loaded");
+    
+    // Get fresh DB connection
+    console.log("🔵 [saveOrder] Getting DB connection...");
     const db = initDb();
-    console.log("🔵 [saveOrder] DB initialized:", !!db);
+    console.log("✅ [saveOrder] DB ready");
 
     // Validate required fields
-    console.log("🔵 [saveOrder] Validating fields...");
+    console.log("🔵 [saveOrder] Validating order data...");
     if (!order.userId) {
       throw new Error("User ID is required");
     }
@@ -224,14 +212,7 @@ export async function saveOrder(order: any) {
     if (!order.items || order.items.length === 0) {
       throw new Error("Order must have items");
     }
-
-    console.log("✅ [saveOrder] Validation passed");
-    console.log("📝 [saveOrder] Saving order:", {
-      id: order.id,
-      userId: order.userId,
-      itemsCount: order.items.length,
-      total: order.total,
-    });
+    console.log("✅ [saveOrder] Validation OK");
 
     // Prepare order data
     const orderData = {
@@ -239,39 +220,26 @@ export async function saveOrder(order: any) {
       createdAt: new Date().toISOString(),
     };
 
+    console.log("📝 [saveOrder] Writing order to Firestore:", order.id);
     const orderRef = doc(db, "orders", order.id);
-    console.log("📝 [saveOrder] Reference created for collection: orders, doc:", order.id);
-
+    
     // Write to Firestore
-    console.log("📤 [saveOrder] About to write to Firestore...");
     await setDoc(orderRef, orderData, { merge: false });
-    console.log("✅ [saveOrder] Firestore write completed");
+    console.log("✅ [saveOrder] Write complete");
 
     // Verify save
-    console.log("🔍 [saveOrder] Verifying save...");
+    console.log("🔍 [saveOrder] Verifying...");
     const saved = await getDoc(orderRef);
-    console.log("🔍 [saveOrder] Read back:", saved.exists());
     
     if (saved.exists()) {
-      const savedData = saved.data();
-      console.log("✅ [saveOrder] SUCCESS - Order verified in Firestore");
-      console.log("✅ [saveOrder] Saved data summary:", {
-        id: savedData.id,
-        itemsCount: savedData.items?.length,
-        total: savedData.total,
-      });
+      console.log("✅ [saveOrder] SUCCESS - Order saved and verified");
       return order.id;
     }
 
-    console.error("❌ [saveOrder] Verification failed - document not found after write");
+    console.error("❌ [saveOrder] Verification failed");
     return null;
   } catch (error: any) {
-    console.error("❌ [saveOrder] EXCEPTION:", {
-      message: error?.message,
-      code: error?.code,
-      name: error?.name,
-    });
-    console.error("❌ [saveOrder] Full error:", error);
+    console.error("❌ [saveOrder] ERROR:", error?.message || error);
     return null;
   }
 }
