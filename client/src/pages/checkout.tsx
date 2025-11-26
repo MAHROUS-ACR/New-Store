@@ -66,6 +66,7 @@ export default function CheckoutPage() {
       toast.error("اختر جميع الخيارات - Select all options");
       return;
     }
+
     if (!items || items.length === 0) {
       toast.error("السلة فارغة - Cart is empty");
       return;
@@ -74,9 +75,7 @@ export default function CheckoutPage() {
     setIsSubmitting(true);
 
     try {
-      // توليد order ID جديد لكل طلب
       const orderId = `ord_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
-
       const orderObj = {
         id: orderId,
         orderNumber: Math.floor(Date.now() / 1000),
@@ -100,10 +99,10 @@ export default function CheckoutPage() {
       // تنظيف السلة
       clearCart();
       Object.keys(localStorage)
-        .filter((k) => k.startsWith("cart"))
-        .forEach((k) => localStorage.removeItem(k));
+        .filter(k => k.startsWith("cart"))
+        .forEach(k => localStorage.removeItem(k));
 
-      // إعادة تصفير form state
+      // RESET form لكن بدون تعطيل الفورم الجديد مباشرة
       setPaymentSelected("");
       setShippingSelected("");
       setZoneSelected(null);
@@ -112,9 +111,7 @@ export default function CheckoutPage() {
       sendNotificationToAdmins("New Order", `L.E ${grandTotal.toFixed(2)}`).catch(() => {});
 
       setIsSubmitting(false);
-
-      // إعادة التوجيه
-      setTimeout(() => setLocation("/cart"), 1200);
+      setLocation("/cart");
     } catch (error) {
       console.error("❌ Order error:", error);
       toast.error("خطأ في الطلب");
