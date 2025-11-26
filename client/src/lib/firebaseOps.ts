@@ -245,13 +245,21 @@ export async function updateOrder(id: string, updates: any) {
     console.log("🔴 FIREBASE: updateOrder called with id:", id, "updates:", JSON.stringify(updates));
     
     // Use setDoc with merge instead of updateDoc
-    await setDoc(orderRef, updates, { merge: true });
+    await setDoc(orderRef, { ...updates, updatedAt: new Date().toISOString() }, { merge: true });
     console.log("🟢 FIREBASE: setDoc success for order:", id);
     return true;
   } catch (error: any) {
     console.error("🔴 FIREBASE ERROR updating order:", id);
     console.error("Code:", error?.code);
     console.error("Message:", error?.message);
+    
+    if (error?.code === "permission-denied") {
+      console.error("🔒 PERMISSION DENIED - Check Firestore Security Rules!");
+      console.error("🔒 User must have write access to 'orders' collection");
+      console.error("🔒 Go to Firebase Console → Firestore → Rules");
+      console.error("🔒 Add this rule: allow write: if request.auth != null;");
+    }
+    
     console.error("Full error:", JSON.stringify(error));
     return false;
   }

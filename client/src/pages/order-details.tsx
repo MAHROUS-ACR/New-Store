@@ -140,53 +140,38 @@ export default function OrderDetailsPage() {
   };
 
   const handleStatusUpdate = async (status: string) => {
-    console.log("🔵 BUTTON CLICKED - Current order:", order?.id, "Current status:", order?.status, "New status:", status);
+    console.log("🔵 BUTTON CLICKED - Order:", order?.id, "Status:", order?.status, "→", status);
     
-    if (!order?.id) {
-      console.error("❌ No order ID");
-      toast.error("No order");
-      return;
-    }
-    if (!status) {
-      console.error("❌ No status selected");
-      toast.error("No status");
+    if (!order?.id || !status) {
+      toast.error("Missing data");
       return;
     }
     if (status === order.status) {
-      console.warn("⚠️ Same status selected");
       toast.error("Select different status");
+      return;
+    }
+    if (!user?.id) {
+      toast.error("Not authenticated");
       return;
     }
     
     setIsProcessing(true);
-    console.log("🔵 Starting update process...");
     
     try {
-      console.log("🔵 Calling updateOrder with:", { id: order.id, status });
       const success = await updateOrder(order.id, { status });
-      console.log("🔵 updateOrder returned:", success, "typeof:", typeof success);
       
       if (success) {
-        console.log("🔵 SUCCESS! Setting new order state with status:", status);
-        setOrder(prevOrder => {
-          const updated = { ...prevOrder, status };
-          console.log("🔵 Old order:", prevOrder?.status, "New order:", updated.status);
-          return updated;
-        });
+        setOrder(prev => prev ? { ...prev, status } : null);
         setEditingStatus(false);
         setNewStatus("pending");
-        toast.success("✅ Updated to: " + status);
+        toast.success("✅ Updated!");
       } else {
-        console.error("❌ updateOrder returned false - check Firebase");
-        toast.error("❌ Firebase returned false");
+        toast.error("❌ Failed to update - check Firestore Rules");
       }
     } catch (error: any) {
-      console.error("❌ Exception:", error?.message);
-      console.error("❌ Full error:", error);
-      toast.error("❌ " + error?.message);
+      toast.error("❌ Error: " + error?.message);
     } finally {
       setIsProcessing(false);
-      console.log("🔵 Update process finished");
     }
   };
 
