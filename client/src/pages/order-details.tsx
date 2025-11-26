@@ -7,7 +7,6 @@ import { useUser } from "@/lib/userContext";
 import { useLanguage } from "@/lib/languageContext";
 import { t } from "@/lib/translations";
 import { toast } from "sonner";
-import { getFirestore, doc, getDoc } from "firebase/firestore";
 import { getOrders, updateOrder } from "@/lib/firebaseOps";
 import { sendNotification } from "@/lib/notificationAPI";
 
@@ -100,39 +99,12 @@ export default function OrderDetailsPage() {
     fetchOrder();
   }, [orderId, user]);
 
-  // Separate effect to handle order user and statistics once order is loaded
+  // Calculate order statistics once order is loaded
   useEffect(() => {
-    if (!order || !order.userId) return;
-
-    // Fetch user data from Firestore using userId
-    const fetchUserData = async () => {
-      try {
-        setUserLoading(true);
-        const db = getFirestore();
-        const userRef = doc(db, "users", order.userId);
-        const userSnap = await getDoc(userRef);
-        
-        if (userSnap.exists()) {
-          const userData = userSnap.data();
-          setOrderUser({
-            username: userData.username || userData.email?.split("@")[0],
-            email: userData.email
-          });
-          if (userData.profileImage) {
-            setUserProfileImage(userData.profileImage);
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching user data:", error);
-      } finally {
-        setUserLoading(false);
-      }
-    };
-
-    fetchUserData();
+    if (!order) return;
 
     // Calculate user order statistics for admin
-    if (user?.role === 'admin') {
+    if (user?.role === 'admin' && order.userId) {
       const calculateStats = async () => {
         try {
           const allOrders = await getOrders();
