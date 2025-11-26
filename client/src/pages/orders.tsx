@@ -73,6 +73,9 @@ export default function OrdersPage() {
     setIsLoading(true);
     setFirebaseConfigured(true);
     
+    let unsubscribe: (() => void) | null = null;
+    let pollInterval: NodeJS.Timeout | null = null;
+    
     try {
       const db = getFirestore();
       const ordersRef = collection(db, "orders");
@@ -81,7 +84,8 @@ export default function OrdersPage() {
       const ordersQuery = query(ordersRef, where("userId", "==", user.id));
       
       // Set up real-time listener
-      const unsubscribe = onSnapshot(ordersQuery, (snapshot) => {
+      unsubscribe = onSnapshot(ordersQuery, (snapshot) => {
+        console.log("📡 Real-time listener: received", snapshot.docs.length, "orders");
         const firebaseOrders = snapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data(),
@@ -94,12 +98,31 @@ export default function OrdersPage() {
         }
         setIsLoading(false);
       }, (error) => {
-        console.error("Error fetching orders:", error);
+        console.error("Error fetching orders from listener:", error);
         setOrders([]);
         setIsLoading(false);
       });
       
-      return () => unsubscribe();
+      // Add polling as backup - refresh every 2 seconds when coming from checkout
+      if (refetchTrigger > 0) {
+        console.log("🔄 Starting polling for new orders");
+        pollInterval = setInterval(async () => {
+          try {
+            const firebaseOrders = await getOrders(user.id);
+            console.log("🔄 Polling: got", firebaseOrders?.length || 0, "orders");
+            if (firebaseOrders && firebaseOrders.length > 0) {
+              setOrders(firebaseOrders as Order[]);
+            }
+          } catch (error) {
+            console.error("Polling error:", error);
+          }
+        }, 1000);
+      }
+      
+      return () => {
+        if (unsubscribe) unsubscribe();
+        if (pollInterval) clearInterval(pollInterval);
+      };
     } catch (error) {
       console.error("Error setting up orders listener:", error);
       setOrders([]);
