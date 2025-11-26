@@ -220,25 +220,13 @@ export async function updateOrder(id: string, updates: any) {
   try {
     const db = initDb();
     const orderRef = doc(db, "orders", id);
-    console.log("🟠 updateOrder START - ID:", id);
     
-    // First check if document exists
-    const docSnapshot = await getDoc(orderRef);
-    if (!docSnapshot.exists()) {
-      console.error("🔴 Document NOT found:", id);
-      // Try to find it by querying
-      const allOrders = await getOrders();
-      console.log("📋 All orders in Firestore:", allOrders.map((o: any) => o.id));
-      return false;
-    }
-    
-    console.log("✅ Document exists, updating...");
-    // Now update it
-    await updateDoc(orderRef, updates);
-    console.log("🟢 updateOrder SUCCESS:", id);
+    // Use setDoc with merge - updates existing fields only, never creates new doc with different ID
+    await setDoc(orderRef, updates, { merge: true });
+    console.log("✅ updateOrder SUCCESS - ID:", id);
     return true;
   } catch (error: any) {
-    console.error("🔴 updateOrder ERROR - Code:", error?.code, "Message:", error?.message);
+    console.error("❌ updateOrder ERROR:", error?.message);
     return false;
   }
 }
