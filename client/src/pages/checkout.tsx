@@ -192,7 +192,8 @@ export default function CheckoutPage() {
       console.log("🔵 saveOrder returned:", savedOrderId);
 
       if (savedOrderId) {
-        console.log("✅ ORDER SAVED SUCCESSFULLY - ID:", savedOrderId);
+        console.log("✅ ORDER SAVED - ID:", savedOrderId);
+        toast.success("✅ Saving order...");
         
         // Send notification in background
         sendNotificationToAdmins(
@@ -200,18 +201,17 @@ export default function CheckoutPage() {
           `Order #${orderNumber} placed for L.E ${finalTotal.toFixed(2)}`
         ).catch(e => console.warn("Notification failed:", e));
 
-        // Reset ALL state IMMEDIATELY
+        // Step 1: Clear processing flag
         setIsProcessing(false);
+        console.log("✅ Processing flag reset");
+        
+        // Step 2: Clear cart from both Context and localStorage
         clearCart();
+        localStorage.removeItem("cart");
+        console.log("✅ Cart cleared");
+        toast.success("✅ Cart cleared");
         
-        // Force clear localStorage to ensure fresh cart
-        try {
-          localStorage.removeItem("cart");
-        } catch (e) {
-          console.warn("Could not clear localStorage");
-        }
-        
-        // Reset form completely
+        // Step 3: Reset all checkout form state
         setPaymentMethod(null);
         setShippingType(null);
         setSelectedZone("");
@@ -228,18 +228,19 @@ export default function CheckoutPage() {
           city: "",
           zipCode: "",
         });
+        console.log("✅ Form state reset");
+        toast.success("✅ Form ready for next order");
         
-        toast.success("✅ Order placed successfully!");
-        
-        // Navigate to orders after a brief delay
+        // Step 4: Navigate to cart page (fresh start)
         setTimeout(() => {
-          console.log("🔵 Navigating to orders page");
-          setLocation("/orders?refresh=" + Date.now());
-        }, 1000);
+          console.log("🔵 Redirecting to cart for next order");
+          setLocation("/cart?refresh=" + Date.now());
+        }, 500);
       } else {
-        console.error("❌ saveOrder returned null");
+        console.error("❌ FIRESTORE WRITE FAILED - Order NOT saved");
+        console.error("🔐 Check Firestore Security Rules");
         setIsProcessing(false);
-        toast.error("Failed to save order");
+        toast.error("❌ Failed to save order - check Firestore Rules");
       }
     } catch (error) {
       console.error("❌ ERROR IN PLACE ORDER:", error);

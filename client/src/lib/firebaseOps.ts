@@ -196,40 +196,43 @@ export async function saveOrder(order: any) {
     
     // Verify all required fields
     if (!order.userId) {
-      const msg = "❌ ERROR: userId is missing!";
-      console.error(msg);
-      throw new Error(msg);
+      console.error("❌ userId is missing!");
+      throw new Error("User ID is required");
     }
     
     console.log("📤 Saving order to Firestore...");
-    console.log("🔍 Order validation:", {
-      hasUserId: !!order.userId,
-      userId: order.userId,
-      hasItems: !!order.items,
-      itemCount: order.items?.length,
-      total: order.total,
-    });
     
-    // Use addDoc to let Firebase generate a unique ID
+    // Use addDoc - Firebase generates ID automatically
     const docRef = await addDoc(ordersRef, order);
     const generatedId = docRef.id;
     
-    console.log("✅ Order saved successfully with ID:", generatedId);
-    return generatedId;
-  } catch (error: any) {
-    console.error("❌❌❌ SAVEORDER FAILED ❌❌❌");
-    console.error("Error code:", error?.code);
-    console.error("Error message:", error?.message);
-    console.error("Full error:", error);
+    console.log("✅ Order saved with ID:", generatedId);
     
-    if (error?.code === "permission-denied") {
-      console.error("🔐 FIRESTORE SECURITY RULES BLOCKING WRITE!");
-      console.error("📝 Go to Firebase Console → Firestore → Rules");
-      console.error("Make sure your rules allow writes to 'orders' collection");
+    // Verify it exists
+    const saved = await getDoc(docRef);
+    if (saved.exists()) {
+      console.log("✅ Order verified in Firestore");
+      return generatedId;
     }
     
-    if (error?.code === "unauthenticated") {
-      console.error("🔐 USER NOT AUTHENTICATED - Please login first");
+    throw new Error("Order verification failed");
+  } catch (error: any) {
+    console.error("❌ SAVEORDER ERROR:", error?.message);
+    console.error("Code:", error?.code);
+    
+    if (error?.code === "permission-denied") {
+      console.error("🔐 FIX: Go to Firebase Console → Firestore Database → Rules tab");
+      console.error("Replace rules with this:");
+      console.error(`
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}
+      `);
     }
     
     return null;
