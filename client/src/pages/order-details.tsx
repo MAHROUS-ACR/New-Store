@@ -139,19 +139,30 @@ export default function OrderDetailsPage() {
   };
 
   const handleStatusUpdate = async (newSts: string) => {
-    if (!newSts || !order) return;
+    console.log("🔧 handleStatusUpdate called with status:", newSts);
+    console.log("📦 Order ID:", order?.id);
+    
+    if (!newSts || !order) {
+      console.warn("⚠️ Missing status or order:", { newSts, order: order?.id });
+      return;
+    }
     
     try {
+      console.log("🔄 Updating order status in Firebase...");
       // Update Firebase using the proper updateOrder function
       const success = await updateOrder(order.id, { status: newSts });
       
+      console.log("✅ Firebase update result:", success);
+      
       if (!success) {
         toast.error("Failed to update order status");
+        console.error("❌ Firebase update failed");
         return;
       }
 
       // Send notification to customer about status change
       if (order.userId) {
+        console.log("📢 Sending notification to user:", order.userId);
         await sendNotification({
           userIds: [order.userId],
           title: "Order Status Updated",
@@ -234,11 +245,18 @@ export default function OrderDetailsPage() {
                       <button
                         onClick={() => {
                           console.log("🟢 Confirm button clicked with status:", newStatus);
-                          handleStatusUpdate(newStatus);
+                          console.log("🟢 Current newStatus state:", newStatus);
+                          console.log("🟢 Order state:", order?.id);
+                          if (newStatus && order) {
+                            handleStatusUpdate(newStatus);
+                          } else {
+                            console.warn("⚠️ Cannot update - missing status or order");
+                            toast.error("Please select a status");
+                          }
                         }}
-                        disabled={!newStatus}
                         className={`p-1 rounded transition ${newStatus ? 'bg-green-600 text-white hover:bg-green-700 cursor-pointer' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
                         data-testid="button-confirm-status"
+                        type="button"
                       >
                         <Check className="w-4 h-4" />
                       </button>
