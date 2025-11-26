@@ -53,39 +53,34 @@ export default function CheckoutPage() {
   }, [items.length]);
 
   const handlePlaceOrder = async () => {
+    console.log("🔘 Button clicked! isProcessing:", isProcessing);
+    
+    if (isProcessing) {
+      console.log("⏳ Already processing, ignoring click");
+      return;
+    }
+
+    if (!paymentMethod) {
+      toast.error("❌ اختر طريقة الدفع - Select payment method");
+      return;
+    }
+    if (!shippingType) {
+      toast.error("❌ اختر نوع الشحن - Select shipping type");
+      return;
+    }
+    if (!selectedZone) {
+      toast.error("❌ اختر المنطقة - Select shipping zone");
+      return;
+    }
+    if (items.length === 0) {
+      toast.error("❌ السلة فارغة - Cart is empty");
+      return;
+    }
+
+    setIsProcessing(true);
+    console.log("📤 Processing order...");
+
     try {
-      console.log("📤 Place Order called:", {
-        items: items.length,
-        payment: paymentMethod,
-        shipping: shippingType,
-        zone: selectedZone,
-        cost: shippingCost,
-        isProcessing,
-      });
-
-      if (!paymentMethod) {
-        console.warn("⚠️ No payment method selected");
-        toast.error("Please select a payment method");
-        return;
-      }
-      if (!shippingType) {
-        console.warn("⚠️ No shipping type selected");
-        toast.error("Please select shipping type");
-        return;
-      }
-      if (!selectedZone) {
-        console.warn("⚠️ No shipping zone selected");
-        toast.error("Please select a shipping zone");
-        return;
-      }
-      if (items.length === 0) {
-        console.warn("⚠️ Cart is empty");
-        toast.error("Cart is empty");
-        return;
-      }
-
-      setIsProcessing(true);
-
       const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
       const finalTotal = total + shippingCost;
 
@@ -103,14 +98,12 @@ export default function CheckoutPage() {
         userId: user?.id,
       };
 
-      console.log("💾 Saving order...");
+      console.log("💾 Saving order to Firestore...", orderData);
       const savedId = await saveOrder(orderData);
 
       if (savedId) {
-        console.log("✅ Order saved:", savedId);
-        toast.success("✅ Order placed!");
-        
-        setIsProcessing(false);
+        console.log("✅ Order saved successfully:", savedId);
+        toast.success("✅ تم الطلب - Order placed!");
         clearCart();
         localStorage.removeItem("cart");
         
@@ -123,14 +116,14 @@ export default function CheckoutPage() {
           setLocation("/cart");
         }, 1000);
       } else {
-        console.error("❌ Order save failed");
+        console.error("❌ saveOrder returned falsy");
+        toast.error("❌ فشل الحفظ - Failed to save order");
         setIsProcessing(false);
-        toast.error("Failed to save order");
       }
     } catch (error) {
-      console.error("❌ Error:", error);
+      console.error("❌ Error placing order:", error);
+      toast.error("❌ خطأ - Error placing order");
       setIsProcessing(false);
-      toast.error("Error placing order");
     }
   };
 
@@ -263,29 +256,17 @@ export default function CheckoutPage() {
 
         {/* Sticky Place Order Button at Bottom */}
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-5 max-w-[390px] mx-auto">
-          {isProcessing && <p className="text-center text-sm text-blue-600 mb-2 font-bold">⏳ Processing order...</p>}
-          {!paymentMethod && <p className="text-center text-sm text-red-600 mb-2">❌ Select payment method</p>}
-          {!shippingType && <p className="text-center text-sm text-red-600 mb-2">❌ Select shipping type</p>}
-          {!selectedZone && <p className="text-center text-sm text-red-600 mb-2">❌ Select shipping zone</p>}
           <button
-            onClick={() => {
-              console.log("🔘 Place Order button clicked! State:", {
-                isProcessing,
-                paymentMethod,
-                shippingType,
-                selectedZone,
-                itemsCount: items.length,
-              });
-              handlePlaceOrder();
-            }}
-            disabled={isProcessing || !paymentMethod || !shippingType || !selectedZone || items.length === 0}
-            className={`w-full py-4 rounded-2xl font-bold text-lg transition ${
-              isProcessing || !paymentMethod || !shippingType || !selectedZone || items.length === 0
-                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                : "bg-black text-white active:bg-gray-800"
+            onClick={handlePlaceOrder}
+            disabled={isProcessing}
+            className={`w-full py-4 px-5 rounded-2xl font-bold text-base transition-all ${
+              isProcessing
+                ? "bg-gray-400 text-white cursor-not-allowed opacity-70"
+                : "bg-black text-white hover:bg-gray-900 active:scale-95"
             }`}
+            type="button"
           >
-            {isProcessing ? "⏳ Processing..." : `✅ Place Order - L.E ${(items.reduce((sum, item) => sum + item.price * item.quantity, 0) + shippingCost).toFixed(2)}`}
+            {isProcessing ? "⏳ جاري المعالجة..." : `✅ اطلب - Place Order - L.E ${(items.reduce((sum, item) => sum + item.price * item.quantity, 0) + shippingCost).toFixed(2)}`}
           </button>
         </div>
       </div>
