@@ -101,7 +101,6 @@ function initDb() {
 // ============= PRODUCTS =============
 export async function getProducts() {
   try {
-    await ensureConfigLoaded();
     const db = initDb();
     const productsRef = collection(db, "products");
     const snapshot = await getDocs(productsRef);
@@ -109,8 +108,8 @@ export async function getProducts() {
       id: doc.id,
       ...doc.data(),
     }));
-  } catch (error) {
-    console.error("Error fetching products:", error);
+  } catch (error: any) {
+    console.error("❌ Error fetching products:", error?.message || error);
     return [];
   }
 }
