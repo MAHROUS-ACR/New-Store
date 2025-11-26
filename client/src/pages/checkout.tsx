@@ -54,10 +54,33 @@ export default function CheckoutPage() {
 
   const handlePlaceOrder = async () => {
     try {
-      console.log("📤 Place Order called:", { items: items.length, payment: paymentMethod, zone: selectedZone });
+      console.log("📤 Place Order called:", {
+        items: items.length,
+        payment: paymentMethod,
+        shipping: shippingType,
+        zone: selectedZone,
+        cost: shippingCost,
+        isProcessing,
+      });
 
-      if (!paymentMethod || !shippingType || !selectedZone || items.length === 0) {
-        toast.error("Please fill all fields");
+      if (!paymentMethod) {
+        console.warn("⚠️ No payment method selected");
+        toast.error("Please select a payment method");
+        return;
+      }
+      if (!shippingType) {
+        console.warn("⚠️ No shipping type selected");
+        toast.error("Please select shipping type");
+        return;
+      }
+      if (!selectedZone) {
+        console.warn("⚠️ No shipping zone selected");
+        toast.error("Please select a shipping zone");
+        return;
+      }
+      if (items.length === 0) {
+        console.warn("⚠️ Cart is empty");
+        toast.error("Cart is empty");
         return;
       }
 
@@ -240,12 +263,29 @@ export default function CheckoutPage() {
 
         {/* Sticky Place Order Button at Bottom */}
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-5 max-w-[390px] mx-auto">
+          {isProcessing && <p className="text-center text-sm text-blue-600 mb-2 font-bold">⏳ Processing order...</p>}
+          {!paymentMethod && <p className="text-center text-sm text-red-600 mb-2">❌ Select payment method</p>}
+          {!shippingType && <p className="text-center text-sm text-red-600 mb-2">❌ Select shipping type</p>}
+          {!selectedZone && <p className="text-center text-sm text-red-600 mb-2">❌ Select shipping zone</p>}
           <button
-            onClick={handlePlaceOrder}
-            disabled={isProcessing || !paymentMethod || !shippingType || !selectedZone}
-            className="w-full bg-black text-white py-4 rounded-2xl font-bold disabled:opacity-50"
+            onClick={() => {
+              console.log("🔘 Place Order button clicked! State:", {
+                isProcessing,
+                paymentMethod,
+                shippingType,
+                selectedZone,
+                itemsCount: items.length,
+              });
+              handlePlaceOrder();
+            }}
+            disabled={isProcessing || !paymentMethod || !shippingType || !selectedZone || items.length === 0}
+            className={`w-full py-4 rounded-2xl font-bold text-lg transition ${
+              isProcessing || !paymentMethod || !shippingType || !selectedZone || items.length === 0
+                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                : "bg-black text-white active:bg-gray-800"
+            }`}
           >
-            {isProcessing ? "Processing..." : `Place Order - L.E ${(items.reduce((sum, item) => sum + item.price * item.quantity, 0) + shippingCost).toFixed(2)}`}
+            {isProcessing ? "⏳ Processing..." : `✅ Place Order - L.E ${(items.reduce((sum, item) => sum + item.price * item.quantity, 0) + shippingCost).toFixed(2)}`}
           </button>
         </div>
       </div>
