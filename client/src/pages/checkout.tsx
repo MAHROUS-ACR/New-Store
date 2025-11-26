@@ -69,17 +69,25 @@ export default function CheckoutPage() {
   const isFormValid = paymentSelected && shippingSelected && zoneSelected;
 
   const handleSubmit = async () => {
+    console.log("🔵 handleSubmit START");
+    console.log("  isFormValid:", isFormValid);
+    console.log("  items:", items?.length);
+    console.log("  user?.id:", user?.id);
+    
     if (!isFormValid) {
+      console.warn("⚠️ Form not valid");
       toast.error("اختر جميع الخيارات - Select all options");
       return;
     }
 
     if (!items || items.length === 0) {
+      console.warn("⚠️ Cart empty");
       toast.error("السلة فارغة - Cart is empty");
       return;
     }
 
     if (!user?.id) {
+      console.warn("⚠️ User not logged in");
       toast.error("يجب تسجيل الدخول - You must login");
       return;
     }
@@ -105,6 +113,8 @@ export default function CheckoutPage() {
 
       console.log("📝 Submitting order:", orderObj);
       const savedId = await saveOrder(orderObj);
+      console.log("✅ SaveOrder returned:", savedId);
+      
       if (!savedId) throw new Error("saveOrder returned null");
 
       console.log("✅ Order saved successfully:", savedId);
@@ -121,7 +131,7 @@ export default function CheckoutPage() {
 
       setIsSubmitting(false);
       
-      // Go to home page after 2 seconds - this resets ALL state
+      // Go to home page after 2 seconds
       setTimeout(() => {
         setLocation("/");
       }, 2000);

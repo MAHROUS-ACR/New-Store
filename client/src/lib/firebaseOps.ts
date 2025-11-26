@@ -212,15 +212,18 @@ export async function saveStoreSettings(settings: any) {
 // ============= SHIPPING ZONES =============
 export async function getShippingZones() {
   try {
+    console.log("📍 getShippingZones START");
     const db = initDb();
     const zonesRef = collection(db, "shippingZones");
     const snapshot = await getDocs(zonesRef);
-    return snapshot.docs.map(doc => ({
+    const zones = snapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data(),
     }));
-  } catch (error) {
-    console.error("Error fetching shipping zones:", error);
+    console.log("📍 getShippingZones SUCCESS - Found:", zones.length, "zones");
+    return zones;
+  } catch (error: any) {
+    console.error("❌ Error fetching shipping zones:", error?.message || error);
     return [];
   }
 }
