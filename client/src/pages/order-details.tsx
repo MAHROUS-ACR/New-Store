@@ -243,31 +243,32 @@ export default function OrderDetailsPage() {
                         <option value="cancelled">{t("cancelled", language)}</option>
                       </select>
                       <button
-                        onClick={() => {
-                          console.log("🟢 Confirm button clicked with status:", newStatus);
-                          console.log("🟢 Current newStatus state:", newStatus);
-                          console.log("🟢 Order state:", order?.id);
-                          if (newStatus && order) {
-                            handleStatusUpdate(newStatus);
-                          } else {
-                            console.warn("⚠️ Cannot update - missing status or order");
-                            toast.error("Please select a status");
-                          }
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          console.log("🟢 Confirm button clicked");
+                          console.log("Status:", newStatus);
+                          handleStatusUpdate(newStatus);
                         }}
-                        className={`p-1 rounded transition ${newStatus ? 'bg-green-600 text-white hover:bg-green-700 cursor-pointer' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
+                        className="p-2 bg-green-600 text-white hover:bg-green-700 rounded transition cursor-pointer"
                         data-testid="button-confirm-status"
                         type="button"
+                        title="Confirm status change"
                       >
                         <Check className="w-4 h-4" />
                       </button>
                       <button
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
                           console.log("❌ Cancel button clicked");
                           setEditingStatus(false);
                           setNewStatus("");
                         }}
-                        className="p-1 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 transition"
+                        className="p-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 transition cursor-pointer"
                         data-testid="button-cancel-status"
+                        type="button"
+                        title="Cancel"
                       >
                         <X className="w-4 h-4" />
                       </button>
@@ -277,22 +278,22 @@ export default function OrderDetailsPage() {
                       <span className={`text-xs font-semibold px-3 py-1 rounded-full border ${getStatusColor(order.status)}`}>
                         {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                       </span>
-                      {user?.role === 'admin' ? (
-                        <button
-                          onClick={() => {
-                            console.log("✏️ Edit button clicked, opening dropdown");
-                            setEditingStatus(true);
-                            setNewStatus(order.status);
-                          }}
-                          className="p-1 text-primary hover:bg-primary/10 rounded transition"
-                          data-testid="button-edit-status"
-                          type="button"
-                        >
-                          <Edit2 className="w-4 h-4" />
-                        </button>
-                      ) : (
-                        <div className="text-xs text-gray-500">Admin only</div>
-                      )}
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          console.log("✏️ Edit button clicked");
+                          console.log("Current user role:", user?.role);
+                          setEditingStatus(true);
+                          setNewStatus(order.status);
+                        }}
+                        className="p-2 text-primary hover:bg-primary/10 rounded transition cursor-pointer"
+                        data-testid="button-edit-status"
+                        type="button"
+                        title="Edit order status"
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </button>
                     </div>
                   )}
                 </div>
