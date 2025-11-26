@@ -147,23 +147,27 @@ export default function OrderDetailsPage() {
       const success = await updateOrder(order.id, { status });
       console.log("✅ Firebase update result:", success);
       if (success) {
-        // Create NEW object to force React re-render
-        const updatedOrder = Object.assign({}, order, { status });
-        console.log("📝 New order object:", updatedOrder);
-        setOrder(updatedOrder);
+        console.log("📝 Reloading order from Firebase after update...");
+        // Reload order from Firebase to get updated data
+        const orders = await getOrders(user?.role === 'admin' ? undefined : user?.id);
+        const reloadedOrder = orders?.find((o: any) => o.id === order.id);
+        if (reloadedOrder) {
+          console.log("✅ Reloaded order:", reloadedOrder);
+          setOrder(reloadedOrder as Order);
+        }
         setEditingStatus(false);
         setNewStatus("pending");
-        toast.success("✅ Status updated to: " + status);
+        toast.success("✅ Status updated!");
         if (order.userId) {
           await sendNotification({ userIds: [order.userId], title: "Order Status Updated", body: `Status: ${status}` });
         }
       } else {
         console.error("❌ Firebase returned false");
-        toast.error("❌ Update failed - check console");
+        toast.error("❌ Update failed");
       }
     } catch (error) {
       console.error("❌ Exception:", error);
-      toast.error("❌ Error: " + (error as any)?.message);
+      toast.error("❌ Error updating");
     } finally {
       setIsProcessing(false);
     }
