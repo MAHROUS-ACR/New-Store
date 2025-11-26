@@ -7,8 +7,8 @@ import { useUser } from "@/lib/userContext";
 import { useLanguage } from "@/lib/languageContext";
 import { t } from "@/lib/translations";
 import { toast } from "sonner";
-import { getFirestore, doc, getDoc, updateDoc } from "firebase/firestore";
-import { getOrders } from "@/lib/firebaseOps";
+import { getFirestore, doc, getDoc } from "firebase/firestore";
+import { getOrders, updateOrder } from "@/lib/firebaseOps";
 import { sendNotification } from "@/lib/notificationAPI";
 
 interface CartItem {
@@ -169,10 +169,13 @@ export default function OrderDetailsPage() {
     if (!newSts || !order) return;
     
     try {
-      // Update Firebase only
-      const db = getFirestore();
-      const orderRef = doc(db, "orders", order.id);
-      await updateDoc(orderRef, { status: newSts });
+      // Update Firebase using the proper updateOrder function
+      const success = await updateOrder(order.id, { status: newSts });
+      
+      if (!success) {
+        toast.error("Failed to update order status");
+        return;
+      }
 
       // Send notification to customer about status change
       if (order.userId) {
@@ -187,9 +190,10 @@ export default function OrderDetailsPage() {
       setEditingStatus(false);
       setNewStatus("");
       toast.success("Order status updated successfully!");
+      console.log("✅ Order status updated to:", newSts);
     } catch (error) {
       toast.error("Failed to update order status");
-      console.error(error);
+      console.error("Status update error:", error);
     }
   };
 
