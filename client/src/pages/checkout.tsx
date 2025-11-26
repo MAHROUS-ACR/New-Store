@@ -45,29 +45,23 @@ export default function CheckoutPage() {
           shippingCost: Number(z.shippingCost) || 0,
         }));
         setZonesList(mappedZones);
-        
-        // Auto-select first zone for "saved" shipping
-        if (shippingSelected === "saved" && mappedZones.length > 0 && !zoneSelected) {
-          setZoneSelected(mappedZones[0]);
-        }
       } catch (err) {
         console.error("Failed to load zones:", err);
-        toast.error("Failed to load zones");
       } finally {
         setIsLoadingZones(false);
       }
     };
     loadZones();
-  }, [shippingSelected]);
+  }, []);
   
-  // Auto-select first zone when "saved" is selected
+  // Auto-select first zone when shipping type changes
   useEffect(() => {
-    if (shippingSelected === "saved" && zonesList.length > 0 && !zoneSelected) {
+    if (shippingSelected === "saved" && zonesList.length > 0) {
       setZoneSelected(zonesList[0]);
     } else if (shippingSelected === "new") {
       setZoneSelected(null);
     }
-  }, [shippingSelected]);
+  }, [shippingSelected, zonesList]);
 
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const shipping = zoneSelected?.shippingCost || 0;
