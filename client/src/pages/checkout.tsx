@@ -60,9 +60,10 @@ export default function CheckoutPage() {
     loadData();
   }, []);
 
+  // Load user profile once when component mounts
   useEffect(() => {
     const loadUserProfile = async () => {
-      if (user?.id && paymentMethod) {
+      if (user?.id) {
         try {
           const db = getFirestore();
           const userRef = doc(db, "users", user.id);
@@ -82,8 +83,10 @@ export default function CheckoutPage() {
         }
       }
     };
-    loadUserProfile();
-  }, [paymentMethod, user?.id]);
+    if (user?.id) {
+      loadUserProfile();
+    }
+  }, [user?.id]); // Only depend on user.id, NOT paymentMethod
 
   const calculateTotalWithDiscounts = () => {
     return items.reduce((sum, item) => {
