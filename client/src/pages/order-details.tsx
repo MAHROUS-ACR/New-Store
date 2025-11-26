@@ -225,16 +225,8 @@ export default function OrderDetailsPage() {
                     <p className="font-semibold text-lg font-mono">#{order.orderNumber || order.id.slice(0, 8).toUpperCase()}</p>
                   </div>
                   {editingStatus ? (
-                    <div className="flex gap-1 items-center">
-                      <select
-                        value={newStatus}
-                        onChange={(e) => {
-                          console.log("📝 Status dropdown changed to:", e.target.value);
-                          setNewStatus(e.target.value);
-                        }}
-                        className="px-3 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-primary/20"
-                        data-testid="select-order-status"
-                      >
+                    <div className="flex gap-2">
+                      <select value={newStatus} onChange={(e) => setNewStatus(e.target.value)} className="px-2 py-1 border rounded text-xs">
                         <option value="pending">{t("pending", language)}</option>
                         <option value="confirmed">{t("confirmed", language)}</option>
                         <option value="processing">{t("processing", language)}</option>
@@ -242,58 +234,13 @@ export default function OrderDetailsPage() {
                         <option value="completed">{t("completed", language)}</option>
                         <option value="cancelled">{t("cancelled", language)}</option>
                       </select>
-                      <button
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          console.log("🟢 Confirm button clicked");
-                          console.log("Status:", newStatus);
-                          handleStatusUpdate(newStatus);
-                        }}
-                        className="p-2 bg-green-600 text-white hover:bg-green-700 rounded transition cursor-pointer"
-                        data-testid="button-confirm-status"
-                        type="button"
-                        title="Confirm status change"
-                      >
-                        <Check className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          console.log("❌ Cancel button clicked");
-                          setEditingStatus(false);
-                          setNewStatus("");
-                        }}
-                        className="p-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 transition cursor-pointer"
-                        data-testid="button-cancel-status"
-                        type="button"
-                        title="Cancel"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
+                      <button onClick={() => handleStatusUpdate(newStatus)} className="px-3 py-1 bg-green-600 text-white rounded text-xs hover:bg-green-700" data-testid="button-confirm-status">✓</button>
+                      <button onClick={() => { setEditingStatus(false); setNewStatus(""); }} className="px-3 py-1 bg-gray-300 text-gray-700 rounded text-xs hover:bg-gray-400" data-testid="button-cancel-status">✕</button>
                     </div>
                   ) : (
                     <div className="flex items-center gap-2">
-                      <span className={`text-xs font-semibold px-3 py-1 rounded-full border ${getStatusColor(order.status)}`}>
-                        {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                      </span>
-                      <button
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          console.log("✏️ Edit button clicked");
-                          console.log("Current user role:", user?.role);
-                          setEditingStatus(true);
-                          setNewStatus(order.status);
-                        }}
-                        className="p-2 text-primary hover:bg-primary/10 rounded transition cursor-pointer"
-                        data-testid="button-edit-status"
-                        type="button"
-                        title="Edit order status"
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </button>
+                      <span className={`text-xs font-semibold px-3 py-1 rounded-full border ${getStatusColor(order.status)}`}>{order.status.charAt(0).toUpperCase() + order.status.slice(1)}</span>
+                      <button onClick={() => { setEditingStatus(true); setNewStatus(order.status); }} className="p-1 text-primary hover:bg-primary/10 rounded" data-testid="button-edit-status"><Edit2 className="w-4 h-4" /></button>
                     </div>
                   )}
                 </div>
