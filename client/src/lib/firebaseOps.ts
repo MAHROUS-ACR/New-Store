@@ -200,43 +200,28 @@ export async function saveOrder(order: any) {
       throw new Error("User ID is missing");
     }
     
-    // Prepare order data WITHOUT relying on frontend ID
-    const orderData = {
-      ...order,
-      savedAt: new Date().toISOString(),
-    };
+    console.log("📤 Saving order with addDoc...");
+    console.log("📦 Order data:", {
+      userId: order.userId,
+      total: order.totalPrice,
+      status: order.status,
+      itemCount: order.items?.length
+    });
     
-    console.log("📤 Saving order with addDoc (Firebase will generate ID)");
-    console.log("📦 Full data to save:", orderData);
-    
-    // Use addDoc to let Firebase generate a unique ID - this is more reliable
-    const docRef = await addDoc(ordersRef, orderData);
+    // Use addDoc to let Firebase generate a unique ID
+    const docRef = await addDoc(ordersRef, order);
     const generatedId = docRef.id;
     
-    console.log("✅ Order saved with Firebase-generated ID:", generatedId);
-    
-    // Update document with its own ID field for reference
-    await updateDoc(docRef, { 
-      firebaseId: generatedId,
-      id: generatedId 
-    });
-    
-    // Verify it was saved
-    const verification = await getDoc(docRef);
-    if (verification.exists()) {
-      console.log("✅ Order VERIFIED saved with ID:", generatedId);
-      console.log("✅ Saved data:", verification.data());
-      return generatedId;
-    } else {
-      console.error("❌ Order NOT found after saving!");
-      throw new Error("Order verification failed");
-    }
+    console.log("✅ Order saved successfully with ID:", generatedId);
+    return generatedId;
   } catch (error: any) {
-    console.error("❌ saveOrder FULL ERROR:", {
-      message: error?.message,
+    console.error("❌ FIRESTORE ERROR:", {
       code: error?.code,
-      details: error
+      message: error?.message,
     });
+    if (error?.code === "permission-denied") {
+      console.error("🔐 SECURITY RULES BLOCKING WRITE - Check Firestore Rules!");
+    }
     return null;
   }
 }
