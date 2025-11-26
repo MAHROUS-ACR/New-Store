@@ -140,36 +140,19 @@ export default function OrderDetailsPage() {
   };
 
   const handleStatusUpdate = async (status: string) => {
-    console.log("🔵 BUTTON CLICKED - Order:", order?.id, "Status:", order?.status, "→", status);
-    
-    if (!order?.id || !status) {
-      toast.error("Missing data");
-      return;
-    }
-    if (status === order.status) {
-      toast.error("Select different status");
-      return;
-    }
-    if (!user?.id) {
-      toast.error("Not authenticated");
-      return;
-    }
+    if (!order?.id || !status || status === order.status) return;
     
     setIsProcessing(true);
-    
     try {
       const success = await updateOrder(order.id, { status });
-      
       if (success) {
         setOrder(prev => prev ? { ...prev, status } : null);
         setEditingStatus(false);
         setNewStatus("pending");
-        toast.success("✅ Updated!");
+        toast.success("Status updated!");
       } else {
-        toast.error("❌ Failed to update - check Firestore Rules");
+        toast.error("Failed to update");
       }
-    } catch (error: any) {
-      toast.error("❌ Error: " + error?.message);
     } finally {
       setIsProcessing(false);
     }

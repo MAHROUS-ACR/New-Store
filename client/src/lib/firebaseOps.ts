@@ -242,28 +242,14 @@ export async function updateOrder(id: string, updates: any) {
   try {
     const db = initDb();
     const orderRef = doc(db, "orders", id);
-    console.log("🟠 Checking if order exists:", id);
+    console.log("🟢 updateOrder START - id:", id, "updates:", updates);
     
-    // First verify the document exists
-    const docSnapshot = await getDoc(orderRef);
-    if (!docSnapshot.exists()) {
-      console.error("🔴 Document not found with ID:", id);
-      console.error("Available orders in system:", await getOrders());
-      return false;
-    }
-    
-    console.log("✅ Document found, updating now...");
-    console.log("🟠 updateOrder - id:", id, "updates:", updates);
-    
-    // Update existing document
-    await updateDoc(orderRef, { 
-      ...updates, 
-      updatedAt: new Date().toISOString() 
-    });
-    console.log("✅ updateOrder SUCCESS for:", id);
+    // Use setDoc with merge - this is more reliable than updateDoc
+    await setDoc(orderRef, updates, { merge: true });
+    console.log("🟢 updateOrder SUCCESS - Updated:", id);
     return true;
   } catch (error: any) {
-    console.error("❌ updateOrder ERROR:", error?.code, error?.message);
+    console.error("🔴 updateOrder FAILED:", error?.message);
     return false;
   }
 }
