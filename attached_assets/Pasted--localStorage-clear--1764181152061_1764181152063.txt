@@ -1,0 +1,219 @@
+حلو — خلّيني أجيب لك إصلاح عملي ومباشر. بما إنّك جربت التعديل على localStorage.clear() ولسه الأوردر التاني مش بيتسجّل، فالمشكلة على الأغلب مركبة من نقطتين مع بعض:
+
+1. بعض وظائف في firebaseOps ما بتضمنش تحميل الـ config أو تهيئة الـ app قبل استعمال getFirestore() (يعني race / stale db).
+
+
+2. إعادة تهيئة Firebase ممكن تكون معمولة بطريقة غير آمنة (duplicate-app) وبالتالي بعد أول عملية يحصل وضع غير متوقع.
+
+
+
+أدناه هتلاقي تعديل موثوق على initDb, ensureConfigLoaded و saveOrder — استبدل النسخ الموجودة في ملف firebaseOps بالنسخة دي. التغييرات الأساسية:
+
+نستخدم getApps() لتجنّب إعادة التهيئة.
+
+نجبر كل عملية كتابة مهمة (saveOrder) إنها تستدعي ensureConfigLoaded() قبل أي حاجة.
+
+تسجيل أخطاء أوضح وmerge: true لتجنّب الكتابة الكاملة عن طريق الخطأ.
+
+لا نعتمد على window.location.reload() عند تغيير config (لمدة سابقة) — هنا نكتفي بتسجيل التغيير (لو عايز إعادة تهيئة ديناميكية نعملها بطريقة مختلفة).
+
+
+استبدال initDb, ensureConfigLoaded و saveOrder
+
+import { initializeApp, getApps } from "firebase/app";
+import {
+  getFirestore,
+  // ... باقي الاستيرادات
+} from "firebase/firestore";
+// باقي الاستيرادات كما هي
+
+let db: any = null;
+let currentFirebaseConfig: any = null;
+let appInitialized = false;
+
+function getFirebaseConfig() {
+  return {
+    apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+    appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  };
+}
+
+async function loadFirebaseConfigFromFirestore() {
+  try {
+    // initialize with default config if missing
+    if (!currentFirebaseConfig) {
+      currentFirebaseConfig = getFirebaseConfig();
+      if (!appInitialized) {
+        if (!getApps().length) {
+          initializeApp(currentFirebaseConfig);
+        }
+        appInitialized = true;
+      }
+    }
+
+    const database = getFirestore();
+    const configRef = doc(database, "settings", "firebase");
+    const configSnap = await getDoc(configRef);
+
+    if (configSnap.exists()) {
+      const firestoreConfig = configSnap.data();
+      const newConfig = {
+        apiKey: firestoreConfig.firebaseApiKey || currentFirebaseConfig.apiKey,
+        authDomain: firestoreConfig.firebaseAuthDomain || currentFirebaseConfig.authDomain,
+        projectId: firestoreConfig.firebaseProjectId || currentFirebaseConfig.projectId,
+        storageBucket: firestoreConfig.firebaseStorageBucket || currentFirebaseConfig.storageBucket,
+        messagingSenderId: firestoreConfig.firebaseMessagingSenderId || currentFirebaseConfig.messagingSenderId,
+        appId: firestoreConfig.firebaseAppId || currentFirebaseConfig.appId,
+      };
+
+      if (JSON.stringify(newConfig) !== JSON.stringify(currentFirebaseConfig)) {
+        console.log("🔄 Firebase config changed in Firestore. Updating local config (no reload).");
+        currentFirebaseConfig = newConfig;
+        // نختار هنا ألا نعمل window.location.reload() لأن ده سبب مشاكل عندك
+        // لو عايز طريقة آمنة لإعادة init، نقدر نطبقها لكن تحتاج تصميم مختلف
+      }
+    }
+  } catch (error) {
+    console.error("Error loading Firebase config from Firestore:", error);
+    // لا نرمي هنا - فقط نُبقي على currentFirebaseConfig الافتراضي
+  }
+}
+
+function initDb() {
+  if (!db) {
+    try {
+      if (!currentFirebaseConfig) {
+        currentFirebaseConfig = getFirebaseConfig();
+      }
+
+      if (!appInitialized) {
+        if (!getApps().length) {
+          initializeApp(currentFirebaseConfig);
+        }
+        appInitialized = true;
+      }
+    } catch (error: any) {
+      // إذا كان الخطأ duplicate-app، نتجاهل لأننا نستخدم getApps() الآن
+      console.error("Failed to initialize Firebase:", error);
+      throw error;
+    }
+    db = getFirestore();
+  }
+  return db;
+}
+
+// Check Firebase config on first call
+let configCheckDone = false;
+async function ensureConfigLoaded() {
+  if (!configCheckDone) {
+    configCheckDone = true;
+    await loadFirebaseConfigFromFirestore();
+  }
+}
+
+// ======= تعديل saveOrder ليضمن ensureConfigLoaded + initDb =======
+export async function saveOrder(order: any) {
+  try {
+    // ensure config and DB are ready
+    await ensureConfigLoaded();
+    const db = initDb();
+
+    // Validate required fields
+    if (!order.userId) {
+      throw new Error("User ID is required");
+    }
+    if (!order.id) {
+      throw new Error("Order ID is required");
+    }
+    if (!order.items || order.items.length === 0) {
+      throw new Error("Order must have items");
+    }
+
+    // Prepare order data — استخدم Timestamp.now() لو عايز وقت firestore
+    const orderData = {
+      ...order,
+      createdAt: new Date().toISOString(),
+    };
+
+    const orderRef = doc(db, "orders", order.id);
+
+    // استخدم merge: true لحماية من الكتابة الكاملة غير المقصودة
+    await setDoc(orderRef, orderData, { merge: true });
+
+    // تحقق للتيقن
+    const saved = await getDoc(orderRef);
+    if (saved.exists()) {
+      console.log("[saveOrder] saved order OK, items:", saved.data()?.items?.length || 0);
+      return order.id;
+    }
+
+    console.error("[saveOrder] Verification failed - order not found after save");
+    return null;
+  } catch (error: any) {
+    console.error("[saveOrder] ERROR:", {
+      message: error?.message,
+      code: error?.code,
+      stack: error?.stack,
+    });
+    return null;
+  }
+}
+
+
+---
+
+تغييرات مطلوبة في صفحة الـ Checkout (اللي بعتها)
+
+إيقاف أي عملية مسح عامة للـ localStorage — أبقي اقتراحي السابق:
+
+
+Object.keys(localStorage)
+  .filter((k) => k.startsWith("cart"))
+  .forEach((k) => localStorage.removeItem(k));
+
+خليك تتأكد إن clearCart() يمسح فقط الـ cart state ويمسح المفاتيح اللي تبدأ بـ cart في localStorage، وما يمسحش أي حاجة اسمها firebaseConfig أو firebase_* أو أي مفتاح غير متعلق بعربة التسوق.
+
+
+
+---
+
+خطوات اختبار سريعة بعد التعديلات
+
+1. نعدل firebaseOps بالكود أعلاه وندفعه.
+
+
+2. نعدل الـ localStorage.clear() كما سبق ونعمل build.
+
+
+3. في المتصفح — افتح DevTools > Console و Network.
+
+
+4. حاول تبعت 2 أوردر ورا بعض (بدون عمل Refresh). راقب Console لأي errors من [saveOrder] ERROR: أو أي rejection.
+
+
+5. لو فشل، انسخ console errors ودلّيهم هنا — هحلّلهم لك فوريًا.
+
+
+
+
+---
+
+نقاط أخيرة قد تكون السبب لو المشاكل لسه موجودة
+
+إذا الكود بتاع useCart بيعمل localStorage.clear() داخليًا بعد clearCart() — لازم تتأكد إنه ما يمسحش الـ config.
+
+لو عندك Service Worker يقوم بكاشين صفحات أو responses قديمة — ممكن يسبب سلوك stale. تعطيل الـ SW مؤقتًا للاختبار مفيد.
+
+لو عندك قواعد Firestore تمنع الكتابة (security rules) للـ orders بعد أول عملية (نادر لكن ممكن) — راجع القواعد.
+
+شبكية الاتصال (offline) أو مشاكل CORS قد تمنع الطلب التاني، راجع تبويب Network لرؤية الطلبات الفاشلة.
+
+
+
+---
+
+إذا نفذت التعديلات دي ولسه المشكلة بتحصل: ابعثلي console.log output من المتصفح (الخطأ الكامل اللي بيطلع تحت [saveOrder] ERROR:) وكود useCart علشان أشوف إذا في أي مكان تاني بيمسح config أو يعيد تهيئة firebase بطريقة خاطئة.

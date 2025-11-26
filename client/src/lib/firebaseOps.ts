@@ -3,7 +3,7 @@
  * Replaces all Express API endpoints
  */
 
-import { initializeApp } from "firebase/app";
+import { initializeApp, getApps } from "firebase/app";
 import {
   getFirestore,
   collection,
@@ -39,19 +39,21 @@ let appInitialized = false;
 
 async function loadFirebaseConfigFromFirestore() {
   try {
-    // Initialize with default config first
+    // initialize with default config if missing
     if (!currentFirebaseConfig) {
       currentFirebaseConfig = getFirebaseConfig();
       if (!appInitialized) {
-        initializeApp(currentFirebaseConfig);
+        if (!getApps().length) {
+          initializeApp(currentFirebaseConfig);
+        }
         appInitialized = true;
       }
     }
-    
+
     const database = getFirestore();
     const configRef = doc(database, "settings", "firebase");
     const configSnap = await getDoc(configRef);
-    
+
     if (configSnap.exists()) {
       const firestoreConfig = configSnap.data();
       const newConfig = {
@@ -62,18 +64,16 @@ async function loadFirebaseConfigFromFirestore() {
         messagingSenderId: firestoreConfig.firebaseMessagingSenderId || currentFirebaseConfig.messagingSenderId,
         appId: firestoreConfig.firebaseAppId || currentFirebaseConfig.appId,
       };
-      
-      // Only reinitialize if config changed
+
       if (JSON.stringify(newConfig) !== JSON.stringify(currentFirebaseConfig)) {
-        console.log("🔄 Updating Firebase config from Firestore");
+        console.log("🔄 Firebase config changed in Firestore. Updating local config (no reload).");
         currentFirebaseConfig = newConfig;
-        // Note: In a real app, you'd need to properly reinitialize Firebase
-        // For now, we reload the page to apply new config
-        window.location.reload();
+        // نختار هنا ألا نعمل window.location.reload() لأن ده سبب مشاكل
       }
     }
   } catch (error) {
     console.error("Error loading Firebase config from Firestore:", error);
+    // لا نرمي هنا - فقط نُبقي على currentFirebaseConfig الافتراضي
   }
 }
 
@@ -83,23 +83,16 @@ function initDb() {
       if (!currentFirebaseConfig) {
         currentFirebaseConfig = getFirebaseConfig();
       }
-      
-      // Only initialize app once
+
       if (!appInitialized) {
-        try {
+        if (!getApps().length) {
           initializeApp(currentFirebaseConfig);
-          appInitialized = true;
-        } catch (error: any) {
-          if (!error.message?.includes('duplicate-app')) {
-            console.error('Firebase initialization error:', error);
-            throw error;
-          }
-          // App already initialized, just continue
-          appInitialized = true;
         }
+        appInitialized = true;
       }
     } catch (error: any) {
-      console.error('Failed to initialize Firebase:', error);
+      // إذا كان الخطأ duplicate-app، نتجاهل لأننا نستخدم getApps() الآن
+      console.error("Failed to initialize Firebase:", error);
       throw error;
     }
     db = getFirestore();
@@ -208,55 +201,46 @@ export async function getOrderById(id: string) {
 
 export async function saveOrder(order: any) {
   try {
-    // Verify all required fields first
+    // ensure config and DB are ready
+    await ensureConfigLoaded();
+    const db = initDb();
+
+    // Validate required fields
     if (!order.userId) {
-      console.error("❌ userId is missing!");
       throw new Error("User ID is required");
     }
-    
     if (!order.id) {
-      console.error("❌ order.id is missing!");
       throw new Error("Order ID is required");
     }
-    
     if (!order.items || order.items.length === 0) {
-      console.error("❌ order.items is missing or empty!");
       throw new Error("Order must have items");
     }
 
-    console.log("📤 [saveOrder] Getting Firestore connection...");
-    const db = initDb();
-    console.log("✅ [saveOrder] Firestore connected");
-    
-    console.log("📤 [saveOrder] Saving order with ID:", order.id, "Items:", order.items.length);
-    
-    // Prepare the order data
+    // Prepare order data
     const orderData = {
       ...order,
       createdAt: new Date().toISOString(),
     };
-    
-    // Save to Firestore with setDoc
+
     const orderRef = doc(db, "orders", order.id);
-    await setDoc(orderRef, orderData, { merge: false });
-    
-    console.log("✅ [saveOrder] Order saved, verifying...");
-    
-    // Verify it was saved by reading it back
+
+    // استخدم merge: true لحماية من الكتابة الكاملة غير المقصودة
+    await setDoc(orderRef, orderData, { merge: true });
+
+    // تحقق للتيقن
     const saved = await getDoc(orderRef);
     if (saved.exists()) {
-      const savedData = saved.data();
-      console.log("✅ [saveOrder] Order verified in Firestore. Items in DB:", savedData.items?.length || 0);
+      console.log("[saveOrder] saved order OK, items:", saved.data()?.items?.length || 0);
       return order.id;
     }
-    
-    console.error("❌ [saveOrder] Verification failed - order not found after save");
-    throw new Error("Order verification failed");
+
+    console.error("[saveOrder] Verification failed - order not found after save");
+    return null;
   } catch (error: any) {
-    console.error("❌ [saveOrder] ERROR:", {
+    console.error("[saveOrder] ERROR:", {
       message: error?.message,
       code: error?.code,
-      stack: error?.stack
+      stack: error?.stack,
     });
     return null;
   }
