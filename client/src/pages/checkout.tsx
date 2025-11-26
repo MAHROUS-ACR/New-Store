@@ -43,6 +43,15 @@ export default function CheckoutPage() {
     load();
   }, []);
 
+  // Reset states when items change (go back to cart and add new items)
+  useEffect(() => {
+    console.log("🔄 Items changed, resetting payment/shipping states. Items:", items.length);
+    setPaymentMethod(null);
+    setShippingType(null);
+    setSelectedZone("");
+    setShippingCost(0);
+  }, [items.length]);
+
   const handlePlaceOrder = async () => {
     try {
       console.log("📤 Place Order called:", { items: items.length, payment: paymentMethod, zone: selectedZone });
@@ -236,7 +245,7 @@ export default function CheckoutPage() {
             disabled={isProcessing || !paymentMethod || !shippingType || !selectedZone}
             className="w-full bg-black text-white py-4 rounded-2xl font-bold disabled:opacity-50"
           >
-            {isProcessing ? "Processing..." : "Place Order"}
+            {isProcessing ? "Processing..." : `Place Order - L.E ${(items.reduce((sum, item) => sum + item.price * item.quantity, 0) + shippingCost).toFixed(2)}`}
           </button>
         </div>
       </div>
