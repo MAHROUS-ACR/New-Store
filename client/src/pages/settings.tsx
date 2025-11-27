@@ -26,6 +26,11 @@ export default function SettingsPage() {
   const [storePhone, setStorePhone] = useState("");
   const [storeEmail, setStoreEmail] = useState("");
   
+  // Email settings
+  const [gmailUser, setGmailUser] = useState("");
+  const [gmailPassword, setGmailPassword] = useState("");
+  const [adminEmail, setAdminEmail] = useState("");
+  
   const [isLoading, setIsLoading] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
@@ -62,6 +67,9 @@ export default function SettingsPage() {
           setStoreAddress(storeData.address || "");
           setStorePhone(storeData.phone || "");
           setStoreEmail(storeData.email || "");
+          setGmailUser(storeData.gmailUser || "");
+          setGmailPassword(storeData.gmailPassword || "");
+          setAdminEmail(storeData.adminEmail || "");
         }
       } catch (error) {
 
@@ -103,6 +111,9 @@ export default function SettingsPage() {
         address: storeAddress,
         phone: storePhone,
         email: storeEmail,
+        gmailUser: gmailUser,
+        gmailPassword: gmailPassword,
+        adminEmail: adminEmail,
         updatedAt: new Date(),
       });
 
