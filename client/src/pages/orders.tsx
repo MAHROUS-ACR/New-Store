@@ -1,8 +1,8 @@
 import { MobileWrapper } from "@/components/mobile-wrapper";
 import { BottomNav } from "@/components/bottom-nav";
-import { ArrowLeft, ChevronRight, X } from "lucide-react";
+import { ArrowLeft, ChevronRight, X, MapPin, Loader } from "lucide-react";
 import { useLocation } from "wouter";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useUser } from "@/lib/userContext";
 import { useLanguage } from "@/lib/languageContext";
 import { t } from "@/lib/translations";
@@ -10,6 +10,40 @@ import { toast } from "sonner";
 import { getOrders } from "@/lib/firebaseOps";
 import { getStatusColor } from "@/lib/statusColors";
 import { getFirestore, collection, query, where, onSnapshot } from "firebase/firestore";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+
+// Create motorcycle delivery icon using emoji
+const createDeliveryIcon = () => {
+  const motorcycleEmoji = "🏍️";
+  
+  const canvas = document.createElement('canvas');
+  canvas.width = 50;
+  canvas.height = 50;
+  const ctx = canvas.getContext('2d');
+  
+  if (ctx) {
+    ctx.font = '40px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(motorcycleEmoji, canvas.width / 2, canvas.height / 2);
+    
+    const url = canvas.toDataURL('image/png');
+    return L.icon({
+      iconUrl: url,
+      iconSize: [canvas.width, canvas.height],
+      iconAnchor: [canvas.width / 2, canvas.height / 2],
+      popupAnchor: [0, -canvas.height / 2],
+    });
+  }
+  
+  return L.icon({
+    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+  });
+};
 
 interface CartItem {
   id: string;
@@ -41,6 +75,8 @@ interface Order {
   customerPhone?: string;
   deliveryAddress?: string;
   notes?: string;
+  latitude?: number;
+  longitude?: number;
 }
 
 export default function OrdersPage() {
@@ -52,6 +88,13 @@ export default function OrdersPage() {
   const [firebaseConfigured, setFirebaseConfigured] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [refetchTrigger, setRefetchTrigger] = useState(0);
+  const [mapLat, setMapLat] = useState<number | null>(null);
+  const [mapLng, setMapLng] = useState<number | null>(null);
+  const [mapLoading, setMapLoading] = useState(false);
+  const mapContainer = useRef<HTMLDivElement>(null);
+  const map = useRef<L.Map | null>(null);
+  const driverMarker = useRef<L.Marker | null>(null);
+  const routePolyline = useRef<L.Polyline | null>(null);
 
   useEffect(() => {
     if (!authLoading && !isLoggedIn) {
@@ -134,6 +177,88 @@ export default function OrdersPage() {
     }
   }, [user?.id, refetchTrigger]);
 
+  // Geocode address to coordinates
+  const geocodeAddress = async (address: string) => {
+    if (!address.trim()) return;
+    setMapLoading(true);
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address)}&format=json&limit=1`
+      );
+      const results = await response.json();
+      if (results.length > 0) {
+        setMapLat(parseFloat(results[0].lat));
+        setMapLng(parseFloat(results[0].lon));
+      }
+    } catch (error) {
+      console.log("Geocoding error:", error);
+    } finally {
+      setMapLoading(false);
+    }
+  };
+
+  // Initialize map
+  useEffect(() => {
+    if (!mapContainer.current || !mapLat || !mapLng) return;
+    
+    if (map.current) {
+      map.current.remove();
+    }
+
+    map.current = L.map(mapContainer.current).setView([mapLat, mapLng], 14);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: '&copy; OpenStreetMap',
+      maxZoom: 19,
+    }).addTo(map.current);
+
+    // Destination marker (red)
+    L.marker([mapLat, mapLng], {
+      icon: L.icon({
+        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+      })
+    })
+      .addTo(map.current)
+      .bindPopup(`<div style="text-align: center"><strong>${language === "ar" ? "موقع التسليم" : "Delivery Location"}</strong></div>`)
+      .openPopup();
+
+    // Add driver location marker if available
+    if (selectedOrder?.latitude !== undefined && selectedOrder?.latitude !== null && selectedOrder?.longitude !== undefined && selectedOrder?.longitude !== null && map.current) {
+      if (driverMarker.current) {
+        driverMarker.current.remove();
+      }
+      driverMarker.current = L.marker([selectedOrder.latitude, selectedOrder.longitude], {
+        icon: createDeliveryIcon()
+      })
+        .addTo(map.current)
+        .bindPopup(`<div style="text-align: center"><strong>${language === "ar" ? "موقع الدليفرى" : "Driver Location"}</strong></div>`);
+
+      // Fetch and display route
+      if (typeof selectedOrder.longitude === 'number' && typeof selectedOrder.latitude === 'number' && typeof mapLng === 'number' && typeof mapLat === 'number') {
+        fetch(`https://router.project-osrm.org/route/v1/driving/${selectedOrder.longitude},${selectedOrder.latitude};${mapLng},${mapLat}?geometries=geojson`)
+          .then(res => res.json())
+          .then(data => {
+            if (data.routes && data.routes[0] && map.current) {
+              const coords = data.routes[0].geometry.coordinates.map((coord: any) => [coord[1], coord[0]]);
+              if (routePolyline.current) routePolyline.current.remove();
+              routePolyline.current = L.polyline(coords, { color: '#3b82f6', weight: 3, opacity: 0.7 }).addTo(map.current);
+            }
+          })
+          .catch(err => console.log("Route error:", err));
+      }
+    }
+  }, [mapLat, mapLng, language, selectedOrder?.latitude, selectedOrder?.longitude]);
+
+  // Geocode when order is selected
+  useEffect(() => {
+    if (selectedOrder && (selectedOrder.shippingAddress || selectedOrder.deliveryAddress) && !mapLat) {
+      geocodeAddress(selectedOrder.shippingAddress || selectedOrder.deliveryAddress || "");
+    }
+  }, [selectedOrder?.id]);
+
 
   return (
     <MobileWrapper>
@@ -215,8 +340,35 @@ export default function OrdersPage() {
                   </button>
 
                   {selectedOrder?.id === order.id && (
-                    <div className="mt-3 bg-white rounded-2xl border border-gray-100 p-4">
-                      <div className="flex items-start justify-between mb-3 pb-3 border-b border-gray-100">
+                    <>
+                      {/* Map Section */}
+                      {(selectedOrder.shippingAddress || selectedOrder.deliveryAddress) && selectedOrder?.status !== "completed" && selectedOrder?.status !== "received" && (
+                        <div className="mt-3 w-full">
+                          {mapLoading ? (
+                            <div className="w-full bg-blue-50 border border-blue-200 rounded-2xl flex items-center justify-center gap-2 py-3">
+                              <Loader size={16} className="animate-spin text-blue-600" />
+                              <span className="text-blue-600 font-semibold text-xs">{language === "ar" ? "جاري تحميل الخريطة..." : "Loading map..."}</span>
+                            </div>
+                          ) : mapLat && mapLng ? (
+                            <div className="w-full bg-blue-100 border border-blue-300 overflow-hidden rounded-2xl" style={{ height: '200px' }} ref={mapContainer}></div>
+                          ) : (
+                            <div className="w-full bg-gray-200 border border-gray-300 rounded-2xl py-6 flex items-center justify-center gap-2">
+                              <MapPin size={16} className="text-gray-600" />
+                              <span className="text-gray-600 font-semibold text-xs">{language === "ar" ? "لا توجد معلومات موقع" : "No location info"}</span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      {(selectedOrder.shippingAddress || selectedOrder.deliveryAddress) && (selectedOrder?.status === "completed" || selectedOrder?.status === "received") && (
+                        <div className="mt-3 w-full bg-green-50 border border-green-300 rounded-2xl py-6 flex items-center justify-center gap-2">
+                          <MapPin size={16} className="text-green-600" />
+                          <span className="text-green-600 font-semibold text-xs">{language === "ar" ? "تم التسليم - الخريطة غير متاحة" : "Delivered - Map unavailable"}</span>
+                        </div>
+                      )}
+
+                      {/* Order Details */}
+                      <div className="mt-3 bg-white rounded-2xl border border-gray-100 p-4">
+                        <div className="flex items-start justify-between mb-3 pb-3 border-b border-gray-100">
                         <div>
                           <p className="text-xs font-semibold text-gray-500">{t("orderDetailsLabel", language)}</p>
                           <p className="text-sm font-bold text-gray-900">#{selectedOrder.orderNumber || "N/A"}</p>
@@ -345,10 +497,11 @@ export default function OrdersPage() {
                         </div>
                       </div>
 
-                      <div className="mt-3 text-xs text-gray-500">
-                        <p>{t("placedAt", language)} {new Date(selectedOrder.createdAt).toLocaleString()}</p>
+                        <div className="mt-3 text-xs text-gray-500">
+                          <p>{t("placedAt", language)} {new Date(selectedOrder.createdAt).toLocaleString()}</p>
+                        </div>
                       </div>
-                    </div>
+                    </>
                   )}
                 </div>
               ))}
