@@ -298,36 +298,50 @@ export default function OrderDetailsPage() {
                   {order.items && order.items.length > 0 ? (
                     order.items.map((item, idx) => (
                       <div key={idx} className="pb-3 border-b border-gray-100 last:border-b-0 last:pb-0">
-                        <div className="flex justify-between mb-1">
-                          <p className="text-sm font-medium">{item.quantity}x {item.title}</p>
-                          <p className="text-sm font-semibold">{(item.price * item.quantity).toFixed(2)}</p>
+                        <div className="flex justify-between items-start mb-2">
+                          <div className="flex-1">
+                            <p className="text-sm font-semibold text-gray-900">{item.quantity}x {item.title}</p>
+                          </div>
+                          <p className="text-sm font-bold text-gray-900 ml-2">L.E {(item.price * item.quantity).toFixed(2)}</p>
                         </div>
                         {(item.selectedColor || item.selectedSize || item.selectedUnit) && (
-                          <div className="flex flex-wrap gap-1 mt-2">
-                            {item.selectedUnit && (
-                              <span className="inline-block px-5 py-1 bg-blue-100 text-blue-700 rounded text-[10px] font-medium">
-                                {item.selectedUnit}
-                              </span>
-                            )}
-                            {item.selectedSize && (
-                              <span className="inline-block px-5 py-1 bg-green-100 text-green-700 rounded text-[10px] font-medium">
-                                {item.selectedSize}
-                              </span>
-                            )}
-                            {item.selectedColor && (() => {
-                              const [colorName, colorHex] = typeof item.selectedColor === 'string' 
-                                ? item.selectedColor.split('|') 
-                                : [item.selectedColor, '#000000'];
-                              return (
-                                <span 
-                                  className="inline-block px-5 py-1 rounded text-[10px] font-medium text-white"
-                                  style={{backgroundColor: colorHex || '#000000'}}
-                                  title={colorName}
-                                >
-                                  {colorName}
-                                </span>
-                              );
-                            })()}
+                          <div className="mt-3 p-2 bg-gray-50 rounded-lg border border-gray-200">
+                            <div className="flex flex-wrap gap-2">
+                              {item.selectedUnit && (
+                                <div className="flex items-center gap-1">
+                                  <span className="text-[10px] font-semibold text-gray-600">الوحدة:</span>
+                                  <span className="inline-block px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-[11px] font-semibold">
+                                    {item.selectedUnit}
+                                  </span>
+                                </div>
+                              )}
+                              {item.selectedSize && (
+                                <div className="flex items-center gap-1">
+                                  <span className="text-[10px] font-semibold text-gray-600">المقاس:</span>
+                                  <span className="inline-block px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-[11px] font-semibold">
+                                    {item.selectedSize}
+                                  </span>
+                                </div>
+                              )}
+                              {item.selectedColor && (() => {
+                                const [colorName, colorHex] = typeof item.selectedColor === 'string' 
+                                  ? item.selectedColor.split('|') 
+                                  : [item.selectedColor, '#000000'];
+                                return (
+                                  <div className="flex items-center gap-1">
+                                    <span className="text-[10px] font-semibold text-gray-600">اللون:</span>
+                                    <div className="flex items-center gap-1 px-2 py-1 rounded-full border border-gray-300 bg-white">
+                                      <div 
+                                        className="w-3 h-3 rounded-full border border-gray-300"
+                                        style={{backgroundColor: colorHex || '#000000'}}
+                                        title={colorName}
+                                      />
+                                      <span className="text-[11px] font-semibold text-gray-700">{colorName}</span>
+                                    </div>
+                                  </div>
+                                );
+                              })()}
+                            </div>
                           </div>
                         )}
                       </div>
