@@ -101,16 +101,22 @@ export default function DeliveryDetailsPage() {
         {/* Content */}
         <div className="flex-1 flex flex-col overflow-y-auto px-5 py-4 space-y-4">
           {/* Map Button */}
-          {mapsLink && (
+          {mapsLink ? (
             <a
               href={mapsLink}
               target="_blank"
               rel="noopener noreferrer"
               className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-4 rounded-2xl transition-colors flex items-center justify-center gap-2"
+              data-testid="button-open-maps"
             >
               <MapPin size={20} />
               {language === "ar" ? "فتح الخريطة وأفضل مسار" : "Open Maps & Best Route"}
             </a>
+          ) : (
+            <div className="w-full bg-gray-200 text-gray-600 font-semibold py-3 px-4 rounded-2xl flex items-center justify-center gap-2">
+              <MapPin size={20} />
+              {language === "ar" ? "لا توجد معلومات موقع" : "No location info"}
+            </div>
           )}
 
           {/* Delivery Info */}
