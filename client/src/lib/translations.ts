@@ -91,9 +91,10 @@ export const translations = {
     
     // Status
     pending: "Pending",
-    completed: "Completed",
+    shipped: "🚚 Shipped",
+    received: "✅ Received",
+    completed: "🎉 Completed",
     cancelled: "Cancelled",
-    shipped: "Shipped",
     
     // Admin & Menu
     editProduct: "Edit Product",
@@ -322,9 +323,10 @@ export const translations = {
     
     // Status
     pending: "قيد الانتظار",
-    completed: "مكتمل",
+    shipped: "🚚 تم الشحن",
+    received: "✅ تم الاستقبال",
+    completed: "🎉 مكتمل",
     cancelled: "ملغى",
-    shipped: "تم الشحن",
     
     // Admin & Menu
     editProduct: "تعديل المنتج",
