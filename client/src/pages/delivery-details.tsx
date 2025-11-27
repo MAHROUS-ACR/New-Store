@@ -142,16 +142,45 @@ export default function DeliveryDetailsPage() {
         .addTo(map.current)
         .bindPopup(`<div style="text-align: center; direction: ${language === "ar" ? "rtl" : "ltr"}"><strong>${language === "ar" ? "موقعك الحالي" : "Your Location"}</strong></div>`);
 
-      // Draw straight line only
-      const line = L.polyline(
-        [[currentLat, currentLng], [mapLat, mapLng]],
-        {
-          color: '#2563eb',
-          weight: 2,
-          opacity: 0.6,
-          dashArray: '5, 5',
+      // Fetch route from OpenRouteService
+      const fetchRouteAsync = async () => {
+        try {
+          const controller = new AbortController();
+          const timeout = setTimeout(() => controller.abort(), 8000);
+          
+          const response = await fetch(
+            `https://api.openrouteservice.org/v2/directions/driving-car?api_key=5b3ce3597851110001cf6248&start=${currentLng},${currentLat}&end=${mapLng},${mapLat}&format=geojson`,
+            { signal: controller.signal }
+          );
+          clearTimeout(timeout);
+          
+          if (response.ok) {
+            const data = await response.json();
+            if (data.features && data.features[0]) {
+              const coords = data.features[0].geometry.coordinates.map((coord: [number, number]) => [coord[1], coord[0]]);
+              const distance = (data.features[0].properties?.segments?.[0]?.distance || 0) / 1000;
+              const duration = (data.features[0].properties?.segments?.[0]?.duration || 0) / 60;
+              
+              if (distance > 0) {
+                setRouteDistance(distance);
+                setRouteDuration(duration);
+              }
+
+              if (map.current && coords.length > 0) {
+                L.polyline(coords, {
+                  color: '#2563eb',
+                  weight: 3,
+                  opacity: 0.8,
+                }).addTo(map.current);
+              }
+            }
+          }
+        } catch (error) {
+          console.log("Route fetch error:", error);
         }
-      ).addTo(map.current);
+      };
+      
+      fetchRouteAsync();
     }
   }, [mapLat, mapLng, currentLat, currentLng, language, showMap, order?.status]);
 
