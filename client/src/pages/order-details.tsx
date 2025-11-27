@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { getOrders, updateOrder } from "@/lib/firebaseOps";
 import { sendNotification } from "@/lib/notificationAPI";
 import { getStatusColor } from "@/lib/statusColors";
+import { getFirestore, collection, query, where, getDocs } from "firebase/firestore";
 
 interface CartItem {
   id: string;
@@ -118,6 +119,37 @@ export default function OrderDetailsPage() {
 
     fetchOrder();
   }, [orderId, user]);
+
+  // Fetch order user data
+  useEffect(() => {
+    if (!order?.userId) return;
+
+    const fetchOrderUser = async () => {
+      setUserLoading(true);
+      try {
+        const db = getFirestore();
+        const usersRef = collection(db, "users");
+        const userQuery = query(usersRef, where("id", "==", order.userId));
+        const querySnapshot = await getDocs(userQuery);
+        
+        if (!querySnapshot.empty) {
+          const userData = querySnapshot.docs[0].data();
+          setOrderUser(userData);
+          if (userData.profileImage) {
+            setUserProfileImage(userData.profileImage);
+          }
+        } else {
+          console.warn("User not found in Firestore");
+        }
+      } catch (error) {
+        console.error("Error fetching order user:", error);
+      } finally {
+        setUserLoading(false);
+      }
+    };
+
+    fetchOrderUser();
+  }, [order?.userId]);
 
   // Calculate order statistics once order is loaded
   useEffect(() => {
