@@ -82,11 +82,10 @@ export default function DeliveryDetailsPage() {
           setCurrentLat(lat);
           setCurrentLng(lng);
 
-          // Update marker and center map if navigating
+          // Update marker if navigating
           if (isNavigating && map.current && currentMarker.current) {
             currentMarker.current.setLatLng([lat, lng]);
             currentMarker.current.setIcon(createDeliveryIcon(true));
-            map.current.panTo([lat, lng]);
             
             // Calculate remaining distance
             if (mapLat && mapLng) {
@@ -297,14 +296,17 @@ export default function DeliveryDetailsPage() {
       
       currentMarker.current = marker;
 
-      // Fit bounds to show both markers immediately (unless navigating)
-      if (!isNavigating) {
+      // Don't auto-center on init - let user control it with button
+      // Just show delivery location by default
+      if (currentLat && currentLng) {
         const bounds = L.latLngBounds([[currentLat, currentLng], [mapLat, mapLng]]);
         map.current.fitBounds(bounds, { padding: [80, 80] });
       } else {
-        // If navigating, focus on current location with close zoom
-        map.current.setView([currentLat, currentLng], 18);
+        map.current.setView([mapLat, mapLng], 15);
       }
+      
+      // Mark that map was initialized (don't auto-pan unless user clicks center button)
+      userInteractedWithMap.current = true;
 
       // Fetch best route with alternatives
       const fetchBestRoute = async () => {
