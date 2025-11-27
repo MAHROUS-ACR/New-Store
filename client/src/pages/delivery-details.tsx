@@ -351,45 +351,28 @@ export default function DeliveryDetailsPage() {
     }
   }, [orderId, mapLat, mapLng, currentLat, currentLng, language, showMap, order?.status, isNavigating]);
 
-  // Update map zoom and center when navigation mode changes
-  useEffect(() => {
-    if (!map.current || !currentLat || !currentLng || !mapLat || !mapLng) return;
-    
-    if (isNavigating) {
-      // Focus on current location with close zoom
-      map.current.setView([currentLat, currentLng], 18);
-    } else {
-      // Show both markers
-      const bounds = L.latLngBounds([[currentLat, currentLng], [mapLat, mapLng]]);
-      map.current.fitBounds(bounds, { padding: [80, 80] });
-    }
-  }, [isNavigating, currentLat, currentLng, mapLat, mapLng]);
-
   // Keep marker updated when location changes during navigation
   useEffect(() => {
     if (isNavigating && map.current && currentMarker.current && currentLat && currentLng) {
-      // Update marker position to latest location
+      // Update marker position to latest location only
       currentMarker.current.setLatLng([currentLat, currentLng]);
-      // Make sure marker stays visible by keeping map centered on it (only if user didn't interact)
-      if (!userInteractedWithMap.current) {
-        map.current.panTo([currentLat, currentLng]);
-      }
     }
   }, [currentLat, currentLng, isNavigating]);
 
-  // Keep delivery location centered when not navigating (unless user interacted)
-  useEffect(() => {
-    if (!isNavigating && map.current && mapLat && mapLng && !userInteractedWithMap.current) {
-      map.current.setView([mapLat, mapLng], 15);
-    }
-  }, [mapLat, mapLng, isNavigating]);
-
-  // Function to recenter map on delivery location
+  // Function to recenter map based on navigation mode
   const recenterMap = () => {
-    if (map.current && mapLat && mapLng) {
-      map.current.setView([mapLat, mapLng], 15);
-      userInteractedWithMap.current = false;
+    if (!map.current || !mapLat || !mapLng) return;
+    
+    if (isNavigating && currentLat && currentLng) {
+      // During navigation: focus on current location only
+      map.current.setView([currentLat, currentLng], 18);
+    } else if (currentLat && currentLng) {
+      // Not navigating: show both markers and route
+      const bounds = L.latLngBounds([[currentLat, currentLng], [mapLat, mapLng]]);
+      map.current.fitBounds(bounds, { padding: [80, 80] });
     }
+    
+    userInteractedWithMap.current = false;
   };
 
   // Fetch order
