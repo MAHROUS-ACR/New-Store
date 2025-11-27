@@ -34,6 +34,7 @@ export default function DeliveryPage() {
   const [showRecipientModal, setShowRecipientModal] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [recipientName, setRecipientName] = useState("");
+  const [deliveryRemarks, setDeliveryRemarks] = useState("");
 
   useEffect(() => {
     if (!isLoading && (!user || user.role !== "delivery")) {
@@ -68,7 +69,7 @@ export default function DeliveryPage() {
     }
   };
 
-  const updateOrderStatus = async (orderId: string, newStatus: string, recName?: string) => {
+  const updateOrderStatus = async (orderId: string, newStatus: string, recName?: string, remarks?: string) => {
     try {
       const db = getFirestore();
       const orderRef = doc(db, "orders", orderId);
@@ -76,11 +77,15 @@ export default function DeliveryPage() {
       if (recName) {
         updateData.recipientName = recName;
       }
+      if (remarks) {
+        updateData.deliveryRemarks = remarks;
+      }
       await updateDoc(orderRef, updateData);
       toast.success(language === "ar" ? "تم تحديث الحالة بنجاح" : "Status updated successfully");
       setShowRecipientModal(false);
       setSelectedOrderId(null);
       setRecipientName("");
+      setDeliveryRemarks("");
     } catch (error) {
       toast.error(language === "ar" ? "فشل تحديث الحالة" : "Failed to update status");
     }
@@ -98,7 +103,7 @@ export default function DeliveryPage() {
       return;
     }
     if (selectedOrderId) {
-      updateOrderStatus(selectedOrderId, "received", recipientName);
+      updateOrderStatus(selectedOrderId, "received", recipientName, deliveryRemarks);
     }
   };
 
@@ -242,27 +247,40 @@ export default function DeliveryPage() {
       {/* Recipient Name Modal */}
       {showRecipientModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-5">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl">
-            <h2 className="text-lg font-bold mb-4">{language === "ar" ? "إدخال اسم المستلم" : "Enter Recipient Name"}</h2>
-            <input
-              type="text"
-              value={recipientName}
-              onChange={(e) => setRecipientName(e.target.value)}
-              placeholder={language === "ar" ? "اسم المستلم" : "Recipient name"}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:border-green-500"
-              data-testid="input-recipient-name"
-              onKeyPress={(e) => {
-                if (e.key === 'Enter') {
-                  handleConfirmDelivery();
-                }
-              }}
-            />
+          <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl max-h-[90vh] overflow-y-auto">
+            <h2 className="text-lg font-bold mb-4">{language === "ar" ? "تأكيد الاستقبال" : "Confirm Delivery"}</h2>
+            
+            <div className="mb-4">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">{language === "ar" ? "اسم المستلم" : "Recipient Name"}</label>
+              <input
+                type="text"
+                value={recipientName}
+                onChange={(e) => setRecipientName(e.target.value)}
+                placeholder={language === "ar" ? "اسم المستلم" : "Recipient name"}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-green-500"
+                data-testid="input-recipient-name"
+              />
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">{language === "ar" ? "ملاحظات التسليم (اختياري)" : "Delivery Remarks (Optional)"}</label>
+              <textarea
+                value={deliveryRemarks}
+                onChange={(e) => setDeliveryRemarks(e.target.value)}
+                placeholder={language === "ar" ? "مثال: الباب مقفول، تم الاتفاق على المخزن..." : "e.g., Door locked, left at store..."}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-green-500 resize-none"
+                rows={3}
+                data-testid="input-delivery-remarks"
+              />
+            </div>
+
             <div className="flex gap-3">
               <button
                 onClick={() => {
                   setShowRecipientModal(false);
                   setSelectedOrderId(null);
                   setRecipientName("");
+                  setDeliveryRemarks("");
                 }}
                 className="flex-1 py-2 px-4 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold rounded-lg transition-colors"
                 data-testid="button-cancel-recipient"
@@ -274,7 +292,7 @@ export default function DeliveryPage() {
                 className="flex-1 py-2 px-4 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition-colors"
                 data-testid="button-confirm-delivery"
               >
-                {language === "ar" ? "تأكيد التسليم" : "Confirm Delivery"}
+                {language === "ar" ? "تأكيد" : "Confirm"}
               </button>
             </div>
           </div>

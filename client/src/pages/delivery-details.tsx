@@ -26,6 +26,7 @@ interface DeliveryOrderDetails {
   shippingType?: string;
   paymentMethod?: string;
   notes?: string;
+  deliveryRemarks?: string;
   items?: any[];
   customerName?: string;
   latitude?: number;
@@ -277,6 +278,16 @@ export default function DeliveryDetailsPage() {
                 <div>
                   <p className="text-xs font-semibold text-gray-600">{language === "ar" ? "ملاحظات" : "Notes"}</p>
                   <p className="text-sm">{order.notes}</p>
+                </div>
+              </div>
+            )}
+
+            {order.deliveryRemarks && (
+              <div className="flex gap-2">
+                <FileText size={16} className="text-red-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-xs font-semibold text-gray-600">{language === "ar" ? "ملاحظات التسليم" : "Delivery Remarks"}</p>
+                  <p className="text-sm">{order.deliveryRemarks}</p>
                 </div>
               </div>
             )}
