@@ -1832,13 +1832,16 @@ export default function ProfilePage() {
                           <div className="grid grid-cols-4 gap-2">
                             {newItemForm.images.map((img, idx) => (
                               <div key={idx} className="relative group">
-                                <img src={img} alt={`Product ${idx + 1}`} className="w-full aspect-square rounded-lg object-cover border border-gray-200" />
+                                <img src={img} alt={`Product ${idx + 1}`} className="w-full aspect-square rounded-lg object-cover border border-gray-200 group-hover:opacity-75 transition-opacity" />
                                 <button
                                   onClick={() => removeProductImage(idx)}
-                                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                  className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/50 transition-all rounded-lg"
+                                  title={language === "ar" ? "انقر لحذف الصورة" : "Click to delete image"}
                                   data-testid={`button-remove-image-${idx}`}
                                 >
-                                  ×
+                                  <span className="bg-red-500 hover:bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold text-lg opacity-0 group-hover:opacity-100 transition-opacity">
+                                    ×
+                                  </span>
                                 </button>
                               </div>
                             ))}
