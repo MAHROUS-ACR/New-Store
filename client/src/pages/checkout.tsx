@@ -234,12 +234,27 @@ export default function CheckoutPage() {
             </h2>
             <div className="space-y-3 mb-4 max-h-40 overflow-y-auto">
               {items.map((item, idx) => (
-                <div key={idx} className="flex justify-between items-center bg-gray-50 p-3 rounded-lg border border-gray-100">
-                  <div className="flex-1">
-                    <p className="font-semibold text-gray-900">{item.title}</p>
-                    <p className="text-sm text-gray-600">الكمية: {item.quantity}</p>
+                <div key={idx} className="bg-gray-50 p-3 rounded-lg border border-gray-100">
+                  <div className="flex justify-between items-start mb-2">
+                    <div className="flex-1">
+                      <p className="font-semibold text-gray-900">{item.quantity}x {item.title}</p>
+                    </div>
+                    <span className="text-green-600 font-bold text-lg ml-2">L.E {(item.price * item.quantity).toFixed(2)}</span>
                   </div>
-                  <span className="text-green-600 font-bold text-lg">L.E {(item.price * item.quantity).toFixed(2)}</span>
+                  {(item.selectedColor || item.selectedSize || item.selectedUnit) && (
+                    <div className="mt-2 p-2 bg-white rounded border border-gray-200 text-[10px] space-y-1">
+                      {item.selectedUnit && <p className="font-semibold text-gray-600">الوحدة: <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium text-[11px]">{item.selectedUnit}</span></p>}
+                      {item.selectedSize && <p className="font-semibold text-gray-600">المقاس: <span className="bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-medium text-[11px]">{item.selectedSize}</span></p>}
+                      {item.selectedColor && (() => {
+                        const [colorName, colorHex] = typeof item.selectedColor === 'string' 
+                          ? item.selectedColor.split('|') 
+                          : [item.selectedColor, '#000000'];
+                        return (
+                          <p className="font-semibold text-gray-600">اللون: <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-gray-300 bg-white text-[11px] font-medium"><div className="w-2.5 h-2.5 rounded-full border border-gray-300" style={{backgroundColor: colorHex || '#000000'}}></div>{colorName}</span></p>
+                        );
+                      })()}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
