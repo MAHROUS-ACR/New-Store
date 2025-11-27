@@ -84,14 +84,6 @@ export function isDiscountActive(discount: Discount | null): boolean {
     end = new Date(String(discount.endDate));
   }
   
-  console.log("🔍 Discount check:", {
-    productId: discount.productId,
-    now: now.toISOString(),
-    start: start.toISOString(),
-    end: end.toISOString(),
-    isActive: now >= start && now <= end
-  });
-  
   return now >= start && now <= end;
 }
 

@@ -136,11 +136,6 @@ export async function getFCMToken(): Promise<string | null> {
 
     return null;
   } catch (error: any) {
-    console.error('❌ Error getting FCM token:', {
-      message: error?.message,
-      code: error?.code,
-      details: String(error)
-    });
     return null;
   }
 }
@@ -149,7 +144,7 @@ export function playNotificationSound() {
   try {
     // Play notification sound
     const audio = new Audio('data:audio/wav;base64,UklGRiYAAABXQVZFZm10IBAAAAABAAEAQB8AAAB9AAACABAAZGF0YQIAAAAAAA==');
-    audio.play().catch(e => console.log('Could not play sound:', e));
+    audio.play().catch(() => {});
     
     // Alternative: Use Web Audio API to create a beep if audio fails
     if (!audio.canPlayType('audio/wav')) {

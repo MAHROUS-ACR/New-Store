@@ -215,7 +215,7 @@ export default function CheckoutPage() {
         sendNotificationToAdmins(
           "New Order",
           `Order #${orderNumber} placed for L.E ${finalTotal.toFixed(2)}`
-        ).catch(e => console.warn("Notification failed:", e));
+        ).catch(() => {});
 
         toast.success("✅ Order placed!");
         
