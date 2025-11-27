@@ -82,6 +82,8 @@ export default function CheckoutPage() {
       setZoneSelected(savedZone || zonesList[0]);
     } else if (shippingSelected === "new") {
       setZoneSelected(null);
+      // Clear delivery address when switching to new address
+      setDeliveryAddress("");
     }
   }, [shippingSelected, zonesList, user?.zoneId]);
 
@@ -296,123 +298,101 @@ export default function CheckoutPage() {
             </div>
           </section>
 
-          {/* Customer Info */}
-          {shippingSelected === "saved" && (
-            <section className="bg-blue-50 rounded-xl p-5 mb-5 border-2 border-blue-200">
-              <h3 className="font-bold text-lg text-gray-900 mb-4 flex items-center gap-2">
-                <User className="w-5 h-5" /> بيانات الطلب
-              </h3>
-              <div className="space-y-3">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">الاسم</label>
-                  <input
-                    type="text"
-                    placeholder="اسمك الكامل"
-                    value={customerName}
-                    onChange={(e) => setCustomerName(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">رقم الهاتف</label>
-                  <input
-                    type="tel"
-                    placeholder="+201012345678"
-                    value={customerPhone}
-                    onChange={(e) => setCustomerPhone(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">العنوان المحفوظ</label>
-                  <textarea
-                    placeholder="عنوانك المحفوظ"
-                    value={deliveryAddress}
-                    onChange={(e) => setDeliveryAddress(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent resize-none"
-                    rows={2}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">البريد الإلكتروني</label>
-                  <input
-                    type="email"
-                    value={user?.email || ""}
-                    disabled
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-100 text-gray-600 cursor-not-allowed"
-                  />
-                </div>
-              </div>
-            </section>
-          )}
-
-          {/* New Address */}
-          {shippingSelected === "new" && (
-            <section className="bg-blue-50 rounded-xl p-5 mb-5 border-2 border-blue-200">
-              <h3 className="font-bold text-lg text-gray-900 mb-4 flex items-center gap-2">
-                <MapPin className="w-5 h-5" /> بيانات التوصيل
-              </h3>
-              <div className="space-y-3">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">اسم المستقبل</label>
-                  <input
-                    type="text"
-                    placeholder="اسم المستقبل الكامل"
-                    value={customerName}
-                    onChange={(e) => setCustomerName(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">رقم الهاتف</label>
-                  <input
-                    type="tel"
-                    placeholder="+201012345678"
-                    value={customerPhone}
-                    onChange={(e) => setCustomerPhone(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">العنوان الكامل</label>
-                  <textarea
-                    placeholder="الشارع، الحي، المدينة"
-                    value={deliveryAddress}
-                    onChange={(e) => setDeliveryAddress(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent resize-none"
-                    rows={3}
-                  />
-                </div>
-              </div>
-            </section>
-          )}
-
-          {/* Zone Selection */}
+          {/* Customer & Delivery Info Combined */}
           {shippingSelected && (
-            <section className="bg-amber-50 rounded-xl p-5 mb-5 border-2 border-amber-200">
-              <h3 className="font-bold text-lg text-gray-900 mb-4">📍 اختر منطقة التوصيل</h3>
-              {isLoadingZones ? (
-                <p className="text-center py-6 text-gray-600">⏳ جاري تحميل المناطق...</p>
-              ) : zonesList.length === 0 ? (
-                <p className="text-center py-6 text-gray-600">لا توجد مناطق متاحة</p>
-              ) : (
-                <div className="space-y-2">
-                  {zonesList.map((z) => (
-                    <button
-                      key={z.id}
-                      onClick={() => setZoneSelected(z)}
-                      className={`w-full p-4 rounded-lg border-2 font-semibold transition flex justify-between items-center ${
-                        zoneSelected?.id === z.id 
-                          ? "border-black bg-black text-white shadow-lg" 
-                          : "border-gray-300 bg-white text-gray-900 hover:border-gray-400"
-                      }`}
-                    >
-                      <span>{z.name}</span>
-                      <span className="text-lg font-bold">+ L.E {z.shippingCost}</span>
-                    </button>
-                  ))}
+            <section className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 mb-5 border-2 border-blue-300 shadow-md">
+              <h3 className="font-bold text-lg text-gray-900 mb-5 flex items-center gap-2">
+                <User className="w-5 h-5" />
+                {shippingSelected === "saved" ? "بيانات الطلب" : "بيانات التوصيل"}
+              </h3>
+              
+              {/* Customer Info Fields */}
+              <div className="space-y-4 mb-6">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">👤 الاسم</label>
+                  <input
+                    type="text"
+                    placeholder={shippingSelected === "saved" ? "اسمك الكامل" : "اسم المستقبل"}
+                    value={customerName}
+                    onChange={(e) => setCustomerName(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                  />
                 </div>
-              )}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">📱 رقم الهاتف</label>
+                  <input
+                    type="tel"
+                    placeholder="+201012345678"
+                    value={customerPhone}
+                    onChange={(e) => setCustomerPhone(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                  />
+                </div>
+                {shippingSelected === "new" && (
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">📍 العنوان الكامل</label>
+                    <textarea
+                      placeholder="الشارع، الحي، المدينة"
+                      value={deliveryAddress}
+                      onChange={(e) => setDeliveryAddress(e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none bg-white"
+                      rows={3}
+                    />
+                  </div>
+                )}
+                {shippingSelected === "saved" && (
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">📍 العنوان المحفوظ</label>
+                    <textarea
+                      placeholder="عنوانك المحفوظ"
+                      value={deliveryAddress}
+                      onChange={(e) => setDeliveryAddress(e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none bg-white"
+                      rows={2}
+                    />
+                  </div>
+                )}
+                {shippingSelected === "saved" && (
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">✉️ البريد الإلكتروني</label>
+                    <input
+                      type="email"
+                      value={user?.email || ""}
+                      disabled
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-100 text-gray-600 cursor-not-allowed"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Zone Selection Inside */}
+              <div className="border-t-2 border-blue-200 pt-6">
+                <h4 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
+                  <span className="text-lg">🚚</span> منطقة التوصيل
+                </h4>
+                {isLoadingZones ? (
+                  <p className="text-center py-4 text-gray-600">⏳ جاري تحميل المناطق...</p>
+                ) : zonesList.length === 0 ? (
+                  <p className="text-center py-4 text-gray-600">لا توجد مناطق متاحة</p>
+                ) : (
+                  <div className="grid gap-2">
+                    {zonesList.map((z) => (
+                      <button
+                        key={z.id}
+                        onClick={() => setZoneSelected(z)}
+                        className={`w-full p-3 rounded-lg border-2 font-semibold transition flex justify-between items-center ${
+                          zoneSelected?.id === z.id
+                            ? "border-black bg-black text-white shadow-lg"
+                            : "border-gray-300 bg-white text-gray-900 hover:border-gray-400 hover:bg-gray-50"
+                        }`}
+                      >
+                        <span className="text-sm">{z.name}</span>
+                        <span className="text-base font-bold">+ L.E {z.shippingCost}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </section>
           )}
 
