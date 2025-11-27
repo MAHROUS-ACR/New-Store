@@ -22,6 +22,7 @@ export default function SettingsPage() {
   
   // Store settings
   const [storeName, setStoreName] = useState("");
+  const [storeLogo, setStoreLogo] = useState("");
   const [storeAddress, setStoreAddress] = useState("");
   const [storePhone, setStorePhone] = useState("");
   const [storeEmail, setStoreEmail] = useState("");
@@ -64,6 +65,7 @@ export default function SettingsPage() {
         if (storeConfigSnap.exists()) {
           const storeData = storeConfigSnap.data();
           setStoreName(storeData.name || "");
+          setStoreLogo(storeData.logo || "");
           setStoreAddress(storeData.address || "");
           setStorePhone(storeData.phone || "");
           setStoreEmail(storeData.email || "");
@@ -108,6 +110,7 @@ export default function SettingsPage() {
       const storeConfigRef = doc(db, "settings", "store");
       await setDoc(storeConfigRef, {
         name: storeName,
+        logo: storeLogo,
         address: storeAddress,
         phone: storePhone,
         email: storeEmail,
@@ -164,16 +167,31 @@ export default function SettingsPage() {
     <MobileWrapper>
       <div className="w-full flex-1 flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="px-5 pb-4 pt-2 flex items-center gap-4 border-b border-gray-100 flex-shrink-0">
-          <button
-            onClick={() => setLocation("/")}
-            className="w-10 h-10 rounded-full bg-white border border-gray-100 flex items-center justify-center hover:bg-gray-50"
-            data-testid="button-back"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </button>
+        <div className="px-5 pb-4 pt-2 border-b border-gray-100 flex-shrink-0">
+          <div className="flex items-center justify-between gap-2 mb-3">
+            {storeName ? (
+              <div className="flex items-center gap-3">
+                {storeLogo ? (
+                  <img src={storeLogo} alt={storeName} className="w-12 h-12 rounded-xl object-cover shadow-md border border-gray-100" />
+                ) : (
+                  <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center text-white font-bold text-2xl shadow-lg leading-none">
+                    {storeName.charAt(0)}
+                  </div>
+                )}
+                <h1 className="text-lg font-bold">{storeName}</h1>
+              </div>
+            ) : (
+              <div className="w-32 h-7 bg-gray-200 rounded-lg animate-pulse" />
+            )}
+            <button
+              onClick={() => setLocation("/")}
+              className="w-10 h-10 rounded-full bg-white border border-gray-100 flex items-center justify-center hover:bg-gray-50"
+              data-testid="button-back"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+          </div>
           <div>
-            <h1 className="text-xl font-bold">Settings</h1>
             <p className="text-xs text-muted-foreground">Configure your application</p>
           </div>
         </div>
