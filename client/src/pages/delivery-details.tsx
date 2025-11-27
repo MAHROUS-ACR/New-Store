@@ -142,36 +142,35 @@ export default function DeliveryDetailsPage() {
         .addTo(map.current)
         .bindPopup(`<div style="text-align: center; direction: ${language === "ar" ? "rtl" : "ltr"}"><strong>${language === "ar" ? "موقعك الحالي" : "Your Location"}</strong></div>`);
 
-      // Fetch route from OpenRouteService
+      // Fetch route from OSRM
       const fetchRouteAsync = async () => {
         try {
           const controller = new AbortController();
-          const timeout = setTimeout(() => controller.abort(), 8000);
+          const timeoutId = setTimeout(() => controller.abort(), 6000);
           
           const response = await fetch(
-            `https://api.openrouteservice.org/v2/directions/driving-car?api_key=5b3ce3597851110001cf6248&start=${currentLng},${currentLat}&end=${mapLng},${mapLat}&format=geojson`,
+            `https://router.project-osrm.org/route/v1/driving/${currentLng},${currentLat};${mapLng},${mapLat}?geometries=geojson&overview=full`,
             { signal: controller.signal }
           );
-          clearTimeout(timeout);
+          clearTimeout(timeoutId);
           
           if (response.ok) {
             const data = await response.json();
-            if (data.features && data.features[0]) {
-              const coords = data.features[0].geometry.coordinates.map((coord: [number, number]) => [coord[1], coord[0]]);
-              const distance = (data.features[0].properties?.segments?.[0]?.distance || 0) / 1000;
-              const duration = (data.features[0].properties?.segments?.[0]?.duration || 0) / 60;
+            if (data.routes && data.routes.length > 0) {
+              const route = data.routes[0];
+              const coords = route.geometry.coordinates.map((coord: [number, number]) => [coord[1], coord[0]]);
               
-              if (distance > 0) {
-                setRouteDistance(distance);
-                setRouteDuration(duration);
-              }
-
-              if (map.current && coords.length > 0) {
+              if (coords && coords.length > 0 && map.current) {
                 L.polyline(coords, {
                   color: '#2563eb',
                   weight: 3,
                   opacity: 0.8,
                 }).addTo(map.current);
+                
+                const distance = (route.distance || 0) / 1000;
+                const duration = (route.duration || 0) / 60;
+                setRouteDistance(distance);
+                setRouteDuration(duration);
               }
             }
           }
