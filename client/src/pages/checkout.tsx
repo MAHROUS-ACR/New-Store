@@ -82,7 +82,9 @@ export default function CheckoutPage() {
         setZonesList(mappedZones);
         
         const discountsList = await getDiscounts();
-        setDiscounts(discountsList);
+        if (Array.isArray(discountsList)) {
+          setDiscounts(discountsList as any);
+        }
       } catch (err) {
 
       } finally {
