@@ -255,20 +255,20 @@ export default function DeliveryDetailsPage() {
     <MobileWrapper>
       <div className="w-full flex-1 flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="px-5 py-4 border-b border-gray-100 flex-shrink-0">
-          <button onClick={() => setLocation("/delivery")} className="flex items-center gap-2 mb-3">
-            <ArrowLeft size={20} />
-            <span className="font-semibold">{language === "ar" ? "رجوع" : "Back"}</span>
+        <div className="px-5 py-1 border-b border-gray-100 flex-shrink-0">
+          <button onClick={() => setLocation("/delivery")} className="flex items-center gap-2 mb-0.5">
+            <ArrowLeft size={18} />
+            <span className="font-semibold text-sm">{language === "ar" ? "رجوع" : "Back"}</span>
           </button>
-          <h1 className="text-lg font-bold">Order #{order.orderNumber || "N/A"}</h1>
+          <h1 className="text-base font-bold">Order #{order.orderNumber || "N/A"}</h1>
           <p className="text-xs text-gray-500">{new Date(order.createdAt).toLocaleDateString()}</p>
         </div>
 
         {/* Map - Full Width at Top */}
         {mapLoading ? (
-          <div className="w-full bg-blue-50 border-b border-blue-200 flex items-center justify-center gap-2 py-6">
-            <Loader size={20} className="animate-spin text-blue-600" />
-            <span className="text-blue-600 font-semibold">{language === "ar" ? "جاري تحميل الخريطة..." : "Loading map..."}</span>
+          <div className="w-full bg-blue-50 border-b border-blue-200 flex items-center justify-center gap-2 py-3">
+            <Loader size={18} className="animate-spin text-blue-600" />
+            <span className="text-blue-600 font-semibold text-sm">{language === "ar" ? "جاري تحميل الخريطة..." : "Loading map..."}</span>
           </div>
         ) : mapLat && mapLng ? (
           <div className="w-full bg-blue-100 border-b border-blue-300 overflow-hidden h-80" ref={mapContainer}></div>
