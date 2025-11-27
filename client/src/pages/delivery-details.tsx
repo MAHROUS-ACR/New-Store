@@ -191,7 +191,7 @@ export default function DeliveryDetailsPage() {
       
       fetchBestRoute();
     }
-  }, [mapLat, mapLng, currentLat, currentLng, language, showMap, order?.status]);
+  }, [orderId, mapLat, mapLng, currentLat, currentLng, language, showMap, order?.status]);
 
   // Fetch order
   useEffect(() => {
