@@ -213,7 +213,7 @@ export function ProductCard({ product, index, discounts = [], onProductClick }: 
             onClick={(e) => e.stopPropagation()}
             className="w-full bg-white rounded-t-3xl p-6 max-h-[80vh] overflow-y-auto"
           >
-            <h2 className="text-lg font-bold mb-4">Select Options for {productTitle}</h2>
+            <h2 className="text-lg font-bold mb-4">{language === "ar" ? `اختر الخيارات لـ ${productTitle}` : `Select Options for ${productTitle}`}</h2>
             
             {product.units && product.units.length > 0 && (
               <div className="mb-4">
