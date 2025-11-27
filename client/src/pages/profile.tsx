@@ -39,6 +39,8 @@ interface AdminOrder {
   paymentMethod?: string;
   orderNumber?: number;
   shippingCost?: number;
+  deliveryUserId?: string;
+  deliveryUsername?: string;
 }
 
 export default function ProfilePage() {

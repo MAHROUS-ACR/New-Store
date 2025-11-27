@@ -1,20 +1,23 @@
-import { Home, Search, ShoppingCart, User } from "lucide-react";
+import { Home, Search, ShoppingCart, User, Truck } from "lucide-react";
 import { useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { useCart } from "@/lib/cartContext";
 import { useLanguage } from "@/lib/languageContext";
+import { useUser } from "@/lib/userContext";
 import { t } from "@/lib/translations";
 
 export function BottomNav() {
   const [location, setLocation] = useLocation();
   const { items } = useCart();
   const { language } = useLanguage();
+  const { user } = useUser();
 
   const tabs = [
     { id: "/", icon: Home, label: t("home", language) },
     { id: "/search", icon: Search, label: t("search", language) },
     { id: "/cart", icon: ShoppingCart, label: t("cart", language) },
+    ...(user?.role === "delivery" ? [{ id: "/delivery", icon: Truck, label: language === "ar" ? "🚚 ديليفري" : "🚚 Delivery" }] : []),
     { id: "/profile", icon: User, label: t("profile", language) },
   ];
 

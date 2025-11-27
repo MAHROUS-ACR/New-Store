@@ -9,6 +9,7 @@ import { LanguageProvider } from "@/lib/languageContext";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 import ProfilePage from "@/pages/profile";
+import DeliveryPage from "@/pages/delivery";
 import SettingsPage from "@/pages/settings";
 import CartPage from "@/pages/cart";
 import CheckoutPage from "@/pages/checkout";
@@ -26,6 +27,7 @@ function AppRouter() {
       <Route path="/" component={Home} />
       <Route path="/login" component={LoginPage} />
       <Route path="/profile" component={ProfilePage} />
+      <Route path="/delivery" component={DeliveryPage} />
       <Route path="/settings" component={SettingsPage} />
       <Route path="/cart" component={CartPage} />
       <Route path="/checkout" component={CheckoutPage} />
