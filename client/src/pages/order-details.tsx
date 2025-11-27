@@ -78,23 +78,13 @@ export default function OrderDetailsPage() {
   // Extract order ID from URL
   const orderId = location.split("/order/")[1]?.split("?")[0];
   
-  // Watch current geolocation
+  // Use order latitude and longitude for driver location
   useEffect(() => {
-    let watchId: number | null = null;
-    if (navigator.geolocation) {
-      watchId = navigator.geolocation.watchPosition(
-        (position) => {
-          setCurrentLat(position.coords.latitude);
-          setCurrentLng(position.coords.longitude);
-        },
-        () => console.log("Location access denied"),
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-      );
+    if (order?.latitude && order?.longitude) {
+      setCurrentLat(order.latitude);
+      setCurrentLng(order.longitude);
     }
-    return () => {
-      if (watchId !== null) navigator.geolocation.clearWatch(watchId);
-    };
-  }, []);
+  }, [order?.latitude, order?.longitude]);
 
   // Geocode address to coordinates
   const geocodeAddress = async (address: string) => {
