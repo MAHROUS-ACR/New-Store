@@ -126,14 +126,14 @@ export default function DeliveryPage() {
                     {language === "ar" ? "🚚 تم الشحن" : "🚚 Shipped"}
                   </button>
                   <button
-                    onClick={() => setSelectedStatusFilter("completed")}
+                    onClick={() => setSelectedStatusFilter("received")}
                     className={`px-3 py-1 rounded-full text-xs font-semibold transition-colors ${
-                      selectedStatusFilter === "completed"
+                      selectedStatusFilter === "received"
                         ? "bg-green-100 text-green-700 border border-green-300"
                         : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                     }`}
                   >
-                    {language === "ar" ? "✅ مكتمل" : "✅ Completed"}
+                    {language === "ar" ? "✅ تم الاستقبال" : "✅ Received"}
                   </button>
                 </div>
               </div>
@@ -153,13 +153,13 @@ export default function DeliveryPage() {
                       </div>
                       <span
                         className={`text-xs font-semibold px-3 py-1 rounded-full ${
-                          order.status === "completed"
+                          order.status === "received"
                             ? "bg-green-100 text-green-700"
                             : "bg-blue-100 text-blue-700"
                         }`}
                       >
-                        {order.status === "completed"
-                          ? language === "ar" ? "✅ مكتمل" : "✅ Completed"
+                        {order.status === "received"
+                          ? language === "ar" ? "✅ تم الاستقبال" : "✅ Received"
                           : language === "ar" ? "🚚 تم الشحن" : "🚚 Shipped"}
                       </span>
                     </div>
@@ -168,7 +168,7 @@ export default function DeliveryPage() {
                     {/* Action Button */}
                     {order.status === "shipped" && (
                       <button
-                        onClick={() => updateOrderStatus(order.id, "completed")}
+                        onClick={() => updateOrderStatus(order.id, "received")}
                         className="w-full py-2 px-4 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
                         data-testid={`button-mark-received-${order.id}`}
                       >
