@@ -1357,9 +1357,15 @@ export default function ProfilePage() {
                             <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
                               u.role === "admin" 
                                 ? "bg-purple-100 text-purple-700"
+                                : u.role === "delivery"
+                                ? "bg-orange-100 text-orange-700"
                                 : "bg-gray-100 text-gray-700"
                             }`} data-testid={`badge-role-${u.id}`}>
-                              {u.role || "user"}
+                              {u.role === "delivery" 
+                                ? language === "ar" ? "🚚 ديليفري" : "🚚 Delivery"
+                                : u.role === "admin"
+                                ? language === "ar" ? "👑 ادمن" : "👑 Admin"
+                                : language === "ar" ? "👤 يوزر" : "👤 User"}
                             </span>
                           </div>
 
@@ -1373,6 +1379,7 @@ export default function ProfilePage() {
                               >
                                 <option value="user">{t("userRole", language)}</option>
                                 <option value="admin">{t("adminRole", language)}</option>
+                                <option value="delivery">{language === "ar" ? "🚚 ديليفري" : "🚚 Delivery"}</option>
                               </select>
                               <button
                                 onClick={() => handleUserRoleUpdate(u.id, newUserRole)}
