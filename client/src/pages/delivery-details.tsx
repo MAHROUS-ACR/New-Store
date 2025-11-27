@@ -49,6 +49,7 @@ export default function DeliveryDetailsPage() {
   const [showMap, setShowMap] = useState(true);
   const [isNavigating, setIsNavigating] = useState(false);
   const [remainingDistance, setRemainingDistance] = useState<number | null>(null);
+  const [isAutoCentering, setIsAutoCentering] = useState(false);
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<L.Map | null>(null);
   const currentMarker = useRef<L.Marker | null>(null);
@@ -359,9 +360,12 @@ export default function DeliveryDetailsPage() {
     }
   }, [currentLat, currentLng, isNavigating]);
 
-  // Function to recenter map based on navigation mode
+  // Toggle auto-centering and recenter map
   const recenterMap = () => {
     if (!map.current || !mapLat || !mapLng) return;
+    
+    setIsAutoCentering(!isAutoCentering);
+    userInteractedWithMap.current = false;
     
     if (isNavigating && currentLat && currentLng) {
       // During navigation: focus on current location only
@@ -371,9 +375,16 @@ export default function DeliveryDetailsPage() {
       const bounds = L.latLngBounds([[currentLat, currentLng], [mapLat, mapLng]]);
       map.current.fitBounds(bounds, { padding: [80, 80] });
     }
-    
-    userInteractedWithMap.current = false;
   };
+
+  // Keep auto-centering active if enabled
+  useEffect(() => {
+    if (!isAutoCentering || !map.current || !currentLat || !currentLng || !mapLat || !mapLng) return;
+    
+    if (isNavigating) {
+      map.current.panTo([currentLat, currentLng]);
+    }
+  }, [isAutoCentering, currentLat, currentLng, isNavigating]);
 
   // Fetch order
   useEffect(() => {
@@ -471,11 +482,11 @@ export default function DeliveryDetailsPage() {
               {showMap && mapLat && mapLng && (
                 <button
                   onClick={recenterMap}
-                  className="flex items-center gap-1 px-2 py-1 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
+                  className={`flex items-center gap-1 px-2 py-1 rounded-lg transition-colors ${isAutoCentering ? "bg-blue-500 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
                   data-testid="button-recenter-map"
                   title={language === "ar" ? "توسيط الخريطة" : "Center map"}
                 >
-                  <Target size={16} className="text-gray-700" />
+                  <Target size={16} />
                 </button>
               )}
               <button
