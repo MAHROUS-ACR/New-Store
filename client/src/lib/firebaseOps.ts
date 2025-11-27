@@ -139,7 +139,7 @@ export async function sendOrderEmailWithResend(order: any, userEmail: string) {
     const storeSnap = await getDoc(storeRef);
     
     if (!storeSnap.exists()) {
-      console.log("Store settings not found");
+      console.warn("⚠️ Store settings not found - email not sent");
       return false;
     }
 
@@ -149,9 +149,15 @@ export async function sendOrderEmailWithResend(order: any, userEmail: string) {
     const adminEmail = storeData?.adminEmail;
     
     if (!resendApiKey || !resendFromEmail) {
-      console.log("Resend credentials not configured");
+      console.warn("⚠️ Resend credentials not configured - email not sent");
+      console.warn("📝 Go to Settings and add: Resend API Key + From Email");
       return false;
     }
+
+    console.log("📧 Sending email via Resend...", {
+      from: resendFromEmail,
+      to: [userEmail, adminEmail],
+    });
 
     // Format order items
     const itemsList = (order.items || [])
@@ -172,7 +178,7 @@ export async function sendOrderEmailWithResend(order: any, userEmail: string) {
       </div>
     `;
 
-    // Send email via Resend API
+    // Send email via Resend REST API
     const response = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
@@ -190,22 +196,29 @@ export async function sendOrderEmailWithResend(order: any, userEmail: string) {
     const result = await response.json();
     
     if (response.ok) {
-      console.log("✅ Email sent successfully via Resend!", result);
+      console.log("✅ Email sent successfully!", {
+        messageId: result.id,
+        to: [userEmail, adminEmail],
+      });
       return true;
     } else {
       console.error("❌ Resend API Error:", {
         status: response.status,
         statusText: response.statusText,
         error: result,
+        details: result.message || result.error,
       });
-      // Show detailed error message
-      if (result.message) {
-        console.error("Error message:", result.message);
+      
+      // Common errors help
+      if (result.message?.includes("Invalid `from` email")) {
+        console.error("💡 Fix: The 'From Email' must be verified in Resend settings");
+        console.error("   Use: Acme <onboarding@resend.dev> for testing");
       }
+      
       return false;
     }
   } catch (error: any) {
-    console.error("❌ Email send error:", error?.message || error);
+    console.error("❌ Email error:", error?.message || error);
     return false;
   }
 }

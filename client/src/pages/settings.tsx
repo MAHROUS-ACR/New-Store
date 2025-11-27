@@ -485,10 +485,19 @@ export default function SettingsPage() {
 
             {/* Email Settings Section */}
             <div className="mb-8 pt-8 border-t border-gray-200">
-              <h2 className="text-lg font-bold mb-4">Email Settings</h2>
-              <p className="text-sm text-muted-foreground mb-6">
-                Configure Resend to send order notifications
+              <h2 className="text-lg font-bold mb-4">📧 Email Settings (Resend)</h2>
+              <p className="text-sm text-muted-foreground mb-2">
+                Send order confirmations automatically
               </p>
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-6 text-xs">
+                <p><strong>📖 Quick Setup:</strong></p>
+                <ol className="list-decimal list-inside ml-1 space-y-1 text-blue-900 mt-2">
+                  <li>Sign up at <a href="https://resend.com" target="_blank" rel="noopener noreferrer" className="underline">resend.com</a></li>
+                  <li>Get API Key from API Keys page</li>
+                  <li>Paste below ⬇️</li>
+                  <li>Use <code className="bg-white px-1 rounded">Acme &lt;onboarding@resend.dev&gt;</code> for From Email</li>
+                </ol>
+              </div>
 
               <div className="space-y-4">
                 <div>
