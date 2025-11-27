@@ -68,24 +68,12 @@ export default function OrderDetailsPage() {
   const [mapLat, setMapLat] = useState<number | null>(null);
   const [mapLng, setMapLng] = useState<number | null>(null);
   const [mapLoading, setMapLoading] = useState(false);
-  const [currentLat, setCurrentLat] = useState<number | null>(null);
-  const [currentLng, setCurrentLng] = useState<number | null>(null);
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<L.Map | null>(null);
-  const currentMarker = useRef<L.Marker | null>(null);
-  const routePolyline = useRef<L.Polyline | null>(null);
 
   // Extract order ID from URL
   const orderId = location.split("/order/")[1]?.split("?")[0];
   
-  // Use order latitude and longitude for driver location
-  useEffect(() => {
-    if (order?.latitude && order?.longitude) {
-      setCurrentLat(order.latitude);
-      setCurrentLng(order.longitude);
-    }
-  }, [order?.latitude, order?.longitude]);
-
   // Geocode address to coordinates
   const geocodeAddress = async (address: string) => {
     if (!address.trim()) return;
@@ -134,39 +122,6 @@ export default function OrderDetailsPage() {
       .bindPopup(`<div style="text-align: center"><strong>${language === "ar" ? "موقع التسليم" : "Delivery Location"}</strong></div>`)
       .openPopup();
   }, [mapLat, mapLng, language]);
-
-  // Add current location marker and route
-  useEffect(() => {
-    if (!map.current || !currentLat || !currentLng || !mapLat || !mapLng) return;
-    
-    if (!currentMarker.current) {
-      currentMarker.current = L.marker([currentLat, currentLng], {
-        icon: L.icon({
-          iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
-          shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-          iconSize: [25, 41],
-          iconAnchor: [12, 41],
-          popupAnchor: [1, -34],
-        })
-      })
-        .addTo(map.current)
-        .bindPopup(`<div style="text-align: center"><strong>🏍️ ${language === "ar" ? "موقع الدليفرى" : "Driver Location"}</strong></div>`);
-      
-      // Fetch route
-      fetch(`https://router.project-osrm.org/route/v1/driving/${currentLng},${currentLat};${mapLng},${mapLat}?geometries=geojson`)
-        .then(res => res.json())
-        .then(data => {
-          if (data.routes && data.routes[0] && map.current) {
-            const coords = data.routes[0].geometry.coordinates.map((coord: any) => [coord[1], coord[0]]);
-            if (routePolyline.current) routePolyline.current.remove();
-            routePolyline.current = L.polyline(coords, { color: '#3b82f6', weight: 3, opacity: 0.7 }).addTo(map.current);
-          }
-        })
-        .catch(console.log);
-    } else {
-      currentMarker.current.setLatLng([currentLat, currentLng]);
-    }
-  }, [currentLat, currentLng, mapLat, mapLng]);
 
   // Geocode address when order is loaded
   useEffect(() => {
