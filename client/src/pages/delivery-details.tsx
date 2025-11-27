@@ -171,22 +171,23 @@ export default function DeliveryDetailsPage() {
           <p className="text-xs text-gray-500">{new Date(order.createdAt).toLocaleDateString()}</p>
         </div>
 
+        {/* Map - Full Width at Top */}
+        {mapLoading ? (
+          <div className="w-full bg-blue-50 border-b border-blue-200 flex items-center justify-center gap-2 py-6">
+            <Loader size={20} className="animate-spin text-blue-600" />
+            <span className="text-blue-600 font-semibold">{language === "ar" ? "جاري تحميل الخريطة..." : "Loading map..."}</span>
+          </div>
+        ) : mapLat && mapLng ? (
+          <div className="w-full bg-blue-100 border-b border-blue-300 overflow-hidden h-80" ref={mapContainer}></div>
+        ) : (
+          <div className="w-full bg-gray-200 border-b border-gray-300 py-12 flex items-center justify-center gap-2">
+            <MapPin size={20} className="text-gray-600" />
+            <span className="text-gray-600 font-semibold">{language === "ar" ? "لا توجد معلومات موقع" : "No location info"}</span>
+          </div>
+        )}
+
         {/* Content */}
         <div className="flex-1 flex flex-col overflow-y-auto px-5 py-4 space-y-4">
-          {/* Map */}
-          {mapLoading ? (
-            <div className="w-full bg-blue-50 rounded-2xl p-4 border border-blue-200 flex items-center justify-center gap-2 h-64">
-              <Loader size={20} className="animate-spin text-blue-600" />
-              <span className="text-blue-600 font-semibold">{language === "ar" ? "جاري تحميل الخريطة..." : "Loading map..."}</span>
-            </div>
-          ) : mapLat && mapLng ? (
-            <div className="w-full rounded-2xl overflow-hidden border border-blue-200 shadow-sm h-64" ref={mapContainer}></div>
-          ) : (
-            <div className="w-full bg-gray-200 rounded-2xl p-4 text-gray-600 font-semibold flex items-center justify-center gap-2 h-32">
-              <MapPin size={20} />
-              {language === "ar" ? "لا توجد معلومات موقع" : "No location info"}
-            </div>
-          )}
 
           {/* Delivery Info */}
           <div className="bg-white rounded-2xl p-4 border border-gray-200">
