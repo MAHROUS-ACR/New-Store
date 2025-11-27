@@ -37,6 +37,10 @@ interface Order {
   shippingAddress?: string;
   shippingPhone?: string;
   shippingZone?: string;
+  customerName?: string;
+  customerPhone?: string;
+  deliveryAddress?: string;
+  notes?: string;
 }
 
 export default function OrdersPage() {
@@ -259,21 +263,27 @@ export default function OrdersPage() {
                         </div>
                       </div>
 
-                      {/* Shipping Information */}
-                      {(selectedOrder.shippingAddress || selectedOrder.shippingPhone || selectedOrder.shippingZone) && (
+                      {/* Customer & Delivery Information */}
+                      {(selectedOrder.customerName || selectedOrder.customerPhone || selectedOrder.deliveryAddress || selectedOrder.shippingAddress || selectedOrder.shippingPhone || selectedOrder.shippingZone) && (
                         <div className="mt-3 pt-3 border-t border-gray-100">
-                          <p className="text-xs font-semibold text-gray-500 mb-2">{t("deliveryInfoLabel", language)}</p>
+                          <p className="text-xs font-semibold text-gray-500 mb-2">👤 {language === "ar" ? "بيانات التوصيل" : "Delivery Information"}</p>
                           <div className="space-y-1.5">
-                            {selectedOrder.shippingAddress && (
+                            {(selectedOrder.customerName || selectedOrder.shippingAddress) && (
                               <div>
-                                <p className="text-xs text-gray-500">{t("address", language)}</p>
-                                <p className="text-xs font-medium text-gray-900">{selectedOrder.shippingAddress}</p>
+                                <p className="text-xs text-gray-500">{language === "ar" ? "الاسم" : "Name"}</p>
+                                <p className="text-xs font-medium text-gray-900">{selectedOrder.customerName || selectedOrder.shippingAddress || "N/A"}</p>
                               </div>
                             )}
-                            {selectedOrder.shippingPhone && (
+                            {(selectedOrder.customerPhone || selectedOrder.shippingPhone) && (
                               <div>
                                 <p className="text-xs text-gray-500">{t("phone", language)}</p>
-                                <p className="text-xs font-medium text-gray-900">{selectedOrder.shippingPhone}</p>
+                                <p className="text-xs font-medium text-gray-900">{selectedOrder.customerPhone || selectedOrder.shippingPhone || "N/A"}</p>
+                              </div>
+                            )}
+                            {(selectedOrder.deliveryAddress || selectedOrder.shippingAddress) && (
+                              <div>
+                                <p className="text-xs text-gray-500">{t("address", language)}</p>
+                                <p className="text-xs font-medium text-gray-900">{selectedOrder.deliveryAddress || selectedOrder.shippingAddress || "N/A"}</p>
                               </div>
                             )}
                             {selectedOrder.shippingZone && (
@@ -285,10 +295,18 @@ export default function OrdersPage() {
                             {selectedOrder.shippingCost !== undefined && selectedOrder.shippingCost > 0 && (
                               <div>
                                 <p className="text-xs text-gray-500">{t("shippingCost", language)}</p>
-                                <p className="text-xs font-medium text-gray-900">{selectedOrder.shippingCost.toFixed(2)}</p>
+                                <p className="text-xs font-medium text-gray-900">L.E {selectedOrder.shippingCost.toFixed(2)}</p>
                               </div>
                             )}
                           </div>
+                        </div>
+                      )}
+
+                      {/* Notes */}
+                      {selectedOrder.notes && (
+                        <div className="mt-3 pt-3 border-t border-gray-100">
+                          <p className="text-xs font-semibold text-gray-500 mb-2">📝 {language === "ar" ? "ملاحظات" : "Notes"}</p>
+                          <p className="text-xs text-gray-900">{selectedOrder.notes}</p>
                         </div>
                       )}
 
