@@ -1,8 +1,8 @@
 import { MobileWrapper } from "@/components/mobile-wrapper";
 import { BottomNav } from "@/components/bottom-nav";
-import { ArrowLeft, Edit2, Check, X } from "lucide-react";
+import { ArrowLeft, Edit2, Check, X, MapPin, Loader } from "lucide-react";
 import { useLocation } from "wouter";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useUser } from "@/lib/userContext";
 import { useLanguage } from "@/lib/languageContext";
 import { t } from "@/lib/translations";
@@ -10,6 +10,8 @@ import { toast } from "sonner";
 import { getOrders, updateOrder } from "@/lib/firebaseOps";
 import { getStatusColor } from "@/lib/statusColors";
 import { getFirestore, doc, getDoc } from "firebase/firestore";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 
 interface CartItem {
   id: string;
@@ -44,6 +46,8 @@ interface Order {
   deliveryUsername?: string;
   recipientName?: string;
   deliveryRemarks?: string;
+  latitude?: number;
+  longitude?: number;
 }
 
 export default function OrderDetailsPage() {
@@ -61,9 +65,73 @@ export default function OrderDetailsPage() {
   const [orderUser, setOrderUser] = useState<any>(null);
   const [userLoading, setUserLoading] = useState(false);
   const [userProfileImage, setUserProfileImage] = useState<string | null>(null);
+  const [mapLat, setMapLat] = useState<number | null>(null);
+  const [mapLng, setMapLng] = useState<number | null>(null);
+  const [mapLoading, setMapLoading] = useState(false);
+  const [deliveryLat, setDeliveryLat] = useState<number | null>(null);
+  const [deliveryLng, setDeliveryLng] = useState<number | null>(null);
+  const mapContainer = useRef<HTMLDivElement>(null);
+  const map = useRef<L.Map | null>(null);
 
   // Extract order ID from URL
   const orderId = location.split("/order/")[1]?.split("?")[0];
+  
+  // Geocode address to coordinates
+  const geocodeAddress = async (address: string) => {
+    if (!address.trim()) return;
+    setMapLoading(true);
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address)}&format=json&limit=1`
+      );
+      const results = await response.json();
+      if (results.length > 0) {
+        setMapLat(parseFloat(results[0].lat));
+        setMapLng(parseFloat(results[0].lon));
+      }
+    } catch (error) {
+      console.log("Geocoding error:", error);
+    } finally {
+      setMapLoading(false);
+    }
+  };
+
+  // Initialize map
+  useEffect(() => {
+    if (!mapContainer.current || !mapLat || !mapLng) return;
+    
+    if (map.current) {
+      map.current.remove();
+    }
+
+    map.current = L.map(mapContainer.current).setView([mapLat, mapLng], 14);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: '&copy; OpenStreetMap',
+      maxZoom: 19,
+    }).addTo(map.current);
+
+    // Destination marker (red)
+    L.marker([mapLat, mapLng], {
+      icon: L.icon({
+        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+      })
+    })
+      .addTo(map.current)
+      .bindPopup(`<div style="text-align: center"><strong>${language === "ar" ? "موقع التسليم" : "Delivery Location"}</strong></div>`)
+      .openPopup();
+  }, [mapLat, mapLng, language]);
+
+  // Geocode address when order is loaded
+  useEffect(() => {
+    if (order && (order.shippingAddress || order.deliveryAddress) && !mapLat) {
+      geocodeAddress(order.shippingAddress || order.deliveryAddress || "");
+    }
+  }, [order?.shippingAddress, order?.deliveryAddress, mapLat]);
+
   // Determine back path based on user role and store tab preference
   const handleBack = () => {
     // Check if there's a previousPage stored in sessionStorage
@@ -247,6 +315,25 @@ export default function OrderDetailsPage() {
           </div>
         ) : (
           <div className="flex-1 overflow-y-auto no-scrollbar pb-40 w-full">
+            {/* Map Section */}
+            {(order.shippingAddress || order.deliveryAddress) && (
+              <div className="w-full">
+                {mapLoading ? (
+                  <div className="w-full bg-blue-50 border-b border-blue-200 flex items-center justify-center gap-2 py-3">
+                    <Loader size={18} className="animate-spin text-blue-600" />
+                    <span className="text-blue-600 font-semibold text-sm">{language === "ar" ? "جاري تحميل الخريطة..." : "Loading map..."}</span>
+                  </div>
+                ) : mapLat && mapLng ? (
+                  <div className="w-full bg-blue-100 border-b border-blue-300 overflow-hidden h-64" ref={mapContainer}></div>
+                ) : (
+                  <div className="w-full bg-gray-200 border-b border-gray-300 py-8 flex items-center justify-center gap-2">
+                    <MapPin size={20} className="text-gray-600" />
+                    <span className="text-gray-600 font-semibold">{language === "ar" ? "لا توجد معلومات موقع" : "No location info"}</span>
+                  </div>
+                )}
+              </div>
+            )}
+            
             <div className="w-full px-5 py-4 space-y-4">
               {/* Order Header */}
               <div className="bg-white rounded-2xl border border-gray-100 p-4">
