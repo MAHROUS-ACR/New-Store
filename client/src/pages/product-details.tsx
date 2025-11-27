@@ -24,6 +24,8 @@ export default function ProductDetailsPage() {
   const [isAdding, setIsAdding] = useState(false);
   const [discounts, setDiscounts] = useState<Discount[]>([]);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [touchStart, setTouchStart] = useState(0);
+  const [touchEnd, setTouchEnd] = useState(0);
 
   useEffect(() => {
     const loadProductAndDiscounts = async () => {
@@ -149,6 +151,32 @@ export default function ProductDetailsPage() {
   const activeDiscount = getActiveDiscount(String(product?.id), discounts);
   const discountedPrice = activeDiscount ? calculateDiscountedPrice(product.price, activeDiscount.discountPercentage) : product?.price;
 
+  // Handle swipe/drag navigation
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    setTouchEnd(e.changedTouches[0].clientX);
+    handleSwipe(touchStart, e.changedTouches[0].clientX);
+  };
+
+  const handleSwipe = (start: number, end: number) => {
+    if (!hasMultipleImages) return;
+    const distance = start - end;
+    const threshold = 50; // minimum distance to trigger swipe
+
+    if (Math.abs(distance) < threshold) return;
+
+    if (distance > 0) {
+      // Swiped left -> next image
+      setCurrentImageIndex((prev) => (prev + 1) % images.length);
+    } else {
+      // Swiped right -> previous image
+      setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
+    }
+  };
+
   return (
     <MobileWrapper>
       <div className="w-full flex-1 flex flex-col overflow-hidden">
@@ -168,11 +196,16 @@ export default function ProductDetailsPage() {
         <div className="flex-1 overflow-y-auto no-scrollbar pb-40 w-full">
           <div className="w-full px-5 py-4">
             {/* Product Image Gallery */}
-            <div className="relative aspect-square rounded-2xl overflow-hidden bg-gray-50 mb-4 group">
+            <div 
+              className="relative aspect-square rounded-2xl overflow-hidden bg-gray-50 mb-4 group cursor-grab active:cursor-grabbing select-none"
+              onTouchStart={handleTouchStart}
+              onTouchEnd={handleTouchEnd}
+              data-testid="gallery-container"
+            >
               <img 
                 src={currentImage} 
                 alt={`${productTitle} - ${currentImageIndex + 1}`}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover transition-opacity duration-200"
                 data-testid="img-product-main"
               />
               
