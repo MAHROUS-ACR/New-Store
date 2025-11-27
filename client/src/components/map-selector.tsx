@@ -76,6 +76,20 @@ export function MapSelector({
     };
   }, []);
 
+  // Handle address input change with debounce
+  useEffect(() => {
+    if (!address.trim()) return;
+
+    // Only forward geocode if address looks like text (not coordinates)
+    if (!address.match(/^\d+\.\d+/)) {
+      const timer = setTimeout(() => {
+        forwardGeocode(address);
+      }, 800); // Debounce for 800ms
+
+      return () => clearTimeout(timer);
+    }
+  }, [address]);
+
   const reverseGeocode = async (lat: number, lng: number) => {
     try {
       setIsLoadingLocation(true);
@@ -95,6 +109,48 @@ export function MapSelector({
     } catch (error) {
       console.log("Geocoding error:", error);
       setAddress(`${lat.toFixed(6)}, ${lng.toFixed(6)}`);
+    } finally {
+      setIsLoadingLocation(false);
+    }
+  };
+
+  const forwardGeocode = async (addressText: string) => {
+    if (!addressText.trim()) return;
+    try {
+      setIsLoadingLocation(true);
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(addressText)}&format=json&limit=1`,
+        {
+          headers: {
+            "Accept-Language": language === "ar" ? "ar" : "en",
+          },
+        }
+      );
+      const data = await response.json();
+      if (data && data.length > 0) {
+        const { lat, lon } = data[0];
+        const newLat = parseFloat(lat);
+        const newLng = parseFloat(lon);
+        setSelectedLat(newLat);
+        setSelectedLng(newLng);
+
+        if (map.current) {
+          map.current.setView([newLat, newLng], 13);
+        }
+
+        if (marker.current) {
+          marker.current.setLatLng([newLat, newLng]);
+          marker.current.setPopupContent(
+            `<div style="text-align: ${language === "ar" ? "right" : "left"}; direction: ${language === "ar" ? "rtl" : "ltr"}">
+              <strong>${language === "ar" ? "الموقع المختار" : "Selected Location"}</strong><br/>
+              ${language === "ar" ? "خط العرض:" : "Latitude:"} ${newLat.toFixed(6)}<br/>
+              ${language === "ar" ? "خط الطول:" : "Longitude:"} ${newLng.toFixed(6)}
+            </div>`
+          );
+        }
+      }
+    } catch (error) {
+      console.log("Forward geocoding error:", error);
     } finally {
       setIsLoadingLocation(false);
     }
