@@ -2018,6 +2018,7 @@ export default function ProfilePage() {
                       <div className="flex gap-2">
                         <button
                           onClick={async () => {
+                            console.log("Save button clicked - Form data:", { title: newItemForm.title, price: newItemForm.price, category: newItemForm.category, editingItemId });
                             if (newItemForm.title && newItemForm.price && newItemForm.category) {
                               setIsSavingItem(true);
                               try {
@@ -2036,12 +2037,15 @@ export default function ProfilePage() {
                                 };
                                 
                                 if (editingItemId) {
+                                  console.log("Updating product with ID:", editingItemId);
                                   const itemRef = doc(db, "products", editingItemId);
                                   await updateDoc(itemRef, productData);
+                                  console.log("Product updated successfully");
                                   setItems(items.map(i => i.id === editingItemId ? { id: editingItemId, ...productData } : i));
                                   toast.success(language === "ar" ? "تم تحديث المنتج!" : "Product updated!");
                                   setEditingItemId(null);
                                 } else {
+                                  console.log("Adding new product");
                                   const productsRef = collection(db, "products");
                                   const docRef = await addDoc(productsRef, productData);
                                   setItems([...items, { id: docRef.id, ...productData }]);
@@ -2053,11 +2057,13 @@ export default function ProfilePage() {
                                 setColorInput("");
                                 setCurrentColorHex("#000000");
                               } catch (error) {
+                                console.error("Error saving product:", error);
                                 toast.error(language === "ar" ? "فشل حفظ المنتج" : "Failed to save product");
                               } finally {
                                 setIsSavingItem(false);
                               }
                             } else {
+                              console.log("Validation failed - Missing fields", { title: newItemForm.title, price: newItemForm.price, category: newItemForm.category });
                               toast.error(language === "ar" ? "الرجاء ملء جميع الحقول" : "Please fill all fields");
                             }
                           }}
