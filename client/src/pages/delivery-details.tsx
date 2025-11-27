@@ -442,7 +442,7 @@ export default function DeliveryDetailsPage() {
         </div>
 
         {/* Map - Full Width at Top */}
-        {showMap && (
+        {showMap && order?.status !== "received" && (
           <>
             {mapLoading ? (
               <div className="w-full bg-blue-50 border-b border-blue-200 flex items-center justify-center gap-2 py-3">
@@ -458,6 +458,12 @@ export default function DeliveryDetailsPage() {
               </div>
             )}
           </>
+        )}
+        {order?.status === "received" && (
+          <div className="w-full bg-green-50 border-b border-green-300 py-8 flex items-center justify-center gap-2">
+            <MapPin size={20} className="text-green-600" />
+            <span className="text-green-600 font-semibold">{language === "ar" ? "تم التسليم - الخريطة غير متاحة" : "Delivered - Map unavailable"}</span>
+          </div>
         )}
 
         {/* Content */}

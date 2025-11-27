@@ -359,7 +359,7 @@ export default function OrderDetailsPage() {
         ) : (
           <div className="flex-1 overflow-y-auto no-scrollbar pb-40 w-full">
             {/* Map Section */}
-            {(order.shippingAddress || order.deliveryAddress) && (
+            {(order.shippingAddress || order.deliveryAddress) && order?.status !== "completed" && order?.status !== "received" && (
               <div className="w-full">
                 {mapLoading ? (
                   <div className="w-full bg-blue-50 border-b border-blue-200 flex items-center justify-center gap-2 py-3">
@@ -374,6 +374,12 @@ export default function OrderDetailsPage() {
                     <span className="text-gray-600 font-semibold">{language === "ar" ? "لا توجد معلومات موقع" : "No location info"}</span>
                   </div>
                 )}
+              </div>
+            )}
+            {(order.shippingAddress || order.deliveryAddress) && (order?.status === "completed" || order?.status === "received") && (
+              <div className="w-full bg-green-50 border-b border-green-300 py-8 flex items-center justify-center gap-2">
+                <MapPin size={20} className="text-green-600" />
+                <span className="text-green-600 font-semibold">{language === "ar" ? "تم التسليم - الخريطة غير متاحة" : "Delivered - Map unavailable"}</span>
               </div>
             )}
             
