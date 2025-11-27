@@ -146,31 +146,26 @@ export default function DeliveryDetailsPage() {
       const bounds = L.latLngBounds([[currentLat, currentLng], [mapLat, mapLng]]);
       map.current.fitBounds(bounds, { padding: [80, 80] });
 
-      // Fetch best route considering traffic
+      // Fetch best route with alternatives
       const fetchBestRoute = async () => {
         try {
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 6000);
-          
-          // Try GraphHopper with traffic data (supports current traffic)
           const response = await fetch(
-            `https://graphhopper.com/api/1/route?point=${currentLat},${currentLng}&point=${mapLat},${mapLng}&vehicle=car&locale=${language === "ar" ? "ar" : "en"}&points_encoded=false&key=4f1fc0f4-4e9e-4bf4-8687-fb2fc4ae1e9e&ch.disable=true`,
-            { signal: controller.signal }
+            `https://router.project-osrm.org/route/v1/driving/${currentLng},${currentLat};${mapLng},${mapLat}?geometries=geojson&overview=full&alternatives=true&steps=false`,
+            { signal: AbortSignal.timeout(6000) }
           );
-          clearTimeout(timeoutId);
           
           if (response.ok) {
             const data = await response.json();
-            if (data.paths && data.paths.length > 0) {
-              // Select the fastest route if multiple paths available
-              let bestRoute = data.paths[0];
-              if (data.paths.length > 1) {
-                bestRoute = data.paths.reduce((best: any, current: any) => 
-                  (current.time || 0) < (best.time || 0) ? current : best
+            if (data.routes && data.routes.length > 0) {
+              // Select fastest route
+              let bestRoute = data.routes[0];
+              if (data.routes.length > 1) {
+                bestRoute = data.routes.reduce((best: any, current: any) => 
+                  (current.duration || 0) < (best.duration || 0) ? current : best
                 );
               }
               
-              const coords = bestRoute.points.coordinates.map((coord: [number, number]) => [coord[1], coord[0]]);
+              const coords = bestRoute.geometry.coordinates.map((coord: [number, number]) => [coord[1], coord[0]]);
               
               if (coords && coords.length > 0 && map.current) {
                 L.polyline(coords, {
@@ -180,7 +175,7 @@ export default function DeliveryDetailsPage() {
                 }).addTo(map.current);
                 
                 const distance = (bestRoute.distance || 0) / 1000;
-                const duration = (bestRoute.time || 0) / 60000;
+                const duration = (bestRoute.duration || 0) / 60;
                 setRouteDistance(distance);
                 setRouteDuration(duration);
               }
@@ -188,35 +183,6 @@ export default function DeliveryDetailsPage() {
           }
         } catch (error) {
           console.log("Route fetch error:", error);
-          // Fallback to OSRM
-          try {
-            const response = await fetch(
-              `https://router.project-osrm.org/route/v1/driving/${currentLng},${currentLat};${mapLng},${mapLat}?geometries=geojson&overview=full`
-            );
-            
-            if (response.ok) {
-              const data = await response.json();
-              if (data.routes && data.routes.length > 0) {
-                const route = data.routes[0];
-                const coords = route.geometry.coordinates.map((coord: [number, number]) => [coord[1], coord[0]]);
-                
-                if (coords && coords.length > 0 && map.current) {
-                  L.polyline(coords, {
-                    color: '#2563eb',
-                    weight: 3,
-                    opacity: 0.8,
-                  }).addTo(map.current);
-                  
-                  const distance = (route.distance || 0) / 1000;
-                  const duration = (route.duration || 0) / 60;
-                  setRouteDistance(distance);
-                  setRouteDuration(duration);
-                }
-              }
-            }
-          } catch (err) {
-            console.log("Fallback route error:", err);
-          }
         }
       };
       
