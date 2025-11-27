@@ -144,39 +144,39 @@ export default function Home() {
     <MobileWrapper>
       <div className="w-full flex-1 flex flex-col overflow-hidden bg-white">
         {/* Header */}
-        <div className="px-5 pt-3 pb-4 flex-shrink-0 border-b border-gray-100">
-          <div className="flex items-center justify-between gap-3 mb-4">
+        <div className="px-5 pt-2 pb-2 flex-shrink-0 border-b border-gray-100">
+          <div className="flex items-center justify-between gap-2 mb-2">
             {storeName ? (
               <div className="flex items-center gap-2">
                 {storeLogo ? (
-                  <img src={storeLogo} alt={storeName} className="w-9 h-9 rounded-lg object-cover" />
+                  <img src={storeLogo} alt={storeName} className="w-8 h-8 rounded-lg object-cover" />
                 ) : (
-                  <div className="w-9 h-9 bg-black rounded-lg flex items-center justify-center text-white font-bold text-sm">
+                  <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center text-white font-bold text-xs">
                     {storeName.charAt(0)}
                   </div>
                 )}
-                <h1 className="text-base font-bold text-gray-900">{storeName}</h1>
+                <h1 className="text-sm font-bold text-gray-900">{storeName}</h1>
               </div>
             ) : (
               <div className="w-24 h-5 bg-gray-200 rounded animate-pulse" />
             )}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
               <button 
                 onClick={() => setLanguage(language === "en" ? "ar" : "en")}
-                className="w-10 h-10 rounded-full bg-white border border-gray-100 flex items-center justify-center hover:bg-gray-50"
+                className="w-8 h-8 rounded-full bg-white border border-gray-100 flex items-center justify-center hover:bg-gray-50"
                 data-testid="button-toggle-language"
                 title={language === "en" ? "عربي" : "English"}
               >
-                <Globe className="w-5 h-5 text-gray-600" />
+                <Globe className="w-4 h-4 text-gray-600" />
               </button>
               <button 
                 onClick={() => setLocation("/cart")}
-                className="w-10 h-10 bg-black text-white rounded-lg flex items-center justify-center relative hover:bg-gray-900 transition-colors flex-shrink-0"
+                className="w-8 h-8 bg-black text-white rounded flex items-center justify-center relative hover:bg-gray-900 transition-colors flex-shrink-0"
                 data-testid="button-cart"
               >
-                <ShoppingCart className="w-4 h-4" />
+                <ShoppingCart className="w-3.5 h-3.5" />
                 {items.length > 0 && (
-                  <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-[9px] font-bold text-white">
+                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center text-[8px] font-bold text-white">
                     {items.length}
                   </div>
                 )}
@@ -186,13 +186,13 @@ export default function Home() {
 
           {/* Search */}
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
             <input 
               type="text" 
               placeholder={t("searchPlaceholder", language)}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black/10"
+              className="w-full pl-9 pr-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-black/10"
               data-testid="input-search"
             />
           </div>
@@ -200,12 +200,12 @@ export default function Home() {
 
         {/* Firebase Status Banner */}
         {!firebaseConfigured && isInitialized && (
-          <div className="px-5 py-3 flex-shrink-0 bg-yellow-50 border-b border-yellow-100">
-            <div className="flex items-start gap-2">
-              <AlertCircle className="w-4 h-4 text-yellow-600 flex-shrink-0 mt-0.5" />
+          <div className="px-5 py-1.5 flex-shrink-0 bg-yellow-50 border-b border-yellow-100">
+            <div className="flex items-start gap-1.5">
+              <AlertCircle className="w-3.5 h-3.5 text-yellow-600 flex-shrink-0 mt-0.5" />
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-semibold text-yellow-900 mb-0.5">Demo Mode</p>
-                <p className="text-xs text-yellow-800">Configure Firebase in Profile to use your products</p>
+                <p className="text-xs font-semibold text-yellow-900">Demo Mode</p>
+                <p className="text-[11px] text-yellow-800">Configure Firebase in Profile to use your products</p>
               </div>
             </div>
           </div>
@@ -213,50 +213,52 @@ export default function Home() {
 
         {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto no-scrollbar pb-40 w-full">
-          <div className="w-full px-0 py-4">
+          <div className="w-full px-0 py-2">
             {/* Active Deals Carousel */}
             <ActiveDealsCarousel products={products} discounts={discounts} />
             
             {/* Categories */}
             {categories.length > 0 && (
-              <div className="mt-5 mb-6">
-                <h3 className="text-sm font-semibold text-gray-900 mb-3">{t("categories", language)}</h3>
+              <div className="mt-2 mb-3">
+                <h3 className="text-xs font-semibold text-gray-900 mb-2 px-5">{t("categories", language)}</h3>
                 <CategoryFilter active={activeCategory} onChange={setActiveCategory} categories={categories} />
               </div>
             )}
 
             {/* Products */}
-            {isLoading ? (
-              <div className="grid grid-cols-2 gap-3">
-                {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="bg-white rounded-lg border border-gray-100 overflow-hidden">
-                    <div className="aspect-square bg-gray-200 animate-pulse" />
-                    <div className="p-2">
-                      <div className="h-3 bg-gray-200 rounded animate-pulse mb-2 w-3/4" />
-                      <div className="h-3 bg-gray-200 rounded animate-pulse w-1/2" />
+            <div className="px-5">
+              {isLoading ? (
+                <div className="grid grid-cols-2 gap-2">
+                  {[1, 2, 3, 4].map((i) => (
+                    <div key={i} className="bg-white rounded-lg border border-gray-100 overflow-hidden">
+                      <div className="aspect-square bg-gray-200 animate-pulse" />
+                      <div className="p-1.5">
+                        <div className="h-2 bg-gray-200 rounded animate-pulse mb-1 w-3/4" />
+                        <div className="h-2 bg-gray-200 rounded animate-pulse w-1/2" />
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            ) : filteredProducts.length > 0 ? (
-              <div className="grid grid-cols-2 gap-3">
-                {filteredProducts.map((product, index) => (
-                  <ProductCard 
-                    key={product.id} 
-                    product={product} 
-                    index={index}
-                    discounts={discounts}
-                    onProductClick={(id) => setLocation(`/product/${id}`)}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-16">
-                <div className="text-5xl mb-3">📦</div>
-                <p className="text-sm text-gray-600 font-semibold mb-1">No products found</p>
-                <p className="text-xs text-gray-500">Try a different search</p>
-              </div>
-            )}
+                  ))}
+                </div>
+              ) : filteredProducts.length > 0 ? (
+                <div className="grid grid-cols-2 gap-2">
+                  {filteredProducts.map((product, index) => (
+                    <ProductCard 
+                      key={product.id} 
+                      product={product} 
+                      index={index}
+                      discounts={discounts}
+                      onProductClick={(id) => setLocation(`/product/${id}`)}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <div className="text-4xl mb-2">📦</div>
+                  <p className="text-xs text-gray-600 font-semibold mb-0.5">No products found</p>
+                  <p className="text-[11px] text-gray-500">Try a different search</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
