@@ -485,6 +485,26 @@ export default function DeliveryDetailsPage() {
                   </div>
                 </div>
               )}
+
+              {order.deliveryUsername && (
+                <div className="flex gap-2">
+                  <User size={18} className="text-blue-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-semibold text-gray-600">{language === "ar" ? "اسم الدليفرى" : "Delivery Driver"}</p>
+                    <p className="text-base">{order.deliveryUsername}</p>
+                  </div>
+                </div>
+              )}
+
+              {order.deliveryRemarks && (
+                <div className="flex gap-2">
+                  <FileText size={18} className="text-orange-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-semibold text-gray-600">{language === "ar" ? "ملاحظات التسليم" : "Delivery Remarks"}</p>
+                    <p className="text-base">{order.deliveryRemarks}</p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -557,16 +577,6 @@ export default function DeliveryDetailsPage() {
                 <div>
                   <p className="text-sm font-semibold text-gray-600">{language === "ar" ? "ملاحظات" : "Notes"}</p>
                   <p className="text-base">{order.notes}</p>
-                </div>
-              </div>
-            )}
-
-            {order.deliveryRemarks && (
-              <div className="flex gap-2">
-                <FileText size={18} className="text-red-600 flex-shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-sm font-semibold text-gray-600">{language === "ar" ? "ملاحظات التسليم" : "Delivery Remarks"}</p>
-                  <p className="text-base">{order.deliveryRemarks}</p>
                 </div>
               </div>
             )}
