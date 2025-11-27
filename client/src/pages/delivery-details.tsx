@@ -44,6 +44,8 @@ export default function DeliveryDetailsPage() {
   const [currentLng, setCurrentLng] = useState<number | null>(null);
   const [mapLoading, setMapLoading] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
+  const [routeDistance, setRouteDistance] = useState<number | null>(null);
+  const [routeDuration, setRouteDuration] = useState<number | null>(null);
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<L.Map | null>(null);
 
@@ -82,6 +84,28 @@ export default function DeliveryDetailsPage() {
     } finally {
       setMapLoading(false);
     }
+  };
+
+  // Get route from OSRM
+  const fetchRoute = async (startLat: number, startLng: number, endLat: number, endLng: number) => {
+    try {
+      const response = await fetch(
+        `https://router.project-osrm.org/route/v1/driving/${startLng},${startLat};${endLng},${endLat}?overview=full&geometries=geojson`
+      );
+      const data = await response.json();
+      if (data.routes && data.routes[0]) {
+        const route = data.routes[0];
+        const coords = route.geometry.coordinates.map((coord: [number, number]) => [coord[1], coord[0]]);
+        const distance = route.distance / 1000; // Convert to km
+        const duration = route.duration / 60; // Convert to minutes
+        setRouteDistance(distance);
+        setRouteDuration(duration);
+        return coords;
+      }
+    } catch (error) {
+      console.log("Route error:", error);
+    }
+    return null;
   };
 
   // Initialize Leaflet map with routing
@@ -138,17 +162,20 @@ export default function DeliveryDetailsPage() {
         .addTo(map.current)
         .bindPopup(`<div style="text-align: center; direction: ${language === "ar" ? "rtl" : "ltr"}"><strong>${language === "ar" ? "موقعك الحالي" : "Your Location"}</strong></div>`);
 
-      // Draw line between current location and delivery location
-      const line = L.polyline([[currentLat, currentLng], [mapLat, mapLng]], {
-        color: 'blue',
-        weight: 2,
-        opacity: 0.7,
-        dashArray: '5, 5',
-      }).addTo(map.current);
+      // Fetch and draw actual route
+      fetchRoute(currentLat, currentLng, mapLat, mapLng).then((coords) => {
+        if (coords && map.current) {
+          const line = L.polyline(coords, {
+            color: '#2563eb',
+            weight: 4,
+            opacity: 0.8,
+          }).addTo(map.current);
 
-      // Fit map bounds to show both points
-      const bounds = L.latLngBounds([[currentLat, currentLng], [mapLat, mapLng]]);
-      map.current.fitBounds(bounds, { padding: [50, 50] });
+          // Fit map bounds to show route
+          const bounds = L.latLngBounds(coords);
+          map.current.fitBounds(bounds, { padding: [50, 50] });
+        }
+      });
     }
   }, [mapLat, mapLng, currentLat, currentLng, language]);
 
@@ -313,6 +340,23 @@ export default function DeliveryDetailsPage() {
                     <span className="font-bold">L.E {(item.price * item.quantity).toFixed(2)}</span>
                   </div>
                 ))}
+              </div>
+            </div>
+          )}
+
+          {/* Route Info */}
+          {routeDistance && routeDuration && (
+            <div className="bg-blue-50 rounded-2xl p-4 border border-blue-200">
+              <h2 className="font-bold text-sm mb-3 text-blue-900">{language === "ar" ? "معلومات المسار" : "Route Info"}</h2>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-blue-700">{language === "ar" ? "المسافة" : "Distance"}</span>
+                  <span className="font-semibold text-blue-900">{routeDistance.toFixed(1)} km</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-blue-700">{language === "ar" ? "الوقت المتوقع" : "Estimated Time"}</span>
+                  <span className="font-semibold text-blue-900">{Math.ceil(routeDuration)} {language === "ar" ? "دقيقة" : "min"}</span>
+                </div>
               </div>
             </div>
           )}
