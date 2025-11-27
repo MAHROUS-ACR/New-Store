@@ -6,7 +6,16 @@ import { useCart } from "@/lib/cartContext";
 import { useUser } from "@/lib/userContext";
 import { useLanguage } from "@/lib/languageContext";
 import { toast } from "sonner";
-import { getShippingZones, saveOrder } from "@/lib/firebaseOps";
+import { getShippingZones, saveOrder, getDiscounts } from "@/lib/firebaseOps";
+import { getActiveDiscount, calculateDiscountedPrice, getDiscountAmount } from "@/lib/discountUtils";
+
+interface Discount {
+  id: string;
+  productId: string;
+  discountPercentage: number | string;
+  startDate: string | Date;
+  endDate: string | Date;
+}
 
 interface Zone {
   id: string;
@@ -34,6 +43,7 @@ export default function CheckoutPage() {
   
   const [isLoadingZones, setIsLoadingZones] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [discounts, setDiscounts] = useState<Discount[]>([]);
 
   // Initialize form with user data
   useEffect(() => {
@@ -55,9 +65,9 @@ export default function CheckoutPage() {
     }
   }, [isLoggedIn, authLoading, setLocation]);
 
-  // Load shipping zones
+  // Load shipping zones and discounts
   useEffect(() => {
-    const loadZones = async () => {
+    const loadZonesAndDiscounts = async () => {
       setIsLoadingZones(true);
       try {
         const zones = await getShippingZones();
@@ -67,13 +77,16 @@ export default function CheckoutPage() {
           shippingCost: Number(z.shippingCost) || 0,
         }));
         setZonesList(mappedZones);
+        
+        const discountsList = await getDiscounts();
+        setDiscounts(discountsList);
       } catch (err) {
 
       } finally {
         setIsLoadingZones(false);
       }
     };
-    loadZones();
+    loadZonesAndDiscounts();
   }, []);
   
   // Auto-select zone when shipping type changes
@@ -88,9 +101,24 @@ export default function CheckoutPage() {
     }
   }, [shippingSelected, zonesList, user?.zoneId]);
 
-  const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  // Calculate subtotal with discounts
+  let subtotal = 0;
+  let totalDiscount = 0;
+  items.forEach(item => {
+    const itemSubtotal = item.price * item.quantity;
+    const discount = getActiveDiscount(item.id, discounts);
+    if (discount) {
+      const discountAmount = getDiscountAmount(itemSubtotal, discount.discountPercentage);
+      totalDiscount += discountAmount;
+      subtotal += itemSubtotal - discountAmount;
+    } else {
+      subtotal += itemSubtotal;
+    }
+  });
+  
   const shipping = zoneSelected?.shippingCost || 0;
   const grandTotal = subtotal + shipping;
+  const originalSubtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
   
   const isFormValid = 
     paymentSelected && 
@@ -162,7 +190,9 @@ export default function CheckoutPage() {
           image: item.image || "",
         })),
         
-        subtotal: Number(subtotal) || 0,
+        subtotal: Number(originalSubtotal) || 0,
+        discountedTotal: Number(subtotal) || 0,
+        discountAmount: Number(totalDiscount) || 0,
         shippingCost: Number(shipping) || 0,
         total: Number(grandTotal) || 0,
         
@@ -265,6 +295,16 @@ export default function CheckoutPage() {
               ))}
             </div>
             <div className="border-t border-gray-200 pt-4 space-y-2">
+              <div className="flex justify-between text-gray-700">
+                <span>{language === "ar" ? "الأصلي:" : "Original:"}</span>
+                <span>L.E {originalSubtotal.toFixed(2)}</span>
+              </div>
+              {totalDiscount > 0 && (
+                <div className="flex justify-between text-green-600 font-semibold">
+                  <span>{language === "ar" ? "الخصم:" : "Discount:"}</span>
+                  <span>-L.E {totalDiscount.toFixed(2)}</span>
+                </div>
+              )}
               <div className="flex justify-between text-gray-700">
                 <span>{language === "ar" ? "المجموع:" : "Subtotal:"}</span>
                 <span>L.E {subtotal.toFixed(2)}</span>
