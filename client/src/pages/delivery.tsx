@@ -19,6 +19,9 @@ interface DeliveryOrder {
   createdAt: string;
   deliveryUsername?: string;
   recipientName?: string;
+  shippingAddress?: string;
+  latitude?: number;
+  longitude?: number;
 }
 
 export default function DeliveryPage() {
@@ -189,9 +192,13 @@ export default function DeliveryPage() {
               {orders
                 .filter(order => selectedStatusFilter === null || order.status === selectedStatusFilter)
                 .map((order) => (
-                  <div
+                  <button
                     key={order.id}
-                    className="p-4 bg-white border border-gray-200 rounded-2xl hover:border-orange-300 transition-all"
+                    onClick={() => {
+                      sessionStorage.setItem('previousPage', '/delivery');
+                      setLocation(`/delivery-order/${order.id}`);
+                    }}
+                    className="w-full text-left p-4 bg-white border border-gray-200 rounded-2xl hover:border-orange-300 hover:shadow-md transition-all"
                   >
                     <div className="flex items-center justify-between mb-2">
                       <div>
@@ -223,7 +230,7 @@ export default function DeliveryPage() {
                         {language === "ar" ? "تم الاستقبال" : "Mark as Received"}
                       </button>
                     )}
-                  </div>
+                  </button>
                 ))}
             </div>
           )}
