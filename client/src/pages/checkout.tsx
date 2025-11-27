@@ -179,9 +179,10 @@ export default function CheckoutPage() {
         
         customerName: customerName.trim(),
         customerPhone: customerPhone.trim(),
-        deliveryAddress: shippingSelected === "saved" 
+        shippingAddress: shippingSelected === "saved" 
           ? `${user.address || zoneSelected?.name}` 
           : deliveryAddress.trim(),
+        shippingPhone: customerPhone.trim(),
         locationLat: locationCoords?.lat,
         locationLng: locationCoords?.lng,
         notes: notes.trim(),
