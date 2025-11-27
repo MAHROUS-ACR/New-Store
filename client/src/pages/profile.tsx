@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { t } from "@/lib/translations";
 import avatarImage from "@assets/generated_images/professional_user_avatar_portrait.png";
 import { saveFirebaseConfig, getFirebaseConfig, clearFirebaseConfig } from "@/lib/firebaseConfig";
-import { getFirestore, doc, updateDoc, getDoc, collection, setDoc, getDocs, addDoc, deleteDoc, query, where } from "firebase/firestore";
+import { getFirestore, doc, updateDoc, getDoc, collection, setDoc, getDocs, addDoc, deleteDoc, query, where, onSnapshot } from "firebase/firestore";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { getProducts, getOrders } from "@/lib/firebaseOps";
 import { getStatusColor } from "@/lib/statusColors";
@@ -196,17 +196,28 @@ export default function ProfilePage() {
     }
   };
 
-  // Fetch all orders for admin
-  const fetchAllOrders = async () => {
+  // Setup real-time listener for all orders for admin
+  const setupOrdersListener = () => {
     setOrdersLoading(true);
     try {
-      // Admin can see all orders - pass undefined to get all
-      const data = await getOrders(undefined);
-      setOrders((data as AdminOrder[]) || []);
+      const db = getFirestore();
+      const ordersRef = collection(db, "orders");
+      
+      const unsubscribe = onSnapshot(ordersRef, (snapshot) => {
+        const ordersList = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+        })) as AdminOrder[];
+        setOrders(ordersList || []);
+        setOrdersLoading(false);
+      }, (error) => {
+        toast.error("Failed to load orders");
+        setOrdersLoading(false);
+      });
+      
+      return unsubscribe;
     } catch (error) {
-
       toast.error("Failed to load orders");
-    } finally {
       setOrdersLoading(false);
     }
   };
@@ -261,9 +272,12 @@ export default function ProfilePage() {
     const preferredTab = sessionStorage.getItem('preferredTab');
     if (preferredTab === 'admin') {
       setActiveTab('admin');
-      fetchAllOrders(); // Fetch orders when switching to admin tab
+      const unsubscribe = setupOrdersListener(); // Setup real-time listener
       fetchCategories(); // Load categories on admin tab
       sessionStorage.removeItem('preferredTab'); // Clear after use
+      return () => {
+        if (unsubscribe) unsubscribe();
+      };
     } else {
       setActiveTab('profile');
     }
@@ -272,9 +286,13 @@ export default function ProfilePage() {
   // Load admin data when switching to admin tab
   useEffect(() => {
     if (activeTab === 'admin') {
+      const unsubscribe = setupOrdersListener(); // Setup real-time listener
       fetchCategories(); // Load categories when admin tab is active
       fetchProducts(); // Load products when admin tab is active
       fetchDiscounts(); // Load discounts when admin tab is active
+      return () => {
+        if (unsubscribe) unsubscribe();
+      };
     }
   }, [activeTab]);
 
