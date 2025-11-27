@@ -249,14 +249,14 @@ export default function CheckoutPage() {
                   </div>
                   {(item.selectedColor || item.selectedSize || item.selectedUnit) && (
                     <div className="mt-2 p-2 bg-white rounded border border-gray-200 text-[10px] space-y-1">
-                      {item.selectedUnit && <p className="font-semibold text-gray-600">{language === "ar" ? "الوحدة:" : "Unit:"} <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium text-[11px]">{item.selectedUnit}</span></p>}
-                      {item.selectedSize && <p className="font-semibold text-gray-600">{language === "ar" ? "المقاس:" : "Size:"} <span className="bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-medium text-[11px]">{item.selectedSize}</span></p>}
+                      {item.selectedUnit && <div className="font-semibold text-gray-600 flex items-center gap-1">{language === "ar" ? "الوحدة:" : "Unit:"} <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium text-[11px]">{item.selectedUnit}</span></div>}
+                      {item.selectedSize && <div className="font-semibold text-gray-600 flex items-center gap-1">{language === "ar" ? "المقاس:" : "Size:"} <span className="bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-medium text-[11px]">{item.selectedSize}</span></div>}
                       {item.selectedColor && (() => {
                         const [colorName, colorHex] = typeof item.selectedColor === 'string' 
                           ? item.selectedColor.split('|') 
                           : [item.selectedColor, '#000000'];
                         return (
-                          <p className="font-semibold text-gray-600">{language === "ar" ? "اللون:" : "Color:"} <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-gray-300 bg-white text-[11px] font-medium"><div className="w-2.5 h-2.5 rounded-full border border-gray-300" style={{backgroundColor: colorHex || '#000000'}}></div>{colorName}</span></p>
+                          <div className="font-semibold text-gray-600 flex items-center gap-1">{language === "ar" ? "اللون:" : "Color:"} <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-gray-300 bg-white text-[11px] font-medium"><span className="w-2.5 h-2.5 rounded-full border border-gray-300 inline-block" style={{backgroundColor: colorHex || '#000000'}}></span>{colorName}</span></div>
                         );
                       })()}
                     </div>
