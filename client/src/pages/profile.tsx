@@ -1082,10 +1082,21 @@ export default function ProfilePage() {
                           {t("shipped", language)}
                         </button>
                         <button
+                          onClick={() => setSelectedStatusFilter("received")}
+                          className={`px-3 py-1 rounded-full text-xs font-semibold transition-colors L.E 
+                            selectedStatusFilter === "received"
+                              ? "bg-green-100 text-green-700 border border-green-300"
+                              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                          }`}
+                          data-testid="filter-received"
+                        >
+                          {language === "ar" ? "✅ تم الاستقبال" : "✅ Received"}
+                        </button>
+                        <button
                           onClick={() => setSelectedStatusFilter("completed")}
                           className={`px-3 py-1 rounded-full text-xs font-semibold transition-colors L.E 
                             selectedStatusFilter === "completed"
-                              ? "bg-green-100 text-green-700 border border-green-300"
+                              ? "bg-emerald-100 text-emerald-700 border border-emerald-300"
                               : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                           }`}
                           data-testid="filter-completed"
