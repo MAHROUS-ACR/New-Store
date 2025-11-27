@@ -4,7 +4,7 @@ import { BottomNav } from "@/components/bottom-nav";
 import { ArrowLeft, MapPin, Phone, User, CreditCard, Truck, FileText, Loader, ChevronDown, ChevronUp, Navigation, Target } from "lucide-react";
 import { useLocation } from "wouter";
 import { useLanguage } from "@/lib/languageContext";
-import { getFirestore, doc, getDoc } from "firebase/firestore";
+import { getFirestore, doc, getDoc, updateDoc } from "firebase/firestore";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -108,6 +108,27 @@ export default function DeliveryDetailsPage() {
       }
     };
   }, [isNavigating, mapLat, mapLng]);
+
+  // Save driver location to Firebase in real-time
+  useEffect(() => {
+    if (!orderId || !currentLat || !currentLng) return;
+    
+    const saveLocationToFirebase = async () => {
+      try {
+        const db = getFirestore();
+        const orderRef = doc(db, "orders", orderId);
+        await updateDoc(orderRef, {
+          latitude: currentLat,
+          longitude: currentLng,
+        });
+        console.log("Location saved to Firebase:", currentLat, currentLng);
+      } catch (error) {
+        console.log("Error saving location:", error);
+      }
+    };
+
+    saveLocationToFirebase();
+  }, [currentLat, currentLng, orderId]);
 
   // Create motorcycle delivery icon using emoji
   const createDeliveryIcon = (isActive: boolean = false) => {
