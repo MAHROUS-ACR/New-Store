@@ -1377,8 +1377,8 @@ export default function ProfilePage() {
                                 className="flex-1 px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                                 data-testid={`select-user-role-${u.id}`}
                               >
-                                <option value="user">{t("userRole", language)}</option>
-                                <option value="admin">{t("adminRole", language)}</option>
+                                <option value="user">{language === "ar" ? "👤 يوزر" : "👤 User"}</option>
+                                <option value="admin">{language === "ar" ? "👑 ادمن" : "👑 Admin"}</option>
                                 <option value="delivery">{language === "ar" ? "🚚 ديليفري" : "🚚 Delivery"}</option>
                               </select>
                               <button
