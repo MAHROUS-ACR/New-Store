@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { MobileWrapper } from "@/components/mobile-wrapper";
 import { BottomNav } from "@/components/bottom-nav";
-import { ArrowLeft, MapPin, Phone, User } from "lucide-react";
+import { ArrowLeft, MapPin, Phone, User, CreditCard, Truck, FileText } from "lucide-react";
 import { useLocation } from "wouter";
 import { useLanguage } from "@/lib/languageContext";
 import { getFirestore, doc, getDoc } from "firebase/firestore";
@@ -10,12 +10,20 @@ interface DeliveryOrderDetails {
   id: string;
   orderNumber?: number;
   total: number;
+  subtotal?: number;
+  discountedTotal?: number;
+  discountAmount?: number;
+  shippingCost?: number;
   status: string;
   createdAt: string;
   deliveryUsername?: string;
   recipientName?: string;
   shippingAddress?: string;
   shippingPhone?: string;
+  shippingZone?: string;
+  shippingType?: string;
+  paymentMethod?: string;
+  notes?: string;
   items?: any[];
   customerName?: string;
   latitude?: number;
@@ -181,11 +189,68 @@ export default function DeliveryDetailsPage() {
             </div>
           )}
 
-          {/* Total */}
-          <div className="bg-orange-50 rounded-2xl p-4 border border-orange-200">
-            <div className="flex justify-between items-center">
-              <span className="font-bold text-gray-900">{language === "ar" ? "الإجمالي" : "Total"}</span>
-              <span className="text-2xl font-bold text-orange-600">L.E {order.total.toFixed(2)}</span>
+          {/* Payment & Shipping Info */}
+          <div className="bg-white rounded-2xl p-4 border border-gray-200 space-y-3">
+            {order.paymentMethod && (
+              <div className="flex gap-2">
+                <CreditCard size={16} className="text-indigo-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-xs font-semibold text-gray-600">{language === "ar" ? "طريقة الدفع" : "Payment"}</p>
+                  <p className="text-sm font-semibold">{order.paymentMethod}</p>
+                </div>
+              </div>
+            )}
+            
+            {order.shippingZone && (
+              <div className="flex gap-2">
+                <Truck size={16} className="text-green-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-xs font-semibold text-gray-600">{language === "ar" ? "منطقة الشحن" : "Shipping Zone"}</p>
+                  <p className="text-sm font-semibold">{order.shippingZone}</p>
+                </div>
+              </div>
+            )}
+
+            {order.notes && (
+              <div className="flex gap-2">
+                <FileText size={16} className="text-yellow-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-xs font-semibold text-gray-600">{language === "ar" ? "ملاحظات" : "Notes"}</p>
+                  <p className="text-sm">{order.notes}</p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Price Breakdown */}
+          <div className="bg-white rounded-2xl p-4 border border-gray-200">
+            <h2 className="font-bold text-sm mb-3">{language === "ar" ? "ملخص الأسعار" : "Price Breakdown"}</h2>
+            <div className="space-y-2 text-sm">
+              {order.subtotal !== undefined && (
+                <div className="flex justify-between">
+                  <span className="text-gray-700">{language === "ar" ? "السعر الأساسي" : "Subtotal"}</span>
+                  <span className="font-semibold">L.E {order.subtotal.toFixed(2)}</span>
+                </div>
+              )}
+              
+              {order.discountAmount ? (
+                <div className="flex justify-between text-red-600">
+                  <span>{language === "ar" ? "خصم" : "Discount"}</span>
+                  <span className="font-semibold">-L.E {order.discountAmount.toFixed(2)}</span>
+                </div>
+              ) : null}
+              
+              {order.shippingCost !== undefined && order.shippingCost > 0 && (
+                <div className="flex justify-between">
+                  <span className="text-gray-700">{language === "ar" ? "شحن" : "Shipping"}</span>
+                  <span className="font-semibold">+L.E {order.shippingCost.toFixed(2)}</span>
+                </div>
+              )}
+              
+              <div className="border-t border-gray-200 pt-2 flex justify-between font-bold">
+                <span>{language === "ar" ? "الإجمالي" : "Total"}</span>
+                <span>L.E {order.total.toFixed(2)}</span>
+              </div>
             </div>
           </div>
         </div>
