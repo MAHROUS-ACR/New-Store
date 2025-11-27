@@ -65,7 +65,6 @@ export default function ProfilePage() {
   const [showItems, setShowItems] = useState(false);
   const [showCategories, setShowCategories] = useState(false);
   const [showUsers, setShowUsers] = useState(false);
-  const [showStoreSettings, setShowStoreSettings] = useState(false);
   const [selectedStatusFilter, setSelectedStatusFilter] = useState<string | null>(null);
   const [items, setItems] = useState<any[]>([]);
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
@@ -137,12 +136,6 @@ export default function ProfilePage() {
     }));
   };
   
-  // Store Settings States
-  const [storeName, setStoreName] = useState("");
-  const [storeAddress, setStoreAddress] = useState("");
-  const [storePhone, setStorePhone] = useState("");
-  const [storeEmail, setStoreEmail] = useState("");
-  const [storeLogo, setStoreLogo] = useState<string>("");
 
   // Shipping Zones States
   const [shippingZones, setShippingZones] = useState<any[]>([]);
@@ -369,31 +362,6 @@ export default function ProfilePage() {
     }
   }, [showFirebaseSettings]);
 
-  useEffect(() => {
-    const loadStoreSettings = async () => {
-      try {
-        const db = getFirestore();
-        const storeConfigRef = doc(db, "settings", "store");
-        const storeConfigSnap = await getDoc(storeConfigRef);
-        if (storeConfigSnap.exists()) {
-          const data = storeConfigSnap.data();
-
-          
-          setStoreName(data.name || "");
-          setStoreAddress(data.address || "");
-          setStorePhone(data.phone || "");
-          setStoreEmail(data.email || "");
-          setStoreLogo(data.logo || "");
-        }
-      } catch (error) {
-
-      }
-    };
-
-    if (showStoreSettings) {
-      loadStoreSettings();
-    }
-  }, [showStoreSettings]);
 
   const handleSaveServerConfig = async () => {
     if (!projectId || !privateKey || !clientEmail) {
