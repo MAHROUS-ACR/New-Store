@@ -70,6 +70,8 @@ export default function OrderDetailsPage() {
   const [mapLoading, setMapLoading] = useState(false);
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<L.Map | null>(null);
+  const driverMarker = useRef<L.Marker | null>(null);
+  const routePolyline = useRef<L.Polyline | null>(null);
 
   // Extract order ID from URL
   const orderId = location.split("/order/")[1]?.split("?")[0];
@@ -121,7 +123,44 @@ export default function OrderDetailsPage() {
       .addTo(map.current)
       .bindPopup(`<div style="text-align: center"><strong>${language === "ar" ? "موقع التسليم" : "Delivery Location"}</strong></div>`)
       .openPopup();
-  }, [mapLat, mapLng, language]);
+
+    // Add driver location marker if available
+    if (order?.latitude && order?.longitude && map.current) {
+      if (driverMarker.current) {
+        driverMarker.current.remove();
+      }
+      driverMarker.current = L.marker([order.latitude, order.longitude], {
+        icon: L.icon({
+          iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+          shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+          iconSize: [25, 41],
+          iconAnchor: [12, 41],
+          popupAnchor: [1, -34],
+        })
+      })
+        .addTo(map.current)
+        .bindPopup(`<div style="text-align: center"><strong>🏍️ ${language === "ar" ? "موقع الدليفرى" : "Driver Location"}</strong></div>`);
+
+      // Fetch and display route
+      fetch(`https://router.project-osrm.org/route/v1/driving/${order.longitude},${order.latitude};${mapLng},${mapLat}?geometries=geojson`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.routes && data.routes[0] && map.current) {
+            const coords = data.routes[0].geometry.coordinates.map((coord: any) => [coord[1], coord[0]]);
+            if (routePolyline.current) routePolyline.current.remove();
+            routePolyline.current = L.polyline(coords, { color: '#3b82f6', weight: 3, opacity: 0.7 }).addTo(map.current);
+          }
+        })
+        .catch(console.log);
+    }
+  }, [mapLat, mapLng, language, order?.latitude, order?.longitude]);
+
+  // Update driver marker position when order location changes
+  useEffect(() => {
+    if (order?.latitude && order?.longitude && driverMarker.current && map.current) {
+      driverMarker.current.setLatLng([order.latitude, order.longitude]);
+    }
+  }, [order?.latitude, order?.longitude]);
 
   // Geocode address when order is loaded
   useEffect(() => {
