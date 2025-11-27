@@ -57,15 +57,17 @@ export default function DeliveryDetailsPage() {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
+          console.log("Got current position:", position.coords.latitude, position.coords.longitude);
           setCurrentLat(position.coords.latitude);
           setCurrentLng(position.coords.longitude);
         },
         (error) => {
+          console.log("Geolocation error:", error);
           setLocationError(language === "ar" ? "لا يمكن الوصول للموقع الحالي" : "Cannot access current location");
         }
       );
     }
-  }, [language]);
+  }, []);
 
   // Geocode address to get lat/lng as fallback
   const geocodeAddress = async (address: string) => {
@@ -130,6 +132,7 @@ export default function DeliveryDetailsPage() {
 
     // Current location marker - only for non-received orders
     if (currentLat && currentLng && order?.status !== "received") {
+      console.log("Adding current location marker:", currentLat, currentLng);
       L.marker([currentLat, currentLng], {
         icon: L.icon({
           iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
