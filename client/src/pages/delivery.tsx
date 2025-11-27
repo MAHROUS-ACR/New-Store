@@ -5,6 +5,7 @@ import { useUser } from "@/lib/userContext";
 import { useLocation } from "wouter";
 import { useLanguage } from "@/lib/languageContext";
 import { t } from "@/lib/translations";
+import { getStatusColor } from "@/lib/statusColors";
 import { getFirestore, collection, query, where, getDocs, doc, updateDoc, onSnapshot } from "firebase/firestore";
 import { toast } from "sonner";
 import { Check } from "lucide-react";
@@ -201,16 +202,8 @@ export default function DeliveryPage() {
                         )}
                       </div>
                       <div className="flex flex-col items-end gap-1">
-                        <span
-                          className={`text-xs font-semibold px-3 py-1 rounded-full ${
-                            order.status === "received"
-                              ? "bg-green-100 text-green-700"
-                              : "bg-blue-100 text-blue-700"
-                          }`}
-                        >
-                          {order.status === "received"
-                            ? language === "ar" ? "✅ تم الاستقبال" : "✅ Received"
-                            : language === "ar" ? "🚚 تم الشحن" : "🚚 Shipped"}
+                        <span className={`text-xs font-semibold px-3 py-1 rounded-full ${getStatusColor(order.status)}`}>
+                          {order.status === "received" ? (language === "ar" ? "✅ تم الاستقبال" : "✅ Received") : t(order.status as any, language)}
                         </span>
                         {order.recipientName && (
                           <p className="text-xs text-gray-600">{order.recipientName}</p>
