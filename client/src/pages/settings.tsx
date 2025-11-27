@@ -32,6 +32,8 @@ export default function SettingsPage() {
   const [gmailUser, setGmailUser] = useState("");
   const [gmailPassword, setGmailPassword] = useState("");
   const [adminEmail, setAdminEmail] = useState("");
+  const [resendApiKey, setResendApiKey] = useState("");
+  const [resendFromEmail, setResendFromEmail] = useState("");
   
   // SN field
   const [sn, setSN] = useState("");
@@ -77,6 +79,8 @@ export default function SettingsPage() {
           setGmailUser(storeData.gmailUser || "");
           setGmailPassword(storeData.gmailPassword || "");
           setAdminEmail(storeData.adminEmail || "");
+          setResendApiKey(storeData.resendApiKey || "");
+          setResendFromEmail(storeData.resendFromEmail || "");
         }
       } catch (error) {
 
@@ -156,6 +160,8 @@ export default function SettingsPage() {
         gmailUser: gmailUser,
         gmailPassword: gmailPassword,
         adminEmail: adminEmail,
+        resendApiKey: resendApiKey,
+        resendFromEmail: resendFromEmail,
         updatedAt: new Date(),
       });
 
@@ -481,39 +487,40 @@ export default function SettingsPage() {
             <div className="mb-8 pt-8 border-t border-gray-200">
               <h2 className="text-lg font-bold mb-4">Email Settings</h2>
               <p className="text-sm text-muted-foreground mb-6">
-                Configure Gmail to send order notifications
+                Configure Resend to send order notifications
               </p>
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-semibold mb-2" htmlFor="gmailUser">
-                    Gmail Address
+                  <label className="block text-sm font-semibold mb-2" htmlFor="resendApiKey">
+                    Resend API Key
                   </label>
                   <input
-                    id="gmailUser"
-                    type="email"
-                    value={gmailUser}
-                    onChange={(e) => setGmailUser(e.target.value)}
-                    placeholder="your-email@gmail.com"
+                    id="resendApiKey"
+                    type="password"
+                    value={resendApiKey}
+                    onChange={(e) => setResendApiKey(e.target.value)}
+                    placeholder="re_xxxxxxxxxxxxxxxxxxxx"
                     className="w-full px-5 py-3 bg-white border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                    data-testid="input-gmail-user"
+                    data-testid="input-resend-api-key"
                   />
+                  <p className="text-xs text-muted-foreground mt-1">Get from <a href="https://resend.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">resend.com</a></p>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold mb-2" htmlFor="gmailPassword">
-                    Gmail App Password
+                  <label className="block text-sm font-semibold mb-2" htmlFor="resendFromEmail">
+                    From Email
                   </label>
                   <input
-                    id="gmailPassword"
-                    type="password"
-                    value={gmailPassword}
-                    onChange={(e) => setGmailPassword(e.target.value)}
-                    placeholder="xxxx xxxx xxxx xxxx"
+                    id="resendFromEmail"
+                    type="email"
+                    value={resendFromEmail}
+                    onChange={(e) => setResendFromEmail(e.target.value)}
+                    placeholder="orders@yourdomain.com"
                     className="w-full px-5 py-3 bg-white border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                    data-testid="input-gmail-password"
+                    data-testid="input-resend-from-email"
                   />
-                  <p className="text-xs text-muted-foreground mt-1">Use app-specific password, not your regular password</p>
+                  <p className="text-xs text-muted-foreground mt-1">Sender email address for order notifications</p>
                 </div>
 
                 <div>

@@ -130,8 +130,77 @@ export async function getOrderById(id: string) {
   }
 }
 
-// Email sending disabled - requires external service or Firebase Cloud Functions
-// See replit.md for email solution options
+// ============= EMAIL SENDING (RESEND) =============
+export async function sendOrderEmailWithResend(order: any, userEmail: string) {
+  try {
+    // Get store settings for Resend credentials
+    const db = initDb();
+    const storeRef = doc(db, "settings", "store");
+    const storeSnap = await getDoc(storeRef);
+    
+    if (!storeSnap.exists()) {
+      console.log("Store settings not found");
+      return false;
+    }
+
+    const storeData = storeSnap.data();
+    const resendApiKey = storeData?.resendApiKey;
+    const resendFromEmail = storeData?.resendFromEmail;
+    const adminEmail = storeData?.adminEmail;
+    
+    if (!resendApiKey || !resendFromEmail) {
+      console.log("Resend credentials not configured");
+      return false;
+    }
+
+    // Format order items
+    const itemsList = (order.items || [])
+      .map((item: any) => `<li>${item.title} × ${item.quantity} = L.E ${(item.price * item.quantity).toFixed(2)}</li>`)
+      .join("");
+
+    // Email template
+    const emailHTML = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #333;">Order Confirmation #${order.orderNumber || order.id}</h2>
+        <p><strong>Status:</strong> ${order.status}</p>
+        <p><strong>Total:</strong> L.E ${order.total?.toFixed(2) || 0}</p>
+        <h3 style="color: #333;">Items:</h3>
+        <ul>${itemsList}</ul>
+        <p><strong>Shipping Address:</strong> ${order.shippingAddress || "N/A"}</p>
+        <p><strong>Phone:</strong> ${order.shippingPhone || "N/A"}</p>
+        <p style="margin-top: 20px; color: #666; font-size: 12px;">Thank you for your order!</p>
+      </div>
+    `;
+
+    // Send email via Resend API
+    const response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${resendApiKey}`,
+      },
+      body: JSON.stringify({
+        from: resendFromEmail,
+        to: [userEmail, adminEmail],
+        subject: `Order Confirmation #${order.orderNumber || order.id}`,
+        html: emailHTML,
+      }),
+    });
+
+    const result = await response.json();
+    
+    if (response.ok) {
+      console.log("✅ Email sent successfully via Resend!");
+      return true;
+    } else {
+      console.error("Resend error:", result);
+      return false;
+    }
+  } catch (error) {
+    console.log("Email send error:", error);
+    return false;
+  }
+}
 
 export async function saveOrder(order: any) {
 
@@ -174,9 +243,8 @@ export async function saveOrder(order: any) {
 
     await setDoc(doc(db, "orders", order.id), cleanOrder);
 
-    // TODO: Email sending requires backend server or external service (Resend, SendGrid, Firebase Cloud Function)
-    // Currently disabled for GitHub deployment compatibility
-    // await sendOrderEmail(cleanOrder, order.customerEmail || order.email);
+    // Send order confirmation email via Resend
+    await sendOrderEmailWithResend(cleanOrder, order.customerEmail || order.email);
 
     return order.id;
   } catch (error: any) {
