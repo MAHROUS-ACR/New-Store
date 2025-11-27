@@ -147,18 +147,23 @@ export default function Home() {
         <div className="px-5 pt-2 pb-2 flex-shrink-0 border-b border-gray-100">
           <div className="flex items-center justify-between gap-2 mb-2">
             {storeName ? (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                 {storeLogo ? (
-                  <img src={storeLogo} alt={storeName} className="w-8 h-8 rounded-lg object-cover" />
+                  <img src={storeLogo} alt={storeName} className="w-10 h-10 rounded-xl object-cover shadow-md border border-gray-100" />
                 ) : (
-                  <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center text-white font-bold text-xs">
+                  <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-lg">
                     {storeName.charAt(0)}
                   </div>
                 )}
-                <h1 className="text-sm font-bold text-gray-900">{storeName}</h1>
+                <h1 
+                  className="text-2xl font-black bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent drop-shadow-sm tracking-tight"
+                  data-testid="text-store-name"
+                >
+                  {storeName}
+                </h1>
               </div>
             ) : (
-              <div className="w-24 h-5 bg-gray-200 rounded animate-pulse" />
+              <div className="w-32 h-7 bg-gray-200 rounded-lg animate-pulse" />
             )}
             <div className="flex items-center gap-1">
               <button 
