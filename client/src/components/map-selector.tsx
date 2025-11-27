@@ -278,7 +278,7 @@ export function MapSelector({
         </button>
       </div>
 
-      <p className="text-xs text-gray-600 text-center space-y-1">
+      <div className="text-xs text-gray-600 text-center space-y-1">
         <div>
           {language === "ar"
             ? "👆 اضغط على الخريطة لتحديد الموقع أو استخدم زر الموقع الحالي"
@@ -289,7 +289,7 @@ export function MapSelector({
             ? "📝 اكتب العنوان الكامل في الحقل أعلاه"
             : "📝 Type your full address in the field above"}
         </div>
-      </p>
+      </div>
     </div>
   );
 }

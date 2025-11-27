@@ -1,0 +1,136 @@
+profile:5  GET https://bea76b91-40a8-4399-818f-3ee3b0ab5fe8-00-57ym5n4zlr1o.kirk.replit.dev/@vite/client net::ERR_ABORTED 404 (Not Found)
+react-dom_client.js?v=fbc006bc:20103 Download the React DevTools for a better development experience: https://react.dev/link/react-devtools
+map-selector.tsx:282 In HTML, <div> cannot be a descendant of <p>.
+This will cause a hydration error.
+
+  ...
+    <Route data-replit-metadata="client/src..." data-component-name="Route" path="/profile" ...>
+      <ProfilePage params={{}}>
+        <MobileWrapper data-replit-metadata="client/src..." data-component-name="MobileWrapper">
+          <div data-replit-metadata="client/src..." data-component-name="div" className="fixed inse...">
+            <div data-replit-metadata="client/src..." data-component-name="div" className="relative w...">
+              <div>
+              <div>
+              <div data-replit-metadata="client/src..." data-component-name="div" className="flex-1 fle...">
+                <div data-replit-metadata="client/src..." data-component-name="div" className="w-full fle...">
+                  <div>
+                  <div>
+                  <div data-replit-metadata="client/src..." data-component-name="div" className="flex-1 ove...">
+                    <div>
+                    <div data-replit-metadata="client/src..." data-component-name="div" className="w-full px-...">
+                      <button>
+                      <button>
+                      <div data-replit-metadata="client/src..." data-component-name="div" className="bg-white r...">
+                        <div data-replit-metadata="client/src..." data-component-name="div">
+                          <button>
+                          <div data-replit-metadata="client/src..." data-component-name="div" className="mb-3 borde...">
+                            <MapSelector data-replit-metadata="client/src..." data-component-name="MapSelector" ...>
+                              <div data-replit-metadata="client/src..." data-component-name="div" className="space-y-3">
+                                <div>
+                                <div>
+                                <div>
+>                               <p
+>                                 data-replit-metadata="client/src/components/map-selector.tsx:281:6"
+>                                 data-component-name="p"
+>                                 className="text-xs text-gray-600 text-center space-y-1"
+>                               >
+>                                 <div
+>                                   data-replit-metadata="client/src/components/map-selector.tsx:282:8"
+>                                   data-component-name="div"
+>                                 >
+                                  ...
+                        ...
+                      ...
+                ...
+              ...
+
+validateDOMNesting @ react-dom_client.js?v=fbc006bc:2156
+completeWork @ react-dom_client.js?v=fbc006bc:9002
+runWithFiberInDEV @ react-dom_client.js?v=fbc006bc:997
+completeUnitOfWork @ react-dom_client.js?v=fbc006bc:12669
+performUnitOfWork @ react-dom_client.js?v=fbc006bc:12575
+workLoopSync @ react-dom_client.js?v=fbc006bc:12424
+renderRootSync @ react-dom_client.js?v=fbc006bc:12408
+performWorkOnRoot @ react-dom_client.js?v=fbc006bc:11766
+performSyncWorkOnRoot @ react-dom_client.js?v=fbc006bc:13517
+flushSyncWorkAcrossRoots_impl @ react-dom_client.js?v=fbc006bc:13414
+processRootScheduleInMicrotask @ react-dom_client.js?v=fbc006bc:13437
+(anonymous) @ react-dom_client.js?v=fbc006bc:13531
+<div>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=fbc006bc:247
+MapSelector @ map-selector.tsx:282
+react_stack_bottom_frame @ react-dom_client.js?v=fbc006bc:18509
+renderWithHooks @ react-dom_client.js?v=fbc006bc:5654
+updateFunctionComponent @ react-dom_client.js?v=fbc006bc:7475
+beginWork @ react-dom_client.js?v=fbc006bc:8525
+runWithFiberInDEV @ react-dom_client.js?v=fbc006bc:997
+performUnitOfWork @ react-dom_client.js?v=fbc006bc:12561
+workLoopSync @ react-dom_client.js?v=fbc006bc:12424
+renderRootSync @ react-dom_client.js?v=fbc006bc:12408
+performWorkOnRoot @ react-dom_client.js?v=fbc006bc:11766
+performSyncWorkOnRoot @ react-dom_client.js?v=fbc006bc:13517
+flushSyncWorkAcrossRoots_impl @ react-dom_client.js?v=fbc006bc:13414
+processRootScheduleInMicrotask @ react-dom_client.js?v=fbc006bc:13437
+(anonymous) @ react-dom_client.js?v=fbc006bc:13531
+<MapSelector>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=fbc006bc:247
+ProfilePage @ profile.tsx:888
+react_stack_bottom_frame @ react-dom_client.js?v=fbc006bc:18509
+renderWithHooks @ react-dom_client.js?v=fbc006bc:5654
+updateFunctionComponent @ react-dom_client.js?v=fbc006bc:7475
+beginWork @ react-dom_client.js?v=fbc006bc:8525
+runWithFiberInDEV @ react-dom_client.js?v=fbc006bc:997
+performUnitOfWork @ react-dom_client.js?v=fbc006bc:12561
+workLoopSync @ react-dom_client.js?v=fbc006bc:12424
+renderRootSync @ react-dom_client.js?v=fbc006bc:12408
+performWorkOnRoot @ react-dom_client.js?v=fbc006bc:11766
+performSyncWorkOnRoot @ react-dom_client.js?v=fbc006bc:13517
+flushSyncWorkAcrossRoots_impl @ react-dom_client.js?v=fbc006bc:13414
+processRootScheduleInMicrotask @ react-dom_client.js?v=fbc006bc:13437
+(anonymous) @ react-dom_client.js?v=fbc006bc:13531
+<ProfilePage>
+exports.createElement @ chunk-KMU3Z7QX.js?v=fbc006bc:793
+h_route @ wouter.js?v=fbc006bc:255
+Route @ wouter.js?v=fbc006bc:274
+react_stack_bottom_frame @ react-dom_client.js?v=fbc006bc:18509
+renderWithHooks @ react-dom_client.js?v=fbc006bc:5654
+updateFunctionComponent @ react-dom_client.js?v=fbc006bc:7475
+beginWork @ react-dom_client.js?v=fbc006bc:8525
+runWithFiberInDEV @ react-dom_client.js?v=fbc006bc:997
+performUnitOfWork @ react-dom_client.js?v=fbc006bc:12561
+workLoopSync @ react-dom_client.js?v=fbc006bc:12424
+renderRootSync @ react-dom_client.js?v=fbc006bc:12408
+performWorkOnRoot @ react-dom_client.js?v=fbc006bc:11766
+performWorkOnRootViaSchedulerTask @ react-dom_client.js?v=fbc006bc:13505
+performWorkUntilDeadline @ react-dom_client.js?v=fbc006bc:36
+<Route>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=fbc006bc:247
+AppRouter @ App.tsx:28
+react_stack_bottom_frame @ react-dom_client.js?v=fbc006bc:18509
+renderWithHooks @ react-dom_client.js?v=fbc006bc:5654
+updateFunctionComponent @ react-dom_client.js?v=fbc006bc:7475
+beginWork @ react-dom_client.js?v=fbc006bc:8525
+runWithFiberInDEV @ react-dom_client.js?v=fbc006bc:997
+performUnitOfWork @ react-dom_client.js?v=fbc006bc:12561
+workLoopSync @ react-dom_client.js?v=fbc006bc:12424
+renderRootSync @ react-dom_client.js?v=fbc006bc:12408
+performWorkOnRoot @ react-dom_client.js?v=fbc006bc:11766
+performWorkOnRootViaSchedulerTask @ react-dom_client.js?v=fbc006bc:13505
+performWorkUntilDeadline @ react-dom_client.js?v=fbc006bc:36
+<AppRouter>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=fbc006bc:247
+App @ App.tsx:53
+react_stack_bottom_frame @ react-dom_client.js?v=fbc006bc:18509
+renderWithHooks @ react-dom_client.js?v=fbc006bc:5654
+updateFunctionComponent @ react-dom_client.js?v=fbc006bc:7475
+beginWork @ react-dom_client.js?v=fbc006bc:8525
+runWithFiberInDEV @ react-dom_client.js?v=fbc006bc:997
+performUnitOfWork @ react-dom_client.js?v=fbc006bc:12561
+workLoopSync @ react-dom_client.js?v=fbc006bc:12424
+renderRootSync @ react-dom_client.js?v=fbc006bc:12408
+performWorkOnRoot @ react-dom_client.js?v=fbc006bc:11766
+performWorkOnRootViaSchedulerTask @ react-dom_client.js?v=fbc006bc:13505
+performWorkUntilDeadline @ react-dom_client.js?v=fbc006bc:36
+<App>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=fbc006bc:247
+(anonymous) @ main.tsx:5
