@@ -109,7 +109,7 @@ export default function DeliveryDetailsPage() {
     };
   }, [isNavigating, mapLat, mapLng]);
 
-  // Create motorcycle delivery icon using emoji/image
+  // Create motorcycle delivery icon using emoji
   const createDeliveryIcon = (isActive: boolean = false) => {
     const motorcycleEmoji = "🏍️";
     
@@ -119,21 +119,8 @@ export default function DeliveryDetailsPage() {
     const ctx = canvas.getContext('2d');
     
     if (ctx) {
-      // Background circle
-      ctx.fillStyle = '#ff6b35';
-      ctx.beginPath();
-      ctx.arc(canvas.width / 2, canvas.height / 2, canvas.width / 2.2, 0, Math.PI * 2);
-      ctx.fill();
-      
-      // Glow effect
-      ctx.strokeStyle = '#ffb366';
-      ctx.lineWidth = isActive ? 2 : 1.5;
-      ctx.beginPath();
-      ctx.arc(canvas.width / 2, canvas.height / 2, canvas.width / 2.2, 0, Math.PI * 2);
-      ctx.stroke();
-      
-      // Emoji
-      ctx.font = `${isActive ? 38 : 32}px Arial`;
+      // Emoji only
+      ctx.font = `${isActive ? 48 : 40}px Arial`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText(motorcycleEmoji, canvas.width / 2, canvas.height / 2);
