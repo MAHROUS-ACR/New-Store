@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { MobileWrapper } from "@/components/mobile-wrapper";
 import { BottomNav } from "@/components/bottom-nav";
 import { Settings, Database, Package, Bell, LogOut, ChevronRight, Edit2, Check, X, Save, Plus, Trash2, TrendingUp, Globe, ShoppingBag, Store, Users, Truck, BarChart3, MapPin, Zap } from "lucide-react";
-import { NotificationCenter } from "@/components/notifications/notification-center";
 import { useLocation } from "wouter";
 import { useUser } from "@/lib/userContext";
 import { useLanguage } from "@/lib/languageContext";
@@ -127,12 +126,6 @@ export default function ProfilePage() {
     startDate: "",
     endDate: "",
   });
-
-  // Send Notifications States
-  const [showSendNotifications, setShowSendNotifications] = useState(false);
-  const [notificationMessage, setNotificationMessage] = useState("");
-  const [notificationMessageAr, setNotificationMessageAr] = useState("");
-  const [sendingNotification, setSendingNotification] = useState(false);
 
   // User Profile States
   const [userAddress, setUserAddress] = useState("");
@@ -459,38 +452,6 @@ export default function ProfilePage() {
     }
   };
 
-  const handleSendNotifications = async () => {
-    if (!notificationMessage && !notificationMessageAr) {
-      toast.error(language === "ar" ? "أدخل رسالة" : "Enter a message");
-      return;
-    }
-
-    setSendingNotification(true);
-    try {
-      const db = getFirestore();
-      const notificationsRef = collection(db, "notifications");
-      
-      // Send notification to all users
-      await addDoc(notificationsRef, {
-        type: "broadcast",
-        message: notificationMessageAr || notificationMessage,
-        messageEn: notificationMessage,
-        read: false,
-        createdAt: new Date().toISOString(),
-        broadcastToAll: true,
-      });
-
-      toast.success(language === "ar" ? "تم إرسال الإشعار بنجاح" : "Notification sent!");
-      setNotificationMessage("");
-      setNotificationMessageAr("");
-    } catch (error) {
-
-      toast.error(language === "ar" ? "فشل الإرسال" : "Failed to send");
-    } finally {
-      setSendingNotification(false);
-    }
-  };
-
   const fetchAllUsers = async () => {
     setUsersLoading(true);
     try {
@@ -757,7 +718,6 @@ export default function ProfilePage() {
         {/* Header */}
         <div className="px-5 pb-4 pt-2 flex items-center justify-between gap-4 border-b border-gray-100 flex-shrink-0">
           <h1 className="text-xl font-bold">{t("profile", language)}</h1>
-          <NotificationCenter />
           <div className="flex items-center gap-2">
             <button 
               onClick={() => setLocation("/settings")}
@@ -987,21 +947,6 @@ export default function ProfilePage() {
                   <span className="font-semibold text-sm text-purple-900">{t("ordersPanel", language)}</span>
                 </div>
                 <ChevronRight className={`w-5 h-5 text-purple-400 transition-transform L.E showOrders ? "rotate-90" : ""}`} />
-              </button>
-
-              {/* Real-time Notifications Button */}
-              <button
-                onClick={() => setLocation('/admin-notifications')}
-                className="w-full flex items-center justify-between p-4 bg-blue-50 rounded-2xl border border-blue-200 hover:border-blue-300 transition-colors mb-6"
-                data-testid="button-admin-notifications"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-blue-100 text-blue-600">
-                    <Bell className="w-6 h-6" />
-                  </div>
-                  <span className="font-semibold text-sm text-blue-900">Real-time Notifications</span>
-                </div>
-                <ChevronRight className="w-5 h-5 text-blue-400 transition-transform" />
               </button>
 
               {/* Orders Content */}
@@ -2306,47 +2251,6 @@ export default function ProfilePage() {
                 </div>
               )}
 
-              {/* Send Notifications Section */}
-              <button
-                onClick={() => setShowSendNotifications(!showSendNotifications)}
-                className="w-full flex items-center justify-between p-4 bg-purple-50 rounded-2xl border border-purple-200 hover:border-purple-300 transition-colors mb-6 mt-6"
-                data-testid="button-toggle-send-notifications"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-purple-100 text-purple-600">
-                    <Bell className="w-6 h-6" />
-                  </div>
-                  <span className="font-semibold text-sm text-purple-900">{language === "ar" ? "إرسال إشعار" : "Send Notification"}</span>
-                </div>
-                <ChevronRight className={`w-5 h-5 text-purple-400 transition-transform L.E showSendNotifications ? "rotate-90" : ""}`} />
-              </button>
-
-              {showSendNotifications && (
-                <div className="mb-6 bg-white rounded-2xl p-4 border border-gray-200 space-y-3">
-                  <textarea
-                    placeholder={language === "ar" ? "الرسالة بالإنجليزية" : "Message in English"}
-                    value={notificationMessage}
-                    onChange={(e) => setNotificationMessage(e.target.value)}
-                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-200 min-h-20"
-                    data-testid="input-notification-message-en"
-                  />
-                  <textarea
-                    placeholder={language === "ar" ? "الرسالة بالعربية" : "Message in Arabic"}
-                    value={notificationMessageAr}
-                    onChange={(e) => setNotificationMessageAr(e.target.value)}
-                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-200 min-h-20"
-                    data-testid="input-notification-message-ar"
-                  />
-                  <button
-                    onClick={handleSendNotifications}
-                    disabled={sendingNotification}
-                    className="w-full bg-purple-600 text-white py-2 rounded-lg font-semibold text-sm hover:bg-purple-700 disabled:opacity-50"
-                    data-testid="button-send-notification"
-                  >
-                    {sendingNotification ? (language === "ar" ? "جاري الإرسال..." : "Sending...") : (language === "ar" ? "إرسال الإشعار" : "Send Notification")}
-                  </button>
-                </div>
-              )}
             </div>
           )}
         </div>
