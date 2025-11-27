@@ -53,6 +53,7 @@ export default function DeliveryDetailsPage() {
   const map = useRef<L.Map | null>(null);
   const currentMarker = useRef<L.Marker | null>(null);
   const routePolyline = useRef<L.Polyline | null>(null);
+  const userInteractedWithMap = useRef(false);
 
   const orderId = location.split("/delivery-order/")[1]?.split("?")[0];
 
@@ -262,6 +263,14 @@ export default function DeliveryDetailsPage() {
       maxZoom: 19,
     }).addTo(map.current);
 
+    // Track user interactions with the map
+    map.current.on('zoom', () => {
+      userInteractedWithMap.current = true;
+    });
+    map.current.on('drag', () => {
+      userInteractedWithMap.current = true;
+    });
+
     // Delivery destination marker
     L.marker([mapLat, mapLng], {
       icon: L.icon({
@@ -361,10 +370,19 @@ export default function DeliveryDetailsPage() {
     if (isNavigating && map.current && currentMarker.current && currentLat && currentLng) {
       // Update marker position to latest location
       currentMarker.current.setLatLng([currentLat, currentLng]);
-      // Make sure marker stays visible by keeping map centered on it
-      map.current.panTo([currentLat, currentLng]);
+      // Make sure marker stays visible by keeping map centered on it (only if user didn't interact)
+      if (!userInteractedWithMap.current) {
+        map.current.panTo([currentLat, currentLng]);
+      }
     }
   }, [currentLat, currentLng, isNavigating]);
+
+  // Keep delivery location centered when not navigating (unless user interacted)
+  useEffect(() => {
+    if (!isNavigating && map.current && mapLat && mapLng && !userInteractedWithMap.current) {
+      map.current.setView([mapLat, mapLng], 15);
+    }
+  }, [mapLat, mapLng, isNavigating]);
 
   // Fetch order
   useEffect(() => {
