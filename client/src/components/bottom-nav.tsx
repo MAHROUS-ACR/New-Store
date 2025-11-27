@@ -21,7 +21,7 @@ export function BottomNav() {
   ];
 
   return (
-    <div className="fixed bottom-1 left-1/2 -translate-x-1/2 w-[calc(100%-1rem)] max-w-[588px] bg-background/90 backdrop-blur-xl border-t border-border/40 px-5 pb-2 pt-4 rounded-t-2xl z-40">
+    <div className="fixed bottom-1 left-1/2 -translate-x-1/2 w-[calc(100%-1rem)] max-w-[588px] bg-background/90 backdrop-blur-xl border-t border-border/40 px-5 pb-1 pt-2 rounded-t-2xl z-40">
       <div className="flex items-center justify-between">
         {tabs.map((tab) => {
           const isActive = location === tab.id;
@@ -29,7 +29,7 @@ export function BottomNav() {
             <button
               key={tab.id}
               onClick={() => setLocation(tab.id)}
-              className="relative flex flex-col items-center gap-1 p-2 group w-16"
+              className="relative flex flex-col items-center gap-0.5 p-1 group w-16"
               data-testid={`nav-${tab.id}`}
             >
               {isActive && (
@@ -54,7 +54,7 @@ export function BottomNav() {
               </div>
               <span
                 className={cn(
-                  "text-[10px] font-medium transition-colors duration-300",
+                  "text-[9px] font-medium transition-colors duration-300",
                   isActive ? "text-primary" : "text-muted-foreground"
                 )}
               >
