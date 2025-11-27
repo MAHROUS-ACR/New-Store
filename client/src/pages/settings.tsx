@@ -509,18 +509,22 @@ export default function SettingsPage() {
 
                 <div>
                   <label className="block text-sm font-semibold mb-2" htmlFor="resendFromEmail">
-                    From Email
+                    From Email (Verified Sender)
                   </label>
                   <input
                     id="resendFromEmail"
                     type="email"
                     value={resendFromEmail}
                     onChange={(e) => setResendFromEmail(e.target.value)}
-                    placeholder="orders@yourdomain.com"
+                    placeholder="onboarding@resend.dev"
                     className="w-full px-5 py-3 bg-white border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                     data-testid="input-resend-from-email"
                   />
-                  <p className="text-xs text-muted-foreground mt-1">Sender email address for order notifications</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    For testing, use: <code className="bg-gray-100 px-2 py-1 rounded">onboarding@resend.dev</code>
+                    <br />
+                    For production, add your own domain in Resend settings
+                  </p>
                 </div>
 
                 <div>

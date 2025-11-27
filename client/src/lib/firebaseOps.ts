@@ -190,14 +190,22 @@ export async function sendOrderEmailWithResend(order: any, userEmail: string) {
     const result = await response.json();
     
     if (response.ok) {
-      console.log("✅ Email sent successfully via Resend!");
+      console.log("✅ Email sent successfully via Resend!", result);
       return true;
     } else {
-      console.error("Resend error:", result);
+      console.error("❌ Resend API Error:", {
+        status: response.status,
+        statusText: response.statusText,
+        error: result,
+      });
+      // Show detailed error message
+      if (result.message) {
+        console.error("Error message:", result.message);
+      }
       return false;
     }
-  } catch (error) {
-    console.log("Email send error:", error);
+  } catch (error: any) {
+    console.error("❌ Email send error:", error?.message || error);
     return false;
   }
 }
