@@ -135,10 +135,13 @@ export default function ProductDetailsPage() {
                       (product.sizes && product.sizes.length > 0) || 
                       (product.units && product.units.length > 0);
   
-  // Support both single image (image) and multiple images (images array)
-  const images = (product.images && Array.isArray(product.images) && product.images.length > 0) 
-    ? product.images 
-    : (product.image ? [product.image] : []);
+  // Build gallery: primary image first, then additional images
+  const allImages = [];
+  if (product.image) allImages.push(product.image);
+  if (product.images && Array.isArray(product.images)) {
+    allImages.push(...product.images);
+  }
+  const images = allImages.length > 0 ? allImages : [];
   const currentImage = images[currentImageIndex] || "";
   const hasMultipleImages = images.length > 1;
   

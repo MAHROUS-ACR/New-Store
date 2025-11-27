@@ -14,6 +14,7 @@ interface ProductProps {
   category?: string;
   price: number;
   image?: string;
+  images?: string[] | null;
   units?: (string | null)[] | null;
   sizes?: (string | null)[] | null;
   colors?: (string | null)[] | null;
@@ -32,11 +33,8 @@ export function ProductCard({ product, index, discounts = [], onProductClick }: 
   // Handle both 'title' (fallback) and 'name' (Firebase) fields
   const productTitle = product.title || product.name || "Product";
   const productCategory = product.category || "Uncategorized";
-  // Support both single image and multiple images
-  const productImages = (product.images && Array.isArray(product.images) && product.images.length > 0) 
-    ? product.images 
-    : (product.image ? [product.image] : []);
-  const productImage = productImages[0] || "";
+  // Use primary image (image field) for card display
+  const productImage = product.image || "";
   const hasVariants = (product.colors && product.colors.length > 0) || 
                       (product.sizes && product.sizes.length > 0) || 
                       (product.units && product.units.length > 0);
