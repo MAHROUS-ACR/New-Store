@@ -13,6 +13,38 @@ import { getFirestore, doc, getDoc } from "firebase/firestore";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
+// Create motorcycle delivery icon using emoji
+const createDeliveryIcon = () => {
+  const motorcycleEmoji = "🏍️";
+  
+  const canvas = document.createElement('canvas');
+  canvas.width = 50;
+  canvas.height = 50;
+  const ctx = canvas.getContext('2d');
+  
+  if (ctx) {
+    ctx.font = '40px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(motorcycleEmoji, canvas.width / 2, canvas.height / 2);
+    
+    const url = canvas.toDataURL('image/png');
+    return L.icon({
+      iconUrl: url,
+      iconSize: [canvas.width, canvas.height],
+      iconAnchor: [canvas.width / 2, canvas.height / 2],
+      popupAnchor: [0, -canvas.height / 2],
+    });
+  }
+  
+  return L.icon({
+    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+  });
+};
+
 interface CartItem {
   id: string;
   title: string;
@@ -131,16 +163,10 @@ export default function OrderDetailsPage() {
         driverMarker.current.remove();
       }
       driverMarker.current = L.marker([order.latitude, order.longitude], {
-        icon: L.icon({
-          iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
-          shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-          iconSize: [25, 41],
-          iconAnchor: [12, 41],
-          popupAnchor: [1, -34],
-        })
+        icon: createDeliveryIcon()
       })
         .addTo(map.current)
-        .bindPopup(`<div style="text-align: center"><strong>🏍️ ${language === "ar" ? "موقع الدليفرى" : "Driver Location"}</strong></div>`);
+        .bindPopup(`<div style="text-align: center"><strong>${language === "ar" ? "موقع الدليفرى" : "Driver Location"}</strong></div>`);
 
       // Fetch and display route
       if (typeof order.longitude === 'number' && typeof order.latitude === 'number' && typeof mapLng === 'number' && typeof mapLat === 'number') {
