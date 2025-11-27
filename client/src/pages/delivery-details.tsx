@@ -333,7 +333,7 @@ export default function DeliveryDetailsPage() {
       
       fetchBestRoute();
     }
-  }, [orderId, mapLat, mapLng, currentLat, currentLng, language, showMap, order?.status, isNavigating]);
+  }, [orderId, mapLat, mapLng, language, showMap, order?.status]);
 
   // Keep marker updated when location changes during navigation
   useEffect(() => {
