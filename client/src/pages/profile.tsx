@@ -1113,39 +1113,128 @@ export default function ProfilePage() {
                   ) : (
                     <div className="space-y-2">
                       {orders.filter(order => selectedStatusFilter === null || order.status === selectedStatusFilter).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).map((order) => (
-                        <button
+                        <div
                           key={order.id}
-                          onClick={() => {
-                            sessionStorage.setItem('previousPage', '/profile');
-                            setLocation(`/order/${order.id}`);
-                          }}
-                          className="w-full p-3 bg-white border border-gray-200 rounded-2xl hover:border-primary hover:shadow-sm transition-all text-left"
+                          className="p-3 bg-white border border-gray-200 rounded-2xl hover:border-primary hover:shadow-sm transition-all"
                           data-testid={`order-${order.id}`}
                         >
-                          <div className="flex items-center justify-between">
-                            <div className="flex-1">
-                              <p className="text-xs text-gray-500">Order #{order.orderNumber || "N/A"}</p>
-                              <p className="text-xs text-gray-500 mt-0.5">{new Date(order.createdAt).toLocaleDateString()}</p>
+                          {editingOrderId === order.id ? (
+                            <div className="space-y-3">
+                              <div>
+                                <label className="text-xs font-semibold text-gray-700 block mb-2">{language === "ar" ? "تغيير الحالة" : "Change Status"}</label>
+                                <select
+                                  value={newStatus}
+                                  onChange={(e) => {
+                                    setNewStatus(e.target.value);
+                                    if (e.target.value !== "shipped") {
+                                      setSelectedDeliveryUserId("");
+                                    }
+                                  }}
+                                  className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                                  data-testid={`select-order-status-${order.id}`}
+                                >
+                                  <option value="pending">{language === "ar" ? "⏳ قيد الانتظار" : "⏳ Pending"}</option>
+                                  <option value="confirmed">{language === "ar" ? "✓ مؤكد" : "✓ Confirmed"}</option>
+                                  <option value="processing">{language === "ar" ? "⚙️ قيد المعالجة" : "⚙️ Processing"}</option>
+                                  <option value="shipped">{language === "ar" ? "🚚 تم الشحن" : "🚚 Shipped"}</option>
+                                  <option value="completed">{language === "ar" ? "✅ مكتمل" : "✅ Completed"}</option>
+                                  <option value="cancelled">{language === "ar" ? "❌ ملغي" : "❌ Cancelled"}</option>
+                                </select>
+                              </div>
+
+                              {newStatus === "shipped" && (
+                                <div>
+                                  <label className="text-xs font-semibold text-gray-700 block mb-2">{language === "ar" ? "🚚 اختر الديليفري" : "🚚 Select Delivery"}</label>
+                                  <select
+                                    value={selectedDeliveryUserId}
+                                    onChange={(e) => setSelectedDeliveryUserId(e.target.value)}
+                                    onFocus={() => {
+                                      if (deliveryUsers.length === 0) {
+                                        fetchDeliveryUsers();
+                                      }
+                                    }}
+                                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-200 focus:border-orange-300"
+                                    data-testid={`select-delivery-${order.id}`}
+                                  >
+                                    <option value="">{language === "ar" ? "-- اختر ديليفري --" : "-- Select Delivery --"}</option>
+                                    {deliveryUsers.map((du) => (
+                                      <option key={du.id} value={du.id}>
+                                        🚚 {du.username || du.email}
+                                      </option>
+                                    ))}
+                                  </select>
+                                  {deliveryUsers.length === 0 && (
+                                    <p className="text-xs text-orange-600 mt-1">{language === "ar" ? "لا توجد ديليفري متاحة" : "No delivery users available"}</p>
+                                  )}
+                                </div>
+                              )}
+
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => handleStatusUpdate(order.id, newStatus)}
+                                  disabled={newStatus === "shipped" && !selectedDeliveryUserId}
+                                  className="flex-1 px-3 py-2 bg-green-600 text-white rounded-lg text-sm font-semibold hover:bg-green-700 disabled:bg-gray-400 transition"
+                                  data-testid={`button-save-order-status-${order.id}`}
+                                >
+                                  {language === "ar" ? "✓ حفظ" : "✓ Save"}
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setEditingOrderId(null);
+                                    setNewStatus("");
+                                    setSelectedDeliveryUserId("");
+                                  }}
+                                  className="flex-1 px-3 py-2 bg-gray-300 text-gray-700 rounded-lg text-sm font-semibold hover:bg-gray-400 transition"
+                                  data-testid={`button-cancel-order-edit-${order.id}`}
+                                >
+                                  {language === "ar" ? "✕ إلغاء" : "✕ Cancel"}
+                                </button>
+                              </div>
                             </div>
-                            <div className="flex flex-col items-end gap-1">
-                              <p className="font-bold text-sm">L.E {order.total.toFixed(2)}</p>
-                              <span
-                                className={`text-xs font-semibold px-5 py-0.5 rounded-full ${
-                                  order.status === "completed"
-                                    ? "bg-green-100 text-green-700"
-                                    : order.status === "cancelled"
-                                    ? "bg-red-100 text-red-700"
-                                    : order.status === "shipped"
-                                    ? "bg-blue-100 text-blue-700"
-                                    : "bg-amber-100 text-amber-700"
-                                }`}
-                                data-testid={`status-badge-${order.id}`}
+                          ) : (
+                            <div className="flex items-center justify-between">
+                              <button
+                                onClick={() => {
+                                  sessionStorage.setItem('previousPage', '/profile');
+                                  setLocation(`/order/${order.id}`);
+                                }}
+                                className="flex-1 text-left hover:opacity-75 transition"
                               >
-                                {order.status || "pending"}
-                              </span>
+                                <p className="text-xs text-gray-500">Order #{order.orderNumber || "N/A"}</p>
+                                <p className="text-xs text-gray-500 mt-0.5">{new Date(order.createdAt).toLocaleDateString()}</p>
+                              </button>
+                              <div className="flex flex-col items-end gap-2">
+                                <p className="font-bold text-sm">L.E {order.total.toFixed(2)}</p>
+                                <div className="flex gap-1.5">
+                                  <span
+                                    className={`text-xs font-semibold px-3 py-0.5 rounded-full ${
+                                      order.status === "completed"
+                                        ? "bg-green-100 text-green-700"
+                                        : order.status === "cancelled"
+                                        ? "bg-red-100 text-red-700"
+                                        : order.status === "shipped"
+                                        ? "bg-blue-100 text-blue-700"
+                                        : "bg-amber-100 text-amber-700"
+                                    }`}
+                                    data-testid={`status-badge-${order.id}`}
+                                  >
+                                    {order.status || "pending"}
+                                  </span>
+                                  <button
+                                    onClick={() => {
+                                      setEditingOrderId(order.id);
+                                      setNewStatus(order.status);
+                                    }}
+                                    className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-semibold hover:bg-blue-200 transition"
+                                    data-testid={`button-edit-order-${order.id}`}
+                                  >
+                                    {language === "ar" ? "✎ تعديل" : "✎ Edit"}
+                                  </button>
+                                </div>
+                              </div>
                             </div>
-                          </div>
-                        </button>
+                          )}
+                        </div>
                       ))}
                     </div>
                   )}
