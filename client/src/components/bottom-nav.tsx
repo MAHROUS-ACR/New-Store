@@ -15,7 +15,6 @@ export function BottomNav() {
 
   const tabs = [
     { id: "/", icon: Home, label: t("home", language) },
-    { id: "/search", icon: Search, label: t("search", language) },
     { id: "/cart", icon: ShoppingCart, label: t("cart", language) },
     ...(user?.role === "delivery" ? [{ id: "/delivery", icon: Truck, label: language === "ar" ? "🚚 ديليفري" : "🚚 Delivery" }] : []),
     { id: "/profile", icon: User, label: t("profile", language) },
