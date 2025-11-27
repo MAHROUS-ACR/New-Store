@@ -108,39 +108,34 @@ export default function DeliveryDetailsPage() {
     };
   }, [isNavigating, mapLat, mapLng]);
 
-  // Create custom GPS location marker icon
+  // Create custom delivery driver marker icon
   const createDeliveryIcon = (isActive: boolean = false) => {
     const svgString = isActive ? 
-      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="40" height="40">
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="44" height="44">
         <defs>
           <style>
             @keyframes pulse {
-              0%, 100% { r: 30; opacity: 0.3; }
-              50% { r: 45; opacity: 0.1; }
+              0%, 100% { r: 28; opacity: 0.4; }
+              50% { r: 40; opacity: 0.1; }
             }
             .pulse-ring { animation: pulse 2s infinite; }
-            @keyframes ping {
-              75%, 100% { r: 35; opacity: 0; }
-            }
-            .ping-ring { animation: ping 1.5s infinite; }
           </style>
         </defs>
-        <!-- Outer pulse rings -->
-        <circle cx="50" cy="50" r="30" fill="none" stroke="#ef4444" stroke-width="1.5" class="pulse-ring" opacity="0.5" />
-        <circle cx="50" cy="50" r="35" fill="none" stroke="#ef4444" stroke-width="1" class="ping-ring" />
-        <!-- Main dot -->
-        <circle cx="50" cy="50" r="12" fill="#ef4444" stroke="#dc2626" stroke-width="2" />
-        <!-- Inner highlight -->
-        <circle cx="50" cy="50" r="8" fill="#ff6b6b" opacity="0.8" />
+        <!-- Pulse ring -->
+        <circle cx="50" cy="50" r="28" fill="none" stroke="#f97316" stroke-width="1.5" class="pulse-ring" />
+        <!-- Background circle -->
+        <circle cx="50" cy="50" r="22" fill="#f97316" stroke="#ea580c" stroke-width="2" />
+        <!-- Delivery person icon -->
+        <circle cx="50" cy="32" r="7" fill="white" />
+        <path d="M 50 40 L 43 48 M 50 40 L 57 48 M 43 48 L 40 60 M 57 48 L 60 60" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none" />
       </svg>`
     :
-      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="28" height="28">
-        <!-- Outer ring -->
-        <circle cx="50" cy="50" r="35" fill="none" stroke="#ef4444" stroke-width="2" opacity="0.3" />
-        <!-- Main dot -->
-        <circle cx="50" cy="50" r="10" fill="#ef4444" stroke="#dc2626" stroke-width="2" />
-        <!-- Inner highlight -->
-        <circle cx="50" cy="50" r="6" fill="#ff6b6b" opacity="0.8" />
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="36" height="36">
+        <!-- Background circle -->
+        <circle cx="50" cy="50" r="20" fill="#f97316" stroke="#ea580c" stroke-width="2" />
+        <!-- Delivery person icon -->
+        <circle cx="50" cy="34" r="6" fill="white" />
+        <path d="M 50 41 L 44 48 M 50 41 L 56 48 M 44 48 L 42 58 M 56 48 L 58 58" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" />
       </svg>`;
     
     const div = document.createElement('div');
@@ -154,14 +149,14 @@ export default function DeliveryDetailsPage() {
       
       return L.icon({
         iconUrl: url,
-        iconSize: isActive ? [40, 40] : [28, 28],
-        iconAnchor: isActive ? [20, 20] : [14, 14],
-        popupAnchor: isActive ? [0, -20] : [0, -14],
+        iconSize: isActive ? [44, 44] : [36, 36],
+        iconAnchor: isActive ? [22, 22] : [18, 18],
+        popupAnchor: isActive ? [0, -22] : [0, -18],
       });
     }
     
     return L.icon({
-      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png',
       iconSize: [25, 41],
       iconAnchor: [12, 41],
       popupAnchor: [1, -34],
