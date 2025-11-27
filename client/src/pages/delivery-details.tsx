@@ -87,8 +87,11 @@ export default function DeliveryDetailsPage() {
     );
   }
 
-  const mapsLink = order.shippingAddress 
-    ? `https://maps.google.com/?q=${encodeURIComponent(order.shippingAddress)}`
+  // Try multiple address sources for backward compatibility
+  const address = order.shippingAddress || (order as any).deliveryAddress || order.shippingZone || "";
+  
+  const mapsLink = address 
+    ? `https://maps.google.com/?q=${encodeURIComponent(address)}`
     : order.latitude && order.longitude 
     ? `https://maps.google.com/?q=${order.latitude},${order.longitude}`
     : null;
@@ -131,12 +134,12 @@ export default function DeliveryDetailsPage() {
           <div className="bg-white rounded-2xl p-4 border border-gray-200">
             <h2 className="font-bold text-sm mb-3">{language === "ar" ? "معلومات التسليم" : "Delivery Info"}</h2>
             <div className="space-y-3">
-              {order.shippingAddress && (
+              {address && (
                 <div className="flex gap-2">
                   <MapPin size={16} className="text-orange-600 flex-shrink-0 mt-0.5" />
                   <div>
                     <p className="text-xs font-semibold text-gray-600">{language === "ar" ? "العنوان" : "Address"}</p>
-                    <p className="text-sm">{order.shippingAddress}</p>
+                    <p className="text-sm">{address}</p>
                   </div>
                 </div>
               )}
