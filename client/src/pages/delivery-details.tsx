@@ -40,11 +40,29 @@ export default function DeliveryDetailsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [mapLat, setMapLat] = useState<number | null>(null);
   const [mapLng, setMapLng] = useState<number | null>(null);
+  const [currentLat, setCurrentLat] = useState<number | null>(null);
+  const [currentLng, setCurrentLng] = useState<number | null>(null);
   const [mapLoading, setMapLoading] = useState(false);
+  const [locationError, setLocationError] = useState<string | null>(null);
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<L.Map | null>(null);
 
   const orderId = location.split("/delivery-order/")[1]?.split("?")[0];
+
+  // Get current location
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setCurrentLat(position.coords.latitude);
+          setCurrentLng(position.coords.longitude);
+        },
+        (error) => {
+          setLocationError(language === "ar" ? "لا يمكن الوصول للموقع الحالي" : "Cannot access current location");
+        }
+      );
+    }
+  }, [language]);
 
   // Geocode address to get lat/lng as fallback
   const geocodeAddress = async (address: string) => {
@@ -66,7 +84,7 @@ export default function DeliveryDetailsPage() {
     }
   };
 
-  // Initialize Leaflet map
+  // Initialize Leaflet map with routing
   useEffect(() => {
     if (!mapContainer.current || !mapLat || !mapLng) return;
     
@@ -75,17 +93,64 @@ export default function DeliveryDetailsPage() {
       map.current.remove();
     }
 
-    map.current = L.map(mapContainer.current).setView([mapLat, mapLng], 15);
+    // Calculate center and zoom to fit both markers if current location exists
+    let centerLat = mapLat;
+    let centerLng = mapLng;
+    let zoomLevel = 15;
+
+    if (currentLat && currentLng) {
+      centerLat = (mapLat + currentLat) / 2;
+      centerLng = (mapLng + currentLng) / 2;
+      zoomLevel = 14;
+    }
+
+    map.current = L.map(mapContainer.current).setView([centerLat, centerLng], zoomLevel);
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: '&copy; OpenStreetMap',
       maxZoom: 19,
     }).addTo(map.current);
 
-    L.marker([mapLat, mapLng])
+    // Delivery destination marker
+    L.marker([mapLat, mapLng], {
+      icon: L.icon({
+        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+      })
+    })
       .addTo(map.current)
-      .bindPopup(`<div style="text-align: center"><strong>${language === "ar" ? "موقع التسليم" : "Delivery Location"}</strong></div>`)
+      .bindPopup(`<div style="text-align: center; direction: ${language === "ar" ? "rtl" : "ltr"}"><strong>${language === "ar" ? "موقع التسليم" : "Delivery Location"}</strong></div>`)
       .openPopup();
-  }, [mapLat, mapLng, language]);
+
+    // Current location marker if available
+    if (currentLat && currentLng) {
+      L.marker([currentLat, currentLng], {
+        icon: L.icon({
+          iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+          shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+          iconSize: [25, 41],
+          iconAnchor: [12, 41],
+          popupAnchor: [1, -34],
+        })
+      })
+        .addTo(map.current)
+        .bindPopup(`<div style="text-align: center; direction: ${language === "ar" ? "rtl" : "ltr"}"><strong>${language === "ar" ? "موقعك الحالي" : "Your Location"}</strong></div>`);
+
+      // Draw line between current location and delivery location
+      const line = L.polyline([[currentLat, currentLng], [mapLat, mapLng]], {
+        color: 'blue',
+        weight: 2,
+        opacity: 0.7,
+        dashArray: '5, 5',
+      }).addTo(map.current);
+
+      // Fit map bounds to show both points
+      const bounds = L.latLngBounds([[currentLat, currentLng], [mapLat, mapLng]]);
+      map.current.fitBounds(bounds, { padding: [50, 50] });
+    }
+  }, [mapLat, mapLng, currentLat, currentLng, language]);
 
   // Fetch order
   useEffect(() => {
