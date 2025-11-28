@@ -77,6 +77,10 @@ interface Order {
   notes?: string;
   latitude?: number;
   longitude?: number;
+  deliveryLat?: number;
+  deliveryLng?: number;
+  driverLat?: number;
+  driverLng?: number;
 }
 
 export default function OrdersPage() {
@@ -225,20 +229,23 @@ export default function OrdersPage() {
       .bindPopup(`<div style="text-align: center"><strong>${language === "ar" ? "موقع التسليم" : "Delivery Location"}</strong></div>`)
       .openPopup();
 
-    // Add driver location marker if available
-    if (selectedOrder?.latitude !== undefined && selectedOrder?.latitude !== null && selectedOrder?.longitude !== undefined && selectedOrder?.longitude !== null && map.current) {
+    // Add driver location marker if available - use driverLat/driverLng
+    const driverLat = selectedOrder?.driverLat || selectedOrder?.latitude;
+    const driverLng = selectedOrder?.driverLng || selectedOrder?.longitude;
+    
+    if (driverLat !== undefined && driverLat !== null && driverLng !== undefined && driverLng !== null && map.current) {
       if (driverMarker.current) {
         driverMarker.current.remove();
       }
-      driverMarker.current = L.marker([selectedOrder.latitude, selectedOrder.longitude], {
+      driverMarker.current = L.marker([driverLat, driverLng], {
         icon: createDeliveryIcon()
       })
         .addTo(map.current)
-        .bindPopup(`<div style="text-align: center"><strong>${language === "ar" ? "موقع الدليفرى" : "Driver Location"}</strong></div>`);
+        .bindPopup(`<div style="text-align: center"><strong>${language === "ar" ? "موقع السائق" : "Driver Location"}</strong></div>`);
 
       // Fetch and display route
-      if (typeof selectedOrder.longitude === 'number' && typeof selectedOrder.latitude === 'number' && typeof mapLng === 'number' && typeof mapLat === 'number') {
-        fetch(`https://router.project-osrm.org/route/v1/driving/${selectedOrder.longitude},${selectedOrder.latitude};${mapLng},${mapLat}?geometries=geojson`)
+      if (typeof driverLng === 'number' && typeof driverLat === 'number' && typeof mapLng === 'number' && typeof mapLat === 'number') {
+        fetch(`https://router.project-osrm.org/route/v1/driving/${driverLng},${driverLat};${mapLng},${mapLat}?geometries=geojson`)
           .then(res => res.json())
           .then(data => {
             if (data.routes && data.routes[0] && map.current) {
@@ -250,17 +257,20 @@ export default function OrdersPage() {
           .catch(err => console.log("Route error:", err));
       }
     }
-  }, [mapLat, mapLng, language, selectedOrder?.latitude, selectedOrder?.longitude]);
+  }, [mapLat, mapLng, language, selectedOrder?.driverLat, selectedOrder?.driverLng, selectedOrder?.latitude, selectedOrder?.longitude]);
 
-  // Reset map and geocode when order is selected
+  // Reset map and geocode when order is selected - use deliveryLat/deliveryLng if available
   useEffect(() => {
     if (selectedOrder?.id) {
       // Reset map state for new order
       setMapLat(null);
       setMapLng(null);
       
-      // Then geocode the new order's address
-      if (selectedOrder.shippingAddress || selectedOrder.deliveryAddress) {
+      // Use deliveryLat/deliveryLng if available, otherwise geocode
+      if (selectedOrder.deliveryLat && selectedOrder.deliveryLng) {
+        setMapLat(selectedOrder.deliveryLat);
+        setMapLng(selectedOrder.deliveryLng);
+      } else if (selectedOrder.shippingAddress || selectedOrder.deliveryAddress) {
         geocodeAddress(selectedOrder.shippingAddress || selectedOrder.deliveryAddress || "");
       }
     }
