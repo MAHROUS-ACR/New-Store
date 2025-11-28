@@ -286,9 +286,6 @@ export default function CheckoutPage() {
       // Set user for OneSignal tracking
       if (user?.id) {
         await setUserId(user.id);
-        if (user?.email) {
-          await setUserEmail(user.email);
-        }
       }
 
       // Send OneSignal notification
