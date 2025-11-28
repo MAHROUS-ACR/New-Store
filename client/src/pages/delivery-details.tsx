@@ -62,6 +62,7 @@ export default function DeliveryDetailsPage() {
   const currentMarker = useRef<L.Marker | null>(null);
   const routePolyline = useRef<L.Polyline | null>(null);
   const userInteractedWithMap = useRef(false);
+  const lastStatusRef = useRef<string | null>(null);
 
   const orderId = location.split("/delivery-order/")[1]?.split("?")[0];
 
@@ -130,25 +131,13 @@ export default function DeliveryDetailsPage() {
           latitude: currentLat,
           longitude: currentLng,
         });
-
-        // Send location update notification
-        if (remainingDistance) {
-          const distanceKm = remainingDistance.toFixed(1);
-          await sendNotification(
-            language === "ar" ? "📍 تحديث موقع السائق" : "📍 Driver Location Update",
-            language === "ar"
-              ? `السائق قريب منك الآن! المسافة المتبقية: ${distanceKm} كم`
-              : `Driver is near! Remaining distance: ${distanceKm} km`,
-            { orderId, distance: remainingDistance }
-          );
-        }
       } catch (error) {
         // Silently handle location save errors
       }
     };
 
     saveLocationToFirebase();
-  }, [currentLat, currentLng, orderId, remainingDistance, language]);
+  }, [currentLat, currentLng, orderId]);
 
   // Create motorcycle delivery icon using emoji
   const createDeliveryIcon = (isActive: boolean = false) => {
@@ -343,7 +332,7 @@ export default function DeliveryDetailsPage() {
     }
   }, [isAutoCentering, currentLat, currentLng, isNavigating]);
 
-  // Fetch order
+  // Fetch order and monitor status changes
   useEffect(() => {
     const fetchOrder = async () => {
       if (!orderId) return;
@@ -354,6 +343,36 @@ export default function DeliveryDetailsPage() {
         const orderSnap = await getDoc(orderRef);
         if (orderSnap.exists()) {
           const data = orderSnap.data() as DeliveryOrderDetails;
+          
+          // Check if status changed and send notification
+          if (lastStatusRef.current && lastStatusRef.current !== data.status) {
+            // Status changed - send notification
+            let notificationTitle = "";
+            let notificationMessage = "";
+
+            if (data.status === "shipped") {
+              notificationTitle = language === "ar" ? "🚚 تم شحن طلبك" : "🚚 Order Shipped";
+              notificationMessage = language === "ar" 
+                ? "تم شحن طلبك! سيصل إليك قريباً."
+                : "Your order has been shipped! It's on the way.";
+            } else if (data.status === "in-transit") {
+              notificationTitle = language === "ar" ? "📍 الطلب في الطريق" : "📍 Out for Delivery";
+              notificationMessage = language === "ar"
+                ? "طلبك في الطريق إليك الآن."
+                : "Your order is out for delivery.";
+            } else if (data.status === "received") {
+              notificationTitle = language === "ar" ? "✅ تم استقبال طلبك" : "✅ Delivered";
+              notificationMessage = language === "ar"
+                ? "شكراً لك! تم استقبال طلبك بنجاح."
+                : "Thank you! Your order has been delivered.";
+            }
+
+            if (notificationTitle && notificationMessage) {
+              await sendNotification(notificationTitle, notificationMessage, { orderId, status: data.status });
+            }
+          }
+
+          lastStatusRef.current = data.status;
           setOrder(data);
           
           // Delivery destination location - use deliveryLat/deliveryLng from order
@@ -379,14 +398,14 @@ export default function DeliveryDetailsPage() {
           }
         }
       } catch (error) {
-        console.error("Error fetching order:", error);
+        // Silently handle fetch errors
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchOrder();
-  }, [orderId]);
+  }, [orderId, language]);
 
   if (isLoading) {
     return (
