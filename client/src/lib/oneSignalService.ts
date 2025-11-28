@@ -52,3 +52,29 @@ export const setUserEmail = async (email: string) => {
     // Silently handle
   }
 };
+
+// Setup subscription listener for when user subscribes via OneSignal permission popup
+export const setupSubscriptionListener = async () => {
+  try {
+    const OneSignal = await getOneSignal(5000);
+    if (!OneSignal) return;
+
+    // Listen for subscription changes
+    OneSignal.User.PushSubscription.addEventListener('change', async (change: any) => {
+      const isSubscribed = OneSignal.User.PushSubscription.isSubscribed;
+      
+      if (isSubscribed) {
+        // User subscribed - register them in OneSignal
+        const authUser = JSON.parse(localStorage.getItem("authUser") || "{}");
+        if (authUser?.id) {
+          await setUserId(authUser.id);
+          if (authUser?.email) {
+            await setUserEmail(authUser.email);
+          }
+        }
+      }
+    });
+  } catch (error) {
+    // Silently handle
+  }
+};
