@@ -82,6 +82,24 @@ export const setUserId = async (userId: string) => {
   }
 };
 
+export const enableNotifications = async (userId: string) => {
+  try {
+    console.log("🔔 Enabling notifications for user:", userId);
+    
+    // Step 1: Request permission
+    await requestPushPermission();
+    
+    // Step 2: Register user
+    await setUserId(userId);
+    
+    console.log("✅ Notifications enabled successfully!");
+    return true;
+  } catch (error) {
+    console.error("❌ Failed to enable notifications:", error);
+    return false;
+  }
+};
+
 // Setup subscription listener for when user subscribes via OneSignal permission popup
 export const setupSubscriptionListener = async () => {
   try {
