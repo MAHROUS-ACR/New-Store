@@ -80,6 +80,10 @@ interface Order {
   deliveryRemarks?: string;
   latitude?: number;
   longitude?: number;
+  deliveryLat?: number;
+  deliveryLng?: number;
+  driverLat?: number;
+  driverLng?: number;
 }
 
 export default function OrderDetailsPage() {
@@ -156,21 +160,24 @@ export default function OrderDetailsPage() {
       .bindPopup(`<div style="text-align: center"><strong>${language === "ar" ? "موقع التسليم" : "Delivery Location"}</strong></div>`)
       .openPopup();
 
-    // Add driver location marker if available
-    if (order?.latitude !== undefined && order?.latitude !== null && order?.longitude !== undefined && order?.longitude !== null && map.current) {
-      console.log("Adding driver marker:", order.latitude, order.longitude);
+    // Add driver location marker if available - use driverLat/driverLng
+    const driverLat = order?.driverLat || order?.latitude;
+    const driverLng = order?.driverLng || order?.longitude;
+    
+    if (driverLat !== undefined && driverLat !== null && driverLng !== undefined && driverLng !== null && map.current) {
+      console.log("Adding driver marker:", driverLat, driverLng);
       if (driverMarker.current) {
         driverMarker.current.remove();
       }
-      driverMarker.current = L.marker([order.latitude, order.longitude], {
+      driverMarker.current = L.marker([driverLat, driverLng], {
         icon: createDeliveryIcon()
       })
         .addTo(map.current)
-        .bindPopup(`<div style="text-align: center"><strong>${language === "ar" ? "موقع الدليفرى" : "Driver Location"}</strong></div>`);
+        .bindPopup(`<div style="text-align: center"><strong>${language === "ar" ? "موقع السائق" : "Driver Location"}</strong></div>`);
 
       // Fetch and display route
-      if (typeof order.longitude === 'number' && typeof order.latitude === 'number' && typeof mapLng === 'number' && typeof mapLat === 'number') {
-        fetch(`https://router.project-osrm.org/route/v1/driving/${order.longitude},${order.latitude};${mapLng},${mapLat}?geometries=geojson`)
+      if (typeof driverLng === 'number' && typeof driverLat === 'number' && typeof mapLng === 'number' && typeof mapLat === 'number') {
+        fetch(`https://router.project-osrm.org/route/v1/driving/${driverLng},${driverLat};${mapLng},${mapLat}?geometries=geojson`)
           .then(res => res.json())
           .then(data => {
             console.log("Route data:", data);
@@ -183,23 +190,30 @@ export default function OrderDetailsPage() {
           .catch(err => console.log("Route error:", err));
       }
     } else {
-      console.log("Driver location not available:", { lat: order?.latitude, lng: order?.longitude });
+      console.log("Driver location not available:", { lat: driverLat, lng: driverLng });
     }
-  }, [mapLat, mapLng, language, order?.latitude, order?.longitude]);
+  }, [mapLat, mapLng, language, order?.driverLat, order?.driverLng, order?.latitude, order?.longitude]);
 
   // Update driver marker position when order location changes
   useEffect(() => {
-    if (order?.latitude !== undefined && order?.latitude !== null && order?.longitude !== undefined && order?.longitude !== null && driverMarker.current && map.current) {
-      driverMarker.current.setLatLng([order.latitude, order.longitude]);
+    const driverLat = order?.driverLat || order?.latitude;
+    const driverLng = order?.driverLng || order?.longitude;
+    if (driverLat !== undefined && driverLat !== null && driverLng !== undefined && driverLng !== null && driverMarker.current && map.current) {
+      driverMarker.current.setLatLng([driverLat, driverLng]);
     }
-  }, [order?.latitude, order?.longitude]);
+  }, [order?.driverLat, order?.driverLng, order?.latitude, order?.longitude]);
 
-  // Geocode address when order is loaded
+  // Geocode address when order is loaded - use deliveryLat/deliveryLng if available
   useEffect(() => {
-    if (order && (order.shippingAddress || order.deliveryAddress) && !mapLat) {
-      geocodeAddress(order.shippingAddress || order.deliveryAddress || "");
+    if (order && !mapLat) {
+      if (order.deliveryLat && order.deliveryLng) {
+        setMapLat(order.deliveryLat);
+        setMapLng(order.deliveryLng);
+      } else {
+        geocodeAddress(order.shippingAddress || order.deliveryAddress || "");
+      }
     }
-  }, [order?.shippingAddress, order?.deliveryAddress, mapLat]);
+  }, [order?.shippingAddress, order?.deliveryAddress, order?.deliveryLat, order?.deliveryLng, mapLat]);
 
   // Determine back path based on user role and store tab preference
   const handleBack = () => {
