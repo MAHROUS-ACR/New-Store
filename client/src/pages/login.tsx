@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { ArrowLeft } from "lucide-react";
 import { t } from "@/lib/translations";
 import { getStoreSettings } from "@/lib/firebaseOps";
+import { requestNotificationPermission } from "@/lib/oneSignalService";
 
 export default function LoginPage() {
   const [, setLocation] = useLocation();
@@ -70,6 +71,8 @@ export default function LoginPage() {
         await login(email, password);
         toast.success(t("welcomeBack", language));
       }
+      // Request notification permission after successful login
+      await requestNotificationPermission();
       // Wait for user data to be set before redirecting
       setTimeout(() => setLocation("/"), 1000);
     } catch (error: any) {

@@ -1,3 +1,5 @@
+let oneSignalReady = false;
+
 export const initializeOneSignal = async () => {
   if (typeof window === 'undefined') return;
 
@@ -7,29 +9,61 @@ export const initializeOneSignal = async () => {
   }
 
   (window as any).OneSignalDeferred.push(async function(OneSignal: any) {
-    await OneSignal.init({
-      appId: "93a6fd35-e795-4201-a5a0-0c31336979be",
-    });
+    try {
+      await OneSignal.init({
+        appId: "93a6fd35-e795-4201-a5a0-0c31336979be",
+      });
+      oneSignalReady = true;
+    } catch (error) {
+      // Silently handle initialization errors
+    }
   });
+};
+
+// Wait for OneSignal to be ready
+const waitForOneSignal = async (timeout = 5000) => {
+  const startTime = Date.now();
+  
+  while (!oneSignalReady && Date.now() - startTime < timeout) {
+    if ((window as any).OneSignal) {
+      oneSignalReady = true;
+      break;
+    }
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
+  
+  return (window as any).OneSignal || null;
+};
+
+export const requestNotificationPermission = async () => {
+  try {
+    const OneSignal = await waitForOneSignal();
+    if (!OneSignal) return false;
+
+    // Request permission from browser
+    const permission = await OneSignal.Notifications.requestPermission();
+    
+    return permission;
+  } catch (error) {
+    // Silently handle errors
+    return false;
+  }
 };
 
 export const sendNotification = async (title: string, message: string, data?: any) => {
   try {
-    if (!(window as any).OneSignal) return;
+    const OneSignal = await waitForOneSignal();
+    if (!OneSignal) return;
 
-    const OneSignal = (window as any).OneSignal;
+    // Ensure user has opted in
+    await OneSignal.User.pushSubscription.optIn();
     
-    // Get user's subscription status
-    const subscription = await OneSignal.User.pushSubscription.optIn();
-    
-    if (subscription) {
-      // Send notification using OneSignal Messaging API
-      await OneSignal.Notifications.sendNotification({
-        title: title,
-        body: message,
-        ...(data && { data: data }),
-      });
-    }
+    // Send notification
+    await OneSignal.Notifications.sendNotification({
+      title: title,
+      body: message,
+      ...(data && { data: data }),
+    });
   } catch (error) {
     // Silently handle errors
   }
@@ -37,9 +71,9 @@ export const sendNotification = async (title: string, message: string, data?: an
 
 export const setUserId = async (userId: string) => {
   try {
-    if (!(window as any).OneSignal) return;
+    const OneSignal = await waitForOneSignal();
+    if (!OneSignal) return;
 
-    const OneSignal = (window as any).OneSignal;
     await OneSignal.login(userId);
   } catch (error) {
     // Silently handle errors
@@ -48,9 +82,9 @@ export const setUserId = async (userId: string) => {
 
 export const setUserEmail = async (email: string) => {
   try {
-    if (!(window as any).OneSignal) return;
+    const OneSignal = await waitForOneSignal();
+    if (!OneSignal) return;
 
-    const OneSignal = (window as any).OneSignal;
     OneSignal.User.addEmail(email);
   } catch (error) {
     // Silently handle errors
