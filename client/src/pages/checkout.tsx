@@ -167,18 +167,34 @@ export default function CheckoutPage() {
 
       if (shippingSelected === "saved") {
         // Use user's saved coordinates and address
-        deliveryLat = user?.addressLat;
-        deliveryLng = user?.addressLng;
         finalAddress = user?.address || zoneSelected?.name || "";
         
-        await updateUserProfile({
-          phone: customerPhone,
-          address: finalAddress,
-          addressLat: deliveryLat,
-          addressLng: deliveryLng,
-          zoneId: zoneSelected?.id,
-          zoneName: zoneSelected?.name,
-        });
+        // If user has saved coordinates, use them
+        if (user?.addressLat && user?.addressLng) {
+          deliveryLat = user.addressLat;
+          deliveryLng = user.addressLng;
+        } else if (locationCoords?.lat && locationCoords?.lng) {
+          // Otherwise use selected coordinates from map
+          deliveryLat = locationCoords.lat;
+          deliveryLng = locationCoords.lng;
+        } else {
+          // No coordinates available
+          toast.error("اختر الموقع من الخريطة - Please select location from map");
+          setIsSubmitting(false);
+          return;
+        }
+        
+        // Update user profile with coordinates if not already saved
+        if (!user?.addressLat || !user?.addressLng) {
+          await updateUserProfile({
+            phone: customerPhone,
+            address: finalAddress,
+            addressLat: deliveryLat,
+            addressLng: deliveryLng,
+            zoneId: zoneSelected?.id,
+            zoneName: zoneSelected?.name,
+          });
+        }
       } else {
         // New address - use coordinates from map selection
         deliveryLat = locationCoords?.lat;
@@ -193,7 +209,7 @@ export default function CheckoutPage() {
         }
       }
 
-      // Validate coordinates exist
+      // Final validation - coordinates MUST exist
       if (!deliveryLat || !deliveryLng) {
         toast.error("خطأ: لا توجد إحداثيات - Error: No coordinates available");
         setIsSubmitting(false);
@@ -252,9 +268,19 @@ export default function CheckoutPage() {
       };
 
 
+      console.log("🛒 Submitting order with coordinates:", { 
+        deliveryLat, 
+        deliveryLng, 
+        userEmail: user.email 
+      });
+      
       const savedId = await saveOrder(orderObj);
       
-      if (!savedId) throw new Error("Failed to save order");
+      if (!savedId) {
+        throw new Error("Failed to save order - check console logs");
+      }
+      
+      console.log("✅ Order saved with ID:", savedId);
 
       toast.success("✅ تم تأكيد الطلب!");
       clearCart();
