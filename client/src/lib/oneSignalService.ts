@@ -38,10 +38,15 @@ export const requestPushPermission = async () => {
     }
 
     console.log("📲 Requesting push notification permission...");
+    console.log("🔧 Service Worker support:", "serviceWorker" in navigator);
+    
     await OneSignal.Notifications.requestPermission();
     console.log("📱 Permission popup shown");
   } catch (error) {
-    console.error("Error requesting permission:", error);
+    console.error("❌ Error requesting permission:", error);
+    if (error instanceof Error) {
+      console.error("Error details:", error.message, error.name);
+    }
   }
 };
 
