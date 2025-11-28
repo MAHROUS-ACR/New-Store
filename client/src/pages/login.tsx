@@ -7,7 +7,6 @@ import { toast } from "sonner";
 import { ArrowLeft } from "lucide-react";
 import { t } from "@/lib/translations";
 import { getStoreSettings } from "@/lib/firebaseOps";
-import { setUserId, requestPushPermission } from "@/lib/oneSignalService";
 
 export default function LoginPage() {
   const [, setLocation] = useLocation();
@@ -66,13 +65,6 @@ export default function LoginPage() {
           return;
         }
         await login(email, password);
-        // Register user in OneSignal immediately after successful login
-        const authUser = JSON.parse(localStorage.getItem("authUser") || "{}");
-        if (authUser?.id) {
-          await setUserId(authUser.id);
-        }
-        // Request push permission separately 
-        setTimeout(() => requestPushPermission(), 500);
         toast.success(t("welcomeBack", language));
         // Wait for user data to be set before redirecting
         setTimeout(() => setLocation("/"), 800);
