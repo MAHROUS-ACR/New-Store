@@ -37,6 +37,8 @@ export interface User {
   profileImage?: string;
   phone?: string;
   address?: string;
+  addressLat?: number;
+  addressLng?: number;
   zoneId?: string;
   zoneName?: string;
 }
@@ -95,6 +97,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
             let username = firebaseUser.email?.split("@")[0] || "user";
             let phone = "";
             let address = "";
+            let addressLat: number | undefined;
+            let addressLng: number | undefined;
             let zoneId = "";
             let zoneName = "";
             
@@ -104,6 +108,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
               username = firestoreData.username || username;
               phone = firestoreData.phone || "";
               address = firestoreData.address || "";
+              addressLat = firestoreData.addressLat;
+              addressLng = firestoreData.addressLng;
               zoneId = firestoreData.zoneId || "";
               zoneName = firestoreData.zoneName || "";
             }
@@ -115,6 +121,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
               role: role,
               phone: phone,
               address: address,
+              addressLat: addressLat,
+              addressLng: addressLng,
               zoneId: zoneId,
               zoneName: zoneName,
             };
@@ -133,6 +141,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
               role: storedData.role || "user",
               phone: storedData.phone || "",
               address: storedData.address || "",
+              addressLat: storedData.addressLat,
+              addressLng: storedData.addressLng,
               zoneId: storedData.zoneId || "",
               zoneName: storedData.zoneName || "",
             };
@@ -208,6 +218,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
       
       if (data.phone !== undefined) updateData.phone = data.phone;
       if (data.address !== undefined) updateData.address = data.address;
+      if (data.addressLat !== undefined) updateData.addressLat = data.addressLat;
+      if (data.addressLng !== undefined) updateData.addressLng = data.addressLng;
       if (data.zoneId !== undefined) updateData.zoneId = data.zoneId;
       if (data.zoneName !== undefined) updateData.zoneName = data.zoneName;
       if (data.username !== undefined) updateData.username = data.username;

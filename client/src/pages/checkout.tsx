@@ -160,20 +160,26 @@ export default function CheckoutPage() {
     setIsSubmitting(true);
 
     try {
+      // Get delivery coordinates
+      let deliveryLat = locationCoords?.lat;
+      let deliveryLng = locationCoords?.lng;
+
       if (shippingSelected === "saved") {
+        // Use user's saved coordinates
+        deliveryLat = user?.addressLat || deliveryLat;
+        deliveryLng = user?.addressLng || deliveryLng;
+        
         await updateUserProfile({
           phone: customerPhone,
           address: deliveryAddress,
+          addressLat: deliveryLat,
+          addressLng: deliveryLng,
           zoneId: zoneSelected?.id,
           zoneName: zoneSelected?.name,
         });
       }
 
       const orderId = `ord_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
-      
-      // Get coordinates (use selected location coords if available)
-      let finalLat = locationCoords?.lat;
-      let finalLng = locationCoords?.lng;
 
       const orderObj = {
         id: orderId,
@@ -188,13 +194,17 @@ export default function CheckoutPage() {
           : deliveryAddress.trim(),
         shippingPhone: customerPhone.trim(),
         
-        // Delivery location coordinates
-        deliveryLat: finalLat,
-        deliveryLng: finalLng,
+        // Delivery location coordinates (customer)
+        deliveryLat: deliveryLat,
+        deliveryLng: deliveryLng,
+        
+        // Driver location (for real-time tracking)
+        driverLat: null,
+        driverLng: null,
         
         // Also keep for backward compatibility
-        latitude: finalLat,
-        longitude: finalLng,
+        latitude: deliveryLat,
+        longitude: deliveryLng,
         
         notes: notes.trim(),
         

@@ -33,6 +33,8 @@ interface DeliveryOrderDetails {
   longitude?: number;
   deliveryLat?: number;
   deliveryLng?: number;
+  driverLat?: number;
+  driverLng?: number;
 }
 
 export default function DeliveryDetailsPage() {
@@ -122,10 +124,14 @@ export default function DeliveryDetailsPage() {
         const db = getFirestore();
         const orderRef = doc(db, "orders", orderId);
         await updateDoc(orderRef, {
+          // Driver current location
+          driverLat: currentLat,
+          driverLng: currentLng,
+          // Backward compatibility
           latitude: currentLat,
           longitude: currentLng,
         });
-        console.log("Location saved to Firebase:", currentLat, currentLng);
+        console.log("Driver location saved to Firebase:", currentLat, currentLng);
       } catch (error) {
         console.log("Error saving location:", error);
       }
