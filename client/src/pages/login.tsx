@@ -66,13 +66,13 @@ export default function LoginPage() {
           return;
         }
         await login(email, password);
-        // Request push notification permission after successful login
-        await requestPushPermission();
-        // Register user in OneSignal after successful login
+        // Register user in OneSignal immediately after successful login
         const authUser = JSON.parse(localStorage.getItem("authUser") || "{}");
         if (authUser?.id) {
           await setUserId(authUser.id);
         }
+        // Request push permission separately 
+        setTimeout(() => requestPushPermission(), 500);
         toast.success(t("welcomeBack", language));
         // Wait for user data to be set before redirecting
         setTimeout(() => setLocation("/"), 800);

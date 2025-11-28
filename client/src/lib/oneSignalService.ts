@@ -38,7 +38,6 @@ export const requestPushPermission = async () => {
     }
 
     console.log("📲 Requesting push notification permission...");
-    // Show the native browser permission prompt
     const permission = await OneSignal.Notifications.requestPermission();
     console.log("📱 Permission result:", permission);
   } catch (error) {
@@ -46,7 +45,6 @@ export const requestPushPermission = async () => {
   }
 };
 
-// 🔥 Get Player ID after permission
 export const getPlayerId = async () => {
   try {
     const OneSignal = await getOneSignal();
@@ -64,27 +62,23 @@ export const getPlayerId = async () => {
 export const setUserId = async (userId: string) => {
   try {
     if (!userId) return;
-    const OneSignal = await getOneSignal();
+    const OneSignal = await getOneSignal(5000);
     if (!OneSignal) {
       console.warn("OneSignal not available for registration");
       return;
     }
 
-    // Register user ID in OneSignal
     console.log("🔐 Registering user in OneSignal:", userId);
     await OneSignal.login(userId);
-    console.log("✅ User registered successfully in OneSignal");
+    console.log("✅ User registered in OneSignal");
 
-    // Check subscription status
-    const isSubscribed = OneSignal.User.PushSubscription.isSubscribed;
-    console.log("🔔 User subscribed to push:", isSubscribed);
-
-    if (!isSubscribed) {
-      console.log("⚠️ User not subscribed yet, attempting to prompt again...");
-      await OneSignal.Notifications.requestPermission();
+    // Get and log player ID
+    const playerId = await getPlayerId();
+    if (playerId) {
+      console.log("✅ Player registered with ID:", playerId);
     }
   } catch (error) {
-    console.error("Error registering user in OneSignal:", error);
+    console.error("Error registering user:", error);
   }
 };
 
