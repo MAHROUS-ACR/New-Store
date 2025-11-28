@@ -1,7 +1,7 @@
 // Initialize OneSignal when available
 let OneSignalInstance: any = null;
 
-const getOneSignal = async (timeout = 3000) => {
+const getOneSignal = async (timeout = 5000) => {
   if (OneSignalInstance) return OneSignalInstance;
 
   const start = Date.now();
@@ -62,18 +62,55 @@ export const setUserId = async (userId: string) => {
   }
 };
 
+export const checkNotificationStatus = async () => {
+  try {
+    const OneSignal = await getOneSignal();
+    if (!OneSignal) {
+      console.log("❌ OneSignal not available");
+      return null;
+    }
+
+    const isSubscribed = OneSignal.User.PushSubscription.isSubscribed;
+    const id = await OneSignal.User.getId();
+    console.log("📊 Notification Status:", {
+      isSubscribed,
+      playerId: id,
+      timestamp: new Date().toISOString()
+    });
+    return { isSubscribed, playerId: id };
+  } catch (error) {
+    console.error("Error checking status:", error);
+    return null;
+  }
+};
+
 export const enableNotifications = async (userId: string) => {
   try {
-    console.log("🔔 Starting notification setup...");
+    console.log("🔔 Starting notification setup for:", userId);
+    
+    // Check status before
+    console.log("📊 Status BEFORE:");
+    await checkNotificationStatus();
     
     // Request permission first (shows popup)
+    console.log("📲 Requesting permission...");
     await requestPushPermission();
     
-    // Wait a moment for the popup to process
-    await new Promise(r => setTimeout(r, 1000));
+    // Wait for the popup to process
+    await new Promise(r => setTimeout(r, 1500));
+    
+    // Check status after permission
+    console.log("📊 Status AFTER permission:");
+    await checkNotificationStatus();
     
     // Then login the user
+    console.log("🔐 Logging in user...");
     await setUserId(userId);
+    
+    // Check final status
+    await new Promise(r => setTimeout(r, 500));
+    console.log("📊 Final Status:");
+    await checkNotificationStatus();
     
     console.log("✅ Notification setup complete!");
     return true;
