@@ -35,11 +35,8 @@ export const setUserId = async (userId: string) => {
     const OneSignal = await getOneSignal();
     if (!OneSignal) return;
 
-    // Only set user ID if they have push notification subscription
-    const isSubscribed = OneSignal.User.PushSubscription.isSubscribed;
-    if (isSubscribed) {
-      await OneSignal.login(userId);
-    }
+    // Register user ID in OneSignal
+    await OneSignal.login(userId);
   } catch (error) {
     // Silently handle
   }
