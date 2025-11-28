@@ -41,6 +41,15 @@ interface AdminOrder {
   shippingCost?: number;
   deliveryUserId?: string;
   deliveryUsername?: string;
+  customerName?: string;
+  shippingAddress?: string;
+  shippingPhone?: string;
+  userEmail?: string;
+  customerEmail?: string;
+  deliveryLat?: number;
+  deliveryLng?: number;
+  driverLat?: number;
+  driverLng?: number;
 }
 
 export default function ProfilePage() {
@@ -717,7 +726,7 @@ export default function ProfilePage() {
       setEditingOrderId(null);
       setNewStatus("");
       setSelectedDeliveryUserId("");
-      loadOrders();
+      setupOrdersListener();
     } catch (error) {
 
       toast.error("Failed to update order");
@@ -729,7 +738,7 @@ export default function ProfilePage() {
       const db = getFirestore();
       const userRef = doc(db, "users", userId);
       await updateDoc(userRef, { role });
-      toast.success(`User role updated to L.E role}!`);
+      toast.success(`User role updated successfully!`);
       setEditingUserId(null);
       setNewUserRole("");
       fetchAllUsers();
@@ -1361,7 +1370,7 @@ export default function ProfilePage() {
                   </div>
                   <span className="font-semibold text-sm text-rose-900">{t("salesAnalytics", language)}</span>
                 </div>
-                <ChevronRight className={`w-5 h-5 text-rose-400 transition-transform L.E showAnalytics ? "rotate-90" : ""}`} />
+                <ChevronRight className={`w-5 h-5 text-rose-400 transition-transform ${showAnalytics ? "rotate-90" : ""}`} />
               </button>
 
               {/* Sales Analytics Content */}
