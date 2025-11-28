@@ -619,8 +619,14 @@ export default function ProfilePage() {
         address: userAddress,
         phone: userPhone,
         zone: userZone,
-        locationLat: userLocationCoords?.lat,
-        locationLng: userLocationCoords?.lng,
+        addressLat: userLocationCoords?.lat,
+        addressLng: userLocationCoords?.lng,
+      });
+      
+      console.log("✅ Profile saved with coordinates:", { 
+        address: userAddress,
+        lat: userLocationCoords?.lat,
+        lng: userLocationCoords?.lng
       });
       
       toast.success("Profile updated successfully!");
@@ -645,8 +651,8 @@ export default function ProfilePage() {
         setUserAddress(data.address || "");
         setUserPhone(data.phone || "");
         setUserZone(data.zone || "");
-        if (data.locationLat && data.locationLng) {
-          setUserLocationCoords({ lat: data.locationLat, lng: data.locationLng });
+        if (data.addressLat && data.addressLng) {
+          setUserLocationCoords({ lat: data.addressLat, lng: data.addressLng });
         }
       }
     } catch (error) {
