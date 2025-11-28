@@ -124,10 +124,10 @@ export default function LoginPage() {
           )}
 
           <h1 className="text-2xl font-bold text-center mb-2" data-testid="text-title">
-            {isSignup ? t("accountCreated", language) : t("welcomeBack", language)}
+            {isSignup ? (language === "ar" ? "إنشاء حساب جديد" : "Create New Account") : (language === "ar" ? "مرحباً بك" : "Welcome Back")}
           </h1>
           <p className="text-gray-600 text-center mb-8" data-testid="text-subtitle">
-            {isSignup ? t("accountCreated", language) : t("welcomeBack", language)}
+            {isSignup ? (language === "ar" ? "أنشئ حسابك الآن لتبدأ" : "Create your account to get started") : (language === "ar" ? "ادخل إلى حسابك" : "Login to your account")}
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
