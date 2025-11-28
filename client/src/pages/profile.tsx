@@ -389,13 +389,9 @@ export default function ProfilePage() {
 
 
   const handleSaveServerConfig = async () => {
-    if (!projectId || !privateKey || !clientEmail) {
-      toast.error("Please fill in all Firebase configuration fields");
-      return;
-    }
-
+    // Validate Brevo config only
     if (!brevoApiKey || !brevoFromEmail || !adminEmail) {
-      toast.error("Please fill in all Brevo configuration fields");
+      toast.error(language === "ar" ? "⚠️ ادخل كل بيانات Brevo المطلوبة" : "⚠️ Please fill in all Brevo configuration fields");
       return;
     }
 
@@ -403,36 +399,21 @@ export default function ProfilePage() {
     try {
       const db = getFirestore();
       
-      // Save Firebase config
-      const firebaseConfigRef = doc(db, "settings", "firebase");
-      await setDoc(firebaseConfigRef, {
-        projectId,
-        privateKey,
-        clientEmail,
-        firebaseApiKey,
-        firebaseProjectId,
-        firebaseAppId,
-        firebaseAuthDomain,
-        firebaseStorageBucket,
-        firebaseMessagingSenderId,
-        firebaseMeasurementId,
-        updatedAt: new Date(),
-      });
-
-      // Save Brevo config
+      // Save Brevo config to store document
       const storeRef = doc(db, "settings", "store");
       await setDoc(storeRef, {
         brevoApiKey,
         brevoFromEmail,
-        brevoFromName,
+        brevoFromName: brevoFromName || "Order System",
         adminEmail,
         updatedAt: new Date(),
       }, { merge: true });
 
-      toast.success("✅ Configuration saved successfully!");
-      setClientEmail("");
-    } catch (error) {
-      toast.error("Failed to save configuration");
+      toast.success(language === "ar" ? "✅ تم حفظ إعدادات Brevo بنجاح!" : "✅ Brevo settings saved successfully!");
+      console.log("✅ Brevo config saved:", { brevoApiKey: "***", brevoFromEmail, adminEmail });
+    } catch (error: any) {
+      console.error("❌ Error saving Brevo config:", error);
+      toast.error(language === "ar" ? "❌ فشل حفظ الإعدادات" : "❌ Failed to save configuration");
     } finally {
       setIsSaving(false);
     }

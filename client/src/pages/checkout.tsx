@@ -265,13 +265,16 @@ export default function CheckoutPage() {
         shippingType: shippingSelected,
         shippingZone: zoneSelected?.name || "",
         shippingZoneId: zoneSelected?.id || "",
+        userEmail: user.email,
+        customerEmail: user.email,
       };
 
 
-      console.log("🛒 Submitting order with coordinates:", { 
+      console.log("🛒 Submitting order with email:", { 
         deliveryLat, 
         deliveryLng, 
-        userEmail: user.email 
+        userEmail: user.email,
+        orderId: orderObj.id
       });
       
       const savedId = await saveOrder(orderObj);
