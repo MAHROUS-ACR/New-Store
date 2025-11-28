@@ -42,38 +42,38 @@ export default function LoginPage() {
     try {
       if (isSignup) {
         if (!email.trim() || !password.trim() || !username.trim()) {
-          toast.error("Please fill in all fields");
+          toast.error(t("fillAllFields", language));
           setFormLoading(false);
           return;
         }
         if (password.length < 6) {
-          toast.error("Password must be at least 6 characters");
+          toast.error(t("passwordTooShort", language));
           setFormLoading(false);
           return;
         }
         await signup(email, password, username);
-        toast.success("Account created successfully!");
+        toast.success(t("accountCreated", language));
       } else {
         if (!email.trim() || !password.trim()) {
-          toast.error("Please fill in all fields");
+          toast.error(t("fillAllFields", language));
           setFormLoading(false);
           return;
         }
         await login(email, password);
-        toast.success("Welcome back!");
+        toast.success(t("welcomeBack", language));
       }
       // Wait for user data to be set before redirecting
       setTimeout(() => setLocation("/"), 1000);
     } catch (error: any) {
 
       if (error.code === "auth/email-already-in-use") {
-        toast.error("Email already exists");
+        toast.error(t("emailExists", language));
       } else if (error.code === "auth/weak-password") {
-        toast.error("Password is too weak");
+        toast.error(t("passwordWeak", language));
       } else if (error.code === "auth/user-not-found" || error.code === "auth/wrong-password") {
-        toast.error("Invalid email or password");
+        toast.error(t("invalidEmailPassword", language));
       } else {
-        toast.error(error.message || "Authentication failed");
+        toast.error(error.message || t("authFailed", language));
       }
     } finally {
       setFormLoading(false);
@@ -121,14 +121,14 @@ export default function LoginPage() {
           {isSignup && (
             <div>
               <label className="block text-sm font-semibold mb-2" htmlFor="username">
-                Username
+                {t("username", language)}
               </label>
               <input
                 id="username"
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="Enter your name"
+                placeholder={language === "ar" ? "أدخل اسمك" : "Enter your name"}
                 className="w-full px-5 py-3 bg-white border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 data-testid="input-username"
               />
@@ -137,14 +137,14 @@ export default function LoginPage() {
 
           <div>
             <label className="block text-sm font-semibold mb-2" htmlFor="email">
-              Email
+              {t("email", language)}
             </label>
             <input
               id="email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email"
+              placeholder={language === "ar" ? "أدخل بريدك الإلكتروني" : "Enter your email"}
               className="w-full px-5 py-3 bg-white border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               data-testid="input-email"
             />
@@ -152,14 +152,14 @@ export default function LoginPage() {
 
           <div>
             <label className="block text-sm font-semibold mb-2" htmlFor="password">
-              Password
+              {t("password", language)}
             </label>
             <input
               id="password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your password"
+              placeholder={language === "ar" ? "أدخل كلمة المرور" : "Enter your password"}
               className="w-full px-5 py-3 bg-white border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               data-testid="input-password"
             />
@@ -169,17 +169,19 @@ export default function LoginPage() {
             type="submit"
             disabled={formLoading}
             className="w-full bg-black text-white py-4 rounded-2xl font-semibold flex items-center justify-center gap-2 hover:bg-neutral-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            data-testid={`button-L.E isSignup ? "signup" : "login"}`}
+            data-testid={isSignup ? "button-signup" : "button-login"}
           >
             {formLoading ? (
               <>
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                {isSignup ? "Creating account..." : "Signing in..."}
+                {language === "ar" 
+                  ? (isSignup ? "جاري الإنشاء..." : "جاري تسجيل الدخول...")
+                  : (isSignup ? "Creating account..." : "Signing in...")}
               </>
             ) : isSignup ? (
-              "Sign Up"
+              t("signUp", language)
             ) : (
-              "Sign In"
+              t("signIn", language)
             )}
           </button>
         </form>
