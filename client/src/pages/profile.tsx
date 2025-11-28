@@ -717,7 +717,7 @@ export default function ProfilePage() {
       setEditingOrderId(null);
       setNewStatus("");
       setSelectedDeliveryUserId("");
-      fetchAllOrders();
+      loadOrders();
     } catch (error) {
 
       toast.error("Failed to update order");
@@ -790,7 +790,7 @@ export default function ProfilePage() {
               <button
                 onClick={() => {
                   setActiveTab("admin");
-                  fetchAllOrders();
+                  setupOrdersListener();
                 }}
                 className={`py-3 px-5 font-semibold text-sm border-b-2 transition-colors ${
                   activeTab === "admin"
@@ -1334,8 +1334,8 @@ export default function ProfilePage() {
                                   {order.deliveryUsername && (
                                     <p className="text-xs text-orange-600 font-semibold">🚚 {order.deliveryUsername}</p>
                                   )}
-                                  {order.recipientName && (
-                                    <p className="text-xs text-gray-600 font-semibold">{order.recipientName}</p>
+                                  {order.customerName && (
+                                    <p className="text-xs text-gray-600 font-semibold">{order.customerName}</p>
                                   )}
                                 </div>
                               </div>
