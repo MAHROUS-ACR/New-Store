@@ -32,8 +32,9 @@ export default function SettingsPage() {
   const [gmailUser, setGmailUser] = useState("");
   const [gmailPassword, setGmailPassword] = useState("");
   const [adminEmail, setAdminEmail] = useState("");
-  const [resendApiKey, setResendApiKey] = useState("");
-  const [resendFromEmail, setResendFromEmail] = useState("");
+  const [brevoApiKey, setBrevoApiKey] = useState("");
+  const [brevoFromEmail, setBrevoFromEmail] = useState("");
+  const [brevoFromName, setBrevoFromName] = useState("");
   
   // SN field
   const [sn, setSN] = useState("");
@@ -79,8 +80,9 @@ export default function SettingsPage() {
           setGmailUser(storeData.gmailUser || "");
           setGmailPassword(storeData.gmailPassword || "");
           setAdminEmail(storeData.adminEmail || "");
-          setResendApiKey(storeData.resendApiKey || "");
-          setResendFromEmail(storeData.resendFromEmail || "");
+          setBrevoApiKey(storeData.brevoApiKey || "");
+          setBrevoFromEmail(storeData.brevoFromEmail || "");
+          setBrevoFromName(storeData.brevoFromName || "");
         }
       } catch (error) {
 
@@ -160,8 +162,9 @@ export default function SettingsPage() {
         gmailUser: gmailUser,
         gmailPassword: gmailPassword,
         adminEmail: adminEmail,
-        resendApiKey: resendApiKey,
-        resendFromEmail: resendFromEmail,
+        brevoApiKey: brevoApiKey,
+        brevoFromEmail: brevoFromEmail,
+        brevoFromName: brevoFromName,
         updatedAt: new Date(),
       });
 
@@ -485,57 +488,71 @@ export default function SettingsPage() {
 
             {/* Email Settings Section */}
             <div className="mb-8 pt-8 border-t border-gray-200">
-              <h2 className="text-lg font-bold mb-4">📧 Email Settings (Resend)</h2>
+              <h2 className="text-lg font-bold mb-4">📧 Email Settings (Brevo)</h2>
               <p className="text-sm text-muted-foreground mb-2">
-                Send order confirmations automatically
+                Send order confirmations automatically via Brevo
               </p>
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-6 text-xs">
+              <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 mb-6 text-xs">
                 <p><strong>📖 Quick Setup:</strong></p>
-                <ol className="list-decimal list-inside ml-1 space-y-1 text-blue-900 mt-2">
-                  <li>Sign up at <a href="https://resend.com" target="_blank" rel="noopener noreferrer" className="underline">resend.com</a></li>
-                  <li>Get API Key from API Keys page</li>
-                  <li>Paste below ⬇️</li>
-                  <li>Use <code className="bg-white px-1 rounded">Acme &lt;onboarding@resend.dev&gt;</code> for From Email</li>
+                <ol className="list-decimal list-inside ml-1 space-y-1 text-orange-900 mt-2">
+                  <li>Sign up at <a href="https://brevo.com" target="_blank" rel="noopener noreferrer" className="underline">brevo.com</a></li>
+                  <li>Get API Key from Settings → API Keys</li>
+                  <li>Add verified sender email</li>
+                  <li>Paste all details below ⬇️</li>
                 </ol>
               </div>
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-semibold mb-2" htmlFor="resendApiKey">
-                    Resend API Key
+                  <label className="block text-sm font-semibold mb-2" htmlFor="brevoApiKey">
+                    Brevo API Key
                   </label>
                   <input
-                    id="resendApiKey"
+                    id="brevoApiKey"
                     type="password"
-                    value={resendApiKey}
-                    onChange={(e) => setResendApiKey(e.target.value)}
-                    placeholder="re_xxxxxxxxxxxxxxxxxxxx"
+                    value={brevoApiKey}
+                    onChange={(e) => setBrevoApiKey(e.target.value)}
+                    placeholder="xkeysib_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
                     className="w-full px-5 py-3 bg-white border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                    data-testid="input-resend-api-key"
+                    data-testid="input-brevo-api-key"
                   />
                   <p className="text-xs text-muted-foreground mt-1">
-                    Get from <a href="https://resend.com/api-keys" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">resend.com/api-keys</a>
+                    Get from <a href="https://app.brevo.com/settings/account/api-keys" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">brevo.com/api-keys</a>
                   </p>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold mb-2" htmlFor="resendFromEmail">
-                    From Email (Must be verified in Resend)
+                  <label className="block text-sm font-semibold mb-2" htmlFor="brevoFromEmail">
+                    From Email (Must be verified in Brevo)
                   </label>
                   <input
-                    id="resendFromEmail"
+                    id="brevoFromEmail"
                     type="email"
-                    value={resendFromEmail}
-                    onChange={(e) => setResendFromEmail(e.target.value)}
-                    placeholder="Acme <onboarding@resend.dev>"
+                    value={brevoFromEmail}
+                    onChange={(e) => setBrevoFromEmail(e.target.value)}
+                    placeholder="noreply@yourdomain.com"
                     className="w-full px-5 py-3 bg-white border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                    data-testid="input-resend-from-email"
+                    data-testid="input-brevo-from-email"
                   />
                   <p className="text-xs text-muted-foreground mt-1">
-                    ✅ Testing: <code className="bg-green-100 px-2 py-1 rounded">Acme &lt;onboarding@resend.dev&gt;</code>
-                    <br />
-                    📋 To use your own email: Go to <a href="https://resend.com/domains" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">resend.com/domains</a> and add your domain
+                    ✅ Verified sender email from your Brevo account
                   </p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold mb-2" htmlFor="brevoFromName">
+                    From Name
+                  </label>
+                  <input
+                    id="brevoFromName"
+                    type="text"
+                    value={brevoFromName}
+                    onChange={(e) => setBrevoFromName(e.target.value)}
+                    placeholder="Order System"
+                    className="w-full px-5 py-3 bg-white border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    data-testid="input-brevo-from-name"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">Name displayed as sender</p>
                 </div>
 
                 <div>
