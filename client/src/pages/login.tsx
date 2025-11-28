@@ -24,12 +24,15 @@ export default function LoginPage() {
     const fetchStoreInfo = async () => {
       try {
         const settings = await getStoreSettings();
-        if (settings) {
-          setStoreName(settings.storeName || "متجرنا");
-          setStoreLogo(settings.storeLogo || "");
+        console.log("Store settings fetched:", settings);
+        if (settings && settings.storeName) {
+          setStoreName(settings.storeName);
+        }
+        if (settings && settings.storeLogo) {
+          setStoreLogo(settings.storeLogo);
         }
       } catch (error) {
-        console.log("Could not fetch store settings");
+        console.error("Could not fetch store settings:", error);
       }
     };
     fetchStoreInfo();
@@ -108,10 +111,14 @@ export default function LoginPage() {
         {/* Form Container */}
         <div className="flex-1 flex flex-col items-center justify-center">
         <div className="text-center mb-8">
-          {storeLogo && (
-            <img src={storeLogo} alt={storeName} className="h-16 mx-auto mb-3 object-contain" data-testid="img-store-logo" />
+          {storeLogo ? (
+            <img src={storeLogo} alt={storeName} className="h-16 mx-auto mb-3 object-contain rounded-lg" data-testid="img-store-logo" />
+          ) : (
+            <div className="h-16 mx-auto mb-3 bg-gradient-to-br from-primary to-purple-600 rounded-lg flex items-center justify-center">
+              <span className="text-white text-2xl font-bold">🏪</span>
+            </div>
           )}
-          <h1 className="text-3xl font-bold mb-2">{storeName}</h1>
+          <h1 className="text-3xl font-bold mb-2" data-testid="text-store-name">{storeName || "متجرنا"}</h1>
           <p className="text-muted-foreground">
             {isSignup ? (language === "ar" ? "إنشاء حساب" : "Create an account") : (language === "ar" ? "أهلاً وسهلاً" : "Welcome back")}
           </p>
