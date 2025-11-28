@@ -1,14 +1,30 @@
 // Initialize OneSignal when available
 let OneSignalInstance: any = null;
 
-const getOneSignal = async (timeout = 8000) => {
+const getOneSignal = async (timeout = 10000) => {
   if (OneSignalInstance) return OneSignalInstance;
 
   const start = Date.now();
+  let checkCount = 0;
+  
   while (!OneSignalInstance && Date.now() - start < timeout) {
     OneSignalInstance = (window as any).OneSignal;
-    if (OneSignalInstance) break;
+    if (OneSignalInstance) {
+      console.log("✅ OneSignal found after", checkCount, "checks");
+      break;
+    }
+    
+    // Log every 20 checks (~1 second)
+    if (checkCount % 20 === 0) {
+      console.log("⏳ Still waiting for OneSignal... checks:", checkCount);
+    }
+    checkCount++;
+    
     await new Promise((r) => setTimeout(r, 50));
+  }
+
+  if (!OneSignalInstance) {
+    console.error("❌ OneSignal SDK not found after", timeout, "ms and", checkCount, "checks");
   }
 
   return OneSignalInstance;
