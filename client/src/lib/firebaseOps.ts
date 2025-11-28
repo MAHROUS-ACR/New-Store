@@ -224,26 +224,38 @@ export async function sendOrderEmailWithResend(order: any, userEmail: string) {
 }
 
 export async function saveOrder(order: any) {
-
-  
   try {
     // Validate required fields
     if (!order?.userId || !order?.id || !order?.items?.length) {
+      console.error("❌ saveOrder validation failed:", { userId: order?.userId, id: order?.id, itemsLength: order?.items?.length });
       throw new Error("Missing userId, id, or items");
     }
+
+    console.log("📦 Saving order with coordinates:", { 
+      deliveryLat: order.deliveryLat, 
+      deliveryLng: order.deliveryLng,
+      driverLat: order.driverLat,
+      driverLng: order.driverLng
+    });
 
     // Get fresh DB connection
     const db = initDb();
 
-
-    // Clean order data - remove undefined fields
+    // Clean order data - preserve numeric fields including coordinates
     const cleanOrder: any = {};
     Object.keys(order).forEach(key => {
       const value = order[key];
-      if (value !== undefined && value !== null && value !== "") {
+      // Keep all values except undefined, but allow null for driver location
+      if (value !== undefined && value !== "") {
         cleanOrder[key] = value;
       }
     });
+
+    // Ensure coordinate numbers are valid
+    if (typeof cleanOrder.deliveryLat === 'number') cleanOrder.deliveryLat = cleanOrder.deliveryLat;
+    if (typeof cleanOrder.deliveryLng === 'number') cleanOrder.deliveryLng = cleanOrder.deliveryLng;
+    if (typeof cleanOrder.driverLat === 'number') cleanOrder.driverLat = cleanOrder.driverLat;
+    if (typeof cleanOrder.driverLng === 'number') cleanOrder.driverLng = cleanOrder.driverLng;
 
     // Set defaults for required string fields
     if (!cleanOrder.status) cleanOrder.status = "pending";
@@ -253,6 +265,8 @@ export async function saveOrder(order: any) {
     
     // Ensure numbers are valid
     cleanOrder.subtotal = Number(cleanOrder.subtotal) || 0;
+    cleanOrder.discountedTotal = Number(cleanOrder.discountedTotal) || 0;
+    cleanOrder.discountAmount = Number(cleanOrder.discountAmount) || 0;
     cleanOrder.shippingCost = Number(cleanOrder.shippingCost) || 0;
     cleanOrder.total = Number(cleanOrder.total) || 0;
     cleanOrder.orderNumber = Number(cleanOrder.orderNumber) || 0;
@@ -260,17 +274,27 @@ export async function saveOrder(order: any) {
     // Add timestamp
     cleanOrder.createdAt = new Date().toISOString();
 
-
+    console.log("💾 Saving to Firebase with data:", { 
+      id: cleanOrder.id,
+      userId: cleanOrder.userId,
+      deliveryLat: cleanOrder.deliveryLat,
+      deliveryLng: cleanOrder.deliveryLng
+    });
 
     await setDoc(doc(db, "orders", order.id), cleanOrder);
+    console.log("✅ Order saved successfully:", order.id);
 
-    // Send order confirmation email via Resend
-    await sendOrderEmailWithResend(cleanOrder, order.customerEmail || order.email);
+    // Send order confirmation email via Resend (non-blocking)
+    const emailAddress = order.userEmail || order.customerEmail || order.email;
+    if (emailAddress) {
+      await sendOrderEmailWithResend(cleanOrder, emailAddress).catch((err: any) => {
+        console.log("⚠️ Email sending failed (non-blocking):", err?.message);
+      });
+    }
 
     return order.id;
   } catch (error: any) {
-
-
+    console.error("❌ saveOrder error:", error?.message || error);
     return null;
   }
 }
