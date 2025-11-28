@@ -200,7 +200,7 @@ export default function LoginPage() {
 
           <div className="mt-8 text-center">
             <p className="text-gray-600 text-sm" data-testid="text-toggle-prompt">
-              {isSignup ? (language === "ar" ? "هل لديك حساب بالفعل؟" : "Already have an account?") : (language === "ar" ? "ليس لديك حساب؟" : "Don't have an account?")}
+              {isSignup ? (language === "ar" ? "ليس لديك حساب بالفعل؟" : "Don't have an account?") : (language === "ar" ? "هل لديك حساب بالفعل؟" : "Already have an account?")}
             </p>
             <button
               onClick={() => {
