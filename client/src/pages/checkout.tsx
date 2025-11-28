@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { getShippingZones, saveOrder, getDiscounts } from "@/lib/firebaseOps";
 import { getActiveDiscount, calculateDiscountedPrice, getDiscountAmount } from "@/lib/discountUtils";
 import { MapSelector } from "@/components/map-selector";
+import { sendNotification, setUserId, setUserEmail } from "@/lib/oneSignalService";
 
 interface Discount {
   id: string;
@@ -281,8 +282,23 @@ export default function CheckoutPage() {
       if (!savedId) {
         throw new Error("Failed to save order - check console logs");
       }
-      
-      console.log("✅ Order saved with ID:", savedId);
+
+      // Set user for OneSignal tracking
+      if (user?.id) {
+        await setUserId(user.id);
+        if (user?.email) {
+          await setUserEmail(user.email);
+        }
+      }
+
+      // Send OneSignal notification
+      await sendNotification(
+        language === "ar" ? "تم تأكيد طلبك ✅" : "Order Confirmed ✅",
+        language === "ar" 
+          ? `تم تأكيد طلبك #${orderObj.orderNumber}. سيتم معالجته قريباً.`
+          : `Your order #${orderObj.orderNumber} has been confirmed. We'll process it soon.`,
+        { orderId: savedId }
+      );
 
       toast.success("✅ تم تأكيد الطلب!");
       clearCart();

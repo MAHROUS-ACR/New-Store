@@ -7,6 +7,7 @@ import { useLanguage } from "@/lib/languageContext";
 import { getFirestore, doc, getDoc, updateDoc } from "firebase/firestore";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { sendNotification } from "@/lib/oneSignalService";
 
 interface DeliveryOrderDetails {
   id: string;
@@ -129,13 +130,25 @@ export default function DeliveryDetailsPage() {
           latitude: currentLat,
           longitude: currentLng,
         });
+
+        // Send location update notification
+        if (remainingDistance) {
+          const distanceKm = remainingDistance.toFixed(1);
+          await sendNotification(
+            language === "ar" ? "📍 تحديث موقع السائق" : "📍 Driver Location Update",
+            language === "ar"
+              ? `السائق قريب منك الآن! المسافة المتبقية: ${distanceKm} كم`
+              : `Driver is near! Remaining distance: ${distanceKm} km`,
+            { orderId, distance: remainingDistance }
+          );
+        }
       } catch (error) {
         // Silently handle location save errors
       }
     };
 
     saveLocationToFirebase();
-  }, [currentLat, currentLng, orderId]);
+  }, [currentLat, currentLng, orderId, remainingDistance, language]);
 
   // Create motorcycle delivery icon using emoji
   const createDeliveryIcon = (isActive: boolean = false) => {
