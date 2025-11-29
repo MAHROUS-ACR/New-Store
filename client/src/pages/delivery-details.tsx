@@ -4,7 +4,7 @@ import { BottomNav } from "@/components/bottom-nav";
 import { ArrowLeft, MapPin, Phone, User, CreditCard, Truck, FileText, Loader, ChevronDown, ChevronUp, Navigation, Target } from "lucide-react";
 import { useLocation } from "wouter";
 import { useLanguage } from "@/lib/languageContext";
-import { getFirestore, doc, getDoc, updateDoc } from "firebase/firestore";
+import { getFirestore, doc, getDoc, updateDoc, onSnapshot } from "firebase/firestore";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { sendNotification } from "@/lib/oneSignalService";
@@ -312,79 +312,79 @@ export default function DeliveryDetailsPage() {
     }
   }, [isAutoCentering, currentLat, currentLng, isNavigating]);
 
-  // Fetch order and monitor status changes
+  // Fetch order and monitor status changes - REAL-TIME
   useEffect(() => {
-    const fetchOrder = async () => {
-      if (!orderId) return;
-      setIsLoading(true);
-      try {
-        const db = getFirestore();
-        const orderRef = doc(db, "orders", orderId);
-        const orderSnap = await getDoc(orderRef);
-        if (orderSnap.exists()) {
-          const data = orderSnap.data() as DeliveryOrderDetails;
-          
-          // Check if status changed and send notification
-          if (lastStatusRef.current && lastStatusRef.current !== data.status) {
-            // Status changed - send notification
-            let notificationTitle = "";
-            let notificationMessage = "";
+    if (!orderId) return;
+    
+    setIsLoading(true);
+    const db = getFirestore();
+    const orderRef = doc(db, "orders", orderId);
+    
+    // Real-time listener for order updates
+    const unsubscribe = onSnapshot(orderRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.data() as DeliveryOrderDetails;
+        
+        // Check if status changed and send notification
+        if (lastStatusRef.current && lastStatusRef.current !== data.status) {
+          // Status changed - send notification
+          let notificationTitle = "";
+          let notificationMessage = "";
 
-            if (data.status === "shipped") {
-              notificationTitle = language === "ar" ? "🚚 تم شحن طلبك" : "🚚 Order Shipped";
-              notificationMessage = language === "ar" 
-                ? "تم شحن طلبك! سيصل إليك قريباً."
-                : "Your order has been shipped! It's on the way.";
-            } else if (data.status === "in-transit") {
-              notificationTitle = language === "ar" ? "📍 الطلب في الطريق" : "📍 Out for Delivery";
-              notificationMessage = language === "ar"
-                ? "طلبك في الطريق إليك الآن."
-                : "Your order is out for delivery.";
-            } else if (data.status === "received") {
-              notificationTitle = language === "ar" ? "✅ تم استقبال طلبك" : "✅ Delivered";
-              notificationMessage = language === "ar"
-                ? "شكراً لك! تم استقبال طلبك بنجاح."
-                : "Thank you! Your order has been delivered.";
-            }
-
-            if (notificationTitle && notificationMessage) {
-              await sendNotification(notificationTitle, notificationMessage, { orderId, status: data.status });
-            }
+          if (data.status === "shipped") {
+            notificationTitle = language === "ar" ? "🚚 تم شحن طلبك" : "🚚 Order Shipped";
+            notificationMessage = language === "ar" 
+              ? "تم شحن طلبك! سيصل إليك قريباً."
+              : "Your order has been shipped! It's on the way.";
+          } else if (data.status === "in-transit") {
+            notificationTitle = language === "ar" ? "📍 الطلب في الطريق" : "📍 Out for Delivery";
+            notificationMessage = language === "ar"
+              ? "طلبك في الطريق إليك الآن."
+              : "Your order is out for delivery.";
+          } else if (data.status === "received") {
+            notificationTitle = language === "ar" ? "✅ تم استقبال طلبك" : "✅ Delivered";
+            notificationMessage = language === "ar"
+              ? "شكراً لك! تم استقبال طلبك بنجاح."
+              : "Thank you! Your order has been delivered.";
           }
 
-          lastStatusRef.current = data.status;
-          setOrder(data);
-          
-          // Delivery destination location - use deliveryLat/deliveryLng from order
-          if (data.deliveryLat && data.deliveryLng) {
-            setDeliveryLat(data.deliveryLat);
-            setDeliveryLng(data.deliveryLng);
-          } else if (data.latitude && data.longitude) {
-            // Backward compatibility: use latitude/longitude if deliveryLat not available
-            setDeliveryLat(data.latitude);
-            setDeliveryLng(data.longitude);
-          } else {
-            // Fallback: geocode the address if no coordinates
-            const addr = data.shippingAddress || (data as any).deliveryAddress || data.shippingZone || "";
-            if (addr) {
-              geocodeAddress(addr);
-            }
-          }
-          
-          // Driver current location
-          if (data.latitude && data.longitude) {
-            setMapLat(data.latitude);
-            setMapLng(data.longitude);
+          if (notificationTitle && notificationMessage) {
+            sendNotification(notificationTitle, notificationMessage, { orderId, status: data.status });
           }
         }
-      } catch (error) {
-        // Silently handle fetch errors
-      } finally {
-        setIsLoading(false);
-      }
-    };
 
-    fetchOrder();
+        lastStatusRef.current = data.status;
+        setOrder(data);
+        
+        // Delivery destination location - use deliveryLat/deliveryLng from order
+        if (data.deliveryLat && data.deliveryLng) {
+          setDeliveryLat(data.deliveryLat);
+          setDeliveryLng(data.deliveryLng);
+        } else if (data.latitude && data.longitude) {
+          // Backward compatibility: use latitude/longitude if deliveryLat not available
+          setDeliveryLat(data.latitude);
+          setDeliveryLng(data.longitude);
+        } else {
+          // Fallback: geocode the address if no coordinates
+          const addr = data.shippingAddress || (data as any).deliveryAddress || data.shippingZone || "";
+          if (addr) {
+            geocodeAddress(addr);
+          }
+        }
+        
+        // Driver current location - will update in real-time
+        if (data.latitude && data.longitude) {
+          setMapLat(data.latitude);
+          setMapLng(data.longitude);
+        }
+      }
+      setIsLoading(false);
+    }, (error) => {
+      console.error("Error listening to order:", error);
+      setIsLoading(false);
+    });
+
+    return () => unsubscribe();
   }, [orderId, language]);
 
   if (isLoading) {

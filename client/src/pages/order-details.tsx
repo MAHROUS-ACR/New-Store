@@ -9,7 +9,7 @@ import { t } from "@/lib/translations";
 import { toast } from "sonner";
 import { getOrders, updateOrder, sendOrderEmailWithBrevo, sendOrderStatusUpdateEmail } from "@/lib/firebaseOps";
 import { getStatusColor } from "@/lib/statusColors";
-import { getFirestore, doc, getDoc } from "firebase/firestore";
+import { getFirestore, doc, getDoc, onSnapshot } from "firebase/firestore";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -220,39 +220,29 @@ export default function OrderDetailsPage() {
   }, [isLoggedIn, authLoading, setLocation, user]);
 
   useEffect(() => {
+    if (!orderId) return;
+    
     setIsLoading(true);
-    const fetchOrder = async () => {
-      try {
-
-        // Fetch from Firebase only
-        const orders = await getOrders(user?.role === 'admin' ? undefined : user?.id);
-        let foundOrder = null;
-        
-        // Try to find by URL ID first
-        if (orderId) {
-          foundOrder = orders?.find((o: any) => o.id === orderId);
-
+    const db = getFirestore();
+    const orderRef = doc(db, "orders", orderId);
+    
+    // Real-time listener for order updates
+    const unsubscribe = onSnapshot(orderRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const orderData = snapshot.data() as Order;
+        // Only show order if user is admin or owner
+        if (user?.role === 'admin' || orderData.userId === user?.id) {
+          setOrder({ ...orderData, id: snapshot.id });
         }
-        
-        // If not found, use the first order
-        if (!foundOrder && orders && orders.length > 0) {
-          foundOrder = orders[0];
-
-        }
-        
-        if (foundOrder) {
-
-          setOrder(foundOrder as Order);
-        }
-      } catch (error) {
-
-      } finally {
-        setIsLoading(false);
       }
-    };
+      setIsLoading(false);
+    }, (error) => {
+      console.error("Error listening to order:", error);
+      setIsLoading(false);
+    });
 
-    fetchOrder();
-  }, [orderId, user]);
+    return () => unsubscribe();
+  }, [orderId, user?.id, user?.role]);
 
   // Fetch order user data
   useEffect(() => {
