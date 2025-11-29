@@ -337,7 +337,7 @@ export default function CheckoutPage() {
         </div>
 
         {/* Scrollable content */}
-        <div className="flex-1 overflow-y-auto px-4 py-5" style={{ paddingBottom: "180px" }}>
+        <div className="flex-1 overflow-y-auto px-4 py-5" style={{ paddingBottom: "120px" }}>
           
           {/* Order Summary */}
           <section className="bg-white rounded-xl p-5 mb-5 border border-gray-200 shadow-sm">
@@ -655,7 +655,7 @@ export default function CheckoutPage() {
         </div>
 
         {/* Bottom button */}
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 max-w-[390px] mx-auto shadow-2xl">
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-3 shadow-2xl">
           <button
             onClick={handleSubmit}
             disabled={isSubmitting || !isFormValid}
