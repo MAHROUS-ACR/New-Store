@@ -157,84 +157,94 @@ export default function DeliveryPage() {
 
   // Initialize map when switching to map view
   useEffect(() => {
-    if (viewMode === "map" && currentLat && currentLng && !map.current) {
-      const timer = setTimeout(() => {
-        if (mapContainer.current && !map.current) {
-          try {
-            map.current = L.map(mapContainer.current).setView([currentLat, currentLng], 13);
-            L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-              attribution: '&copy; OpenStreetMap',
-              maxZoom: 19,
-            }).addTo(map.current);
-            
-            // Add marker for current location
-            L.marker([currentLat, currentLng], {
-              icon: L.icon({
-                iconUrl: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDMyIDMyIj48Y2lyY2xlIGN4PSIxNiIgY3k9IjE2IiByPSIxMiIgZmlsbD0iIzIyYzU1ZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIyIi8+PC9zdmc+',
-                iconSize: [32, 32],
-                iconAnchor: [16, 16],
-              })
-            }).addTo(map.current).bindPopup(language === "ar" ? "📍 موقعك الحالي" : "📍 Your Location");
-            
-            map.current.invalidateSize();
-            setMapLoading(false);
-          } catch (error) {
-            console.error("Map init error:", error);
-            setMapLoading(false);
-          }
-        }
-      }, 100);
-      return () => clearTimeout(timer);
+    if (viewMode !== "map" || !currentLat || !currentLng) return;
+    
+    setMapLoading(true);
+    
+    // Reset map if already exists
+    if (map.current) {
+      try {
+        map.current.remove();
+      } catch (e) {}
+      map.current = null;
     }
-  }, [viewMode, currentLat, currentLng]);
-
-  // Add order markers to map with delay to ensure map is ready
-  useEffect(() => {
-    if (!map.current || viewMode !== "map" || orders.length === 0) return;
+    
+    // Clear old markers
+    orderMarkersRef.current.forEach(m => {
+      try { map.current?.removeLayer(m); } catch (e) {}
+    });
+    orderMarkersRef.current = [];
     
     const timer = setTimeout(() => {
-      if (!map.current) return;
+      if (!mapContainer.current) return;
       
-      // Remove old markers
-      orderMarkersRef.current.forEach(m => {
-        try { map.current?.removeLayer(m); } catch (e) {}
-      });
-      orderMarkersRef.current = [];
-      
-      const pendingOrders = orders.filter(o => o.status === "shipped");
-      
-      let markerCount = 0;
-      pendingOrders.forEach((order, idx) => {
-        const lat = order.deliveryLat;
-        const lng = order.deliveryLng;
+      try {
+        map.current = L.map(mapContainer.current).setView([currentLat, currentLng], 13);
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          attribution: '&copy; OpenStreetMap',
+          maxZoom: 19,
+        }).addTo(map.current);
         
-        if (typeof lat === "number" && typeof lng === "number" && lat && lng) {
-          markerCount++;
-          try {
-            const markerIcon = L.divIcon({
-              html: `<div style="font-size: 18px; text-align: center; line-height: 28px; width: 28px; height: 28px; background-color: #3B82F6; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">${idx + 1}</div>`,
-              iconSize: [28, 28],
-              iconAnchor: [14, 14],
-              popupAnchor: [0, -14],
-              className: ''
-            });
-            
-            if (map.current) {
-              const marker = L.marker([lat, lng], { icon: markerIcon })
-                .addTo(map.current)
-                .bindPopup(`Order #${order.orderNumber}<br/>${order.shippingAddress}`);
-              orderMarkersRef.current.push(marker);
-            }
-          } catch (e) {
-            console.error("Error adding marker:", e);
-          }
-        }
-      });
-      console.log(`Markers rendered: ${markerCount}/${pendingOrders.length}`);
+        // Add marker for current location
+        L.marker([currentLat, currentLng], {
+          icon: L.icon({
+            iconUrl: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDMyIDMyIj48Y2lyY2xlIGN4PSIxNiIgY3k9IjE2IiByPSIxMiIgZmlsbD0iIzIyYzU1ZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIyIi8+PC9zdmc+',
+            iconSize: [32, 32],
+            iconAnchor: [16, 16],
+          })
+        }).addTo(map.current).bindPopup(language === "ar" ? "📍 موقعك الحالي" : "📍 Your Location");
+        
+        map.current.invalidateSize();
+        setMapLoading(false);
+      } catch (error) {
+        console.error("Map init error:", error);
+        setMapLoading(false);
+      }
     }, 50);
     
     return () => clearTimeout(timer);
-  }, [viewMode, orders]);
+  }, [viewMode, currentLat, currentLng]);
+
+  // Add order markers to map
+  useEffect(() => {
+    if (!map.current || viewMode !== "map" || orders.length === 0) return;
+    
+    // Remove old markers
+    orderMarkersRef.current.forEach(m => {
+      try { map.current?.removeLayer(m); } catch (e) {}
+    });
+    orderMarkersRef.current = [];
+    
+    const pendingOrders = orders.filter(o => o.status === "shipped");
+    
+    let markerCount = 0;
+    pendingOrders.forEach((order, idx) => {
+      const lat = order.deliveryLat;
+      const lng = order.deliveryLng;
+      
+      if (typeof lat === "number" && typeof lng === "number" && lat && lng) {
+        markerCount++;
+        try {
+          const markerIcon = L.divIcon({
+            html: `<div style="font-size: 18px; text-align: center; line-height: 28px; width: 28px; height: 28px; background-color: #3B82F6; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">${idx + 1}</div>`,
+            iconSize: [28, 28],
+            iconAnchor: [14, 14],
+            popupAnchor: [0, -14],
+            className: ''
+          });
+          
+          if (map.current) {
+            const marker = L.marker([lat, lng], { icon: markerIcon })
+              .addTo(map.current)
+              .bindPopup(`Order #${order.orderNumber}<br/>${order.shippingAddress}`);
+            orderMarkersRef.current.push(marker);
+          }
+        } catch (e) {
+          console.error("Error adding marker:", e);
+        }
+      }
+    });
+  }, [viewMode, orders, map]);
 
   useEffect(() => {
     const unsubscribe = setupOrdersListener();
