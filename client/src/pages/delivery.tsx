@@ -145,7 +145,17 @@ export default function DeliveryPage() {
 
   // Load map when viewMode changes
   useEffect(() => {
-    if (viewMode !== "map") return;
+    if (viewMode !== "map") {
+      // Clean up map when leaving map view
+      const container = document.getElementById("leaflet-map");
+      if (container) {
+        const existingMap = (container as any)._leaflet_map;
+        if (existingMap) {
+          existingMap.remove();
+        }
+      }
+      return;
+    }
 
     setMapError(null);
     let isMounted = true;
@@ -162,8 +172,8 @@ export default function DeliveryPage() {
       
       try {
         const container = document.getElementById("leaflet-map");
-        if (!container) {
-          if (isMounted) setMapError("Map container not found");
+        if (!container || !container.offsetParent) {
+          if (isMounted) setMapError("Map container not ready");
           return;
         }
 
@@ -185,10 +195,10 @@ export default function DeliveryPage() {
           ordersWithDistance = shippedOrders;
         }
 
-        // Create new map - center on user location
+        // Create new map
         const centerLat = userLat || (shippedOrders[0]?.deliveryLat || 30.0444);
         const centerLng = userLng || (shippedOrders[0]?.deliveryLng || 31.2357);
-        const map = L.map(container, { zoomControl: true }).setView([centerLat, centerLng], 13);
+        const map = L.map(container).setView([centerLat, centerLng], 13);
 
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
           attribution: '&copy; OpenStreetMap',
@@ -207,7 +217,7 @@ export default function DeliveryPage() {
           }).addTo(map).bindPopup(language === "ar" ? "موقعك الحالي" : "Your Location");
         }
 
-        // Draw routes for delivery sequence (from current location to order 1, order 1 to order 2, etc)
+        // Draw routes
         let startLat = userLat || centerLat;
         let startLng = userLng || centerLng;
         
@@ -218,24 +228,18 @@ export default function DeliveryPage() {
           fetch(url)
             .then(res => res.json())
             .then(data => {
-              if (isMounted && data.routes && data.routes[0]) {
-                try {
-                  const route = data.routes[0].geometry.coordinates;
-                  const latlngs = route.map((coord: [number, number]) => [coord[1], coord[0]]);
-                  L.polyline(latlngs, { color: routeColor, weight: 3, opacity: 0.7 }).addTo(map);
-                } catch (e) {
-                  // Silent fail for route drawing
-                }
+              if (isMounted && data.routes?.[0]) {
+                const latlngs = data.routes[0].geometry.coordinates.map((c: [number, number]) => [c[1], c[0]]);
+                L.polyline(latlngs, { color: routeColor, weight: 3, opacity: 0.7 }).addTo(map);
               }
             })
             .catch(() => {});
           
-          // Update start point for next route
           startLat = order.deliveryLat!;
           startLng = order.deliveryLng!;
         });
 
-        // Add markers for each order with delivery sequence numbers
+        // Add markers
         ordersWithDistance.forEach((order, idx) => {
           const isFirst = idx === 0;
           const markerColor = isFirst ? '#ef4444' : '#3B82F6';
@@ -251,15 +255,10 @@ export default function DeliveryPage() {
         });
 
         setTimeout(() => {
-          if (isMounted && map) {
-            map.invalidateSize();
-          }
+          if (isMounted) map.invalidateSize();
         }, 100);
       } catch (err: any) {
-        if (isMounted) {
-          console.error("Map init error:", err?.message || err);
-          setMapError("Failed to load map");
-        }
+        if (isMounted) setMapError("Failed to load map");
       }
     }, 50);
 
@@ -307,9 +306,9 @@ export default function DeliveryPage() {
           </div>
 
           {/* Content */}
-          <div className="flex-1 overflow-y-auto px-5 py-4 pb-32">
+          <div className="flex-1 overflow-y-auto px-5 py-4 pb-32 h-0">
             {viewMode === "list" ? (
-              <>
+              <div className="w-full">
                 {ordersLoading ? (
                   <div className="flex items-center justify-center py-8">
                     <div className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
@@ -361,14 +360,13 @@ export default function DeliveryPage() {
                     ))}
                   </div>
                 )}
-              </>
+              </div>
             ) : (
-              // MAP VIEW
-              <div className="space-y-4">
+              <div className="w-full h-full flex flex-col">
                 {mapError ? (
                   <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700 text-sm">{mapError}</div>
                 ) : (
-                  <div id="leaflet-map" style={{ height: "500px", width: "100%", borderRadius: "16px", border: "1px solid #e5e7eb" }} />
+                  <div id="leaflet-map" style={{ height: "calc(100vh - 250px)", width: "100%", borderRadius: "16px", border: "1px solid #e5e7eb", flex: 1 }} />
                 )}
               </div>
             )}
