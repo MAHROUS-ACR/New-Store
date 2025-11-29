@@ -8,7 +8,7 @@ import { t } from "@/lib/translations";
 import { getStatusColor } from "@/lib/statusColors";
 import { getFirestore, collection, query, where, getDocs, doc, updateDoc, onSnapshot } from "firebase/firestore";
 import { toast } from "sonner";
-import { Check, Map, List, Loader, Navigation } from "lucide-react";
+import { Check, Map, List, Loader } from "lucide-react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -22,12 +22,8 @@ interface DeliveryOrder {
   deliveryUsername?: string;
   recipientName?: string;
   shippingAddress?: string;
-  latitude?: number;
-  longitude?: number;
   deliveryLat?: number;
   deliveryLng?: number;
-  driverLat?: number;
-  driverLng?: number;
 }
 
 export default function DeliveryPage() {
@@ -42,12 +38,9 @@ export default function DeliveryPage() {
   const [recipientName, setRecipientName] = useState("");
   const [deliveryRemarks, setDeliveryRemarks] = useState("");
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
-  const [currentLat, setCurrentLat] = useState<number | null>(null);
-  const [currentLng, setCurrentLng] = useState<number | null>(null);
   const [mapLoading, setMapLoading] = useState(false);
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<L.Map | null>(null);
-  const orderMarkersRef = useRef<L.Marker[]>([]);
 
   useEffect(() => {
     if (!isLoading && (!user || user.role !== "delivery")) {
@@ -55,38 +48,11 @@ export default function DeliveryPage() {
     }
   }, [isLoading, user, setLocation]);
 
-  // Watch driver location continuously
-  useEffect(() => {
-    const DEFAULT_LAT = 30.0444;
-    const DEFAULT_LNG = 31.2357;
-    
-    setCurrentLat(DEFAULT_LAT);
-    setCurrentLng(DEFAULT_LNG);
-    
-    if (navigator.geolocation) {
-      const watchId = navigator.geolocation.watchPosition(
-        (position) => {
-          const lat = position.coords.latitude;
-          const lng = position.coords.longitude;
-          setCurrentLat(lat);
-          setCurrentLng(lng);
-        },
-        (error) => {
-          console.log("Geolocation error:", error.code);
-        },
-        { enableHighAccuracy: false, timeout: 10000, maximumAge: 30000 }
-      );
-      
-      return () => navigator.geolocation.clearWatch(watchId);
-    }
-  }, []);
-
   const setupOrdersListener = () => {
     setOrdersLoading(true);
     try {
       const db = getFirestore();
       const ordersRef = collection(db, "orders");
-      // Get ALL orders - filter on client side
       const q = query(ordersRef);
       
       const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -155,16 +121,13 @@ export default function DeliveryPage() {
     }
   };
 
-  // Initialize map when switching to map view
+  // Initialize map with order markers only
   useEffect(() => {
     if (viewMode !== "map") return;
     
     setMapLoading(true);
-    let initTimeout: NodeJS.Timeout;
-    let retries = 0;
-    const maxRetries = 20;
     
-    // Reset map if already exists
+    // Clear existing map
     if (map.current) {
       try {
         map.current.remove();
@@ -172,119 +135,56 @@ export default function DeliveryPage() {
       map.current = null;
     }
     
-    // Clear old markers
-    orderMarkersRef.current.forEach(m => {
-      try { map.current?.removeLayer(m); } catch (e) {}
-    });
-    orderMarkersRef.current = [];
+    // Get shipped orders
+    const shippedOrders = orders.filter(o => o.status === "shipped" && o.deliveryLat && o.deliveryLng);
     
-    const initializeMap = () => {
-      if (retries > maxRetries) {
-        console.error("Map init failed after max retries");
+    if (shippedOrders.length === 0) {
+      setMapLoading(false);
+      return;
+    }
+    
+    // Wait for DOM
+    const timer = setTimeout(() => {
+      if (!mapContainer.current) {
         setMapLoading(false);
         return;
       }
       
-      const container = document.getElementById("map-container");
-      if (!container) {
-        retries++;
-        initTimeout = setTimeout(initializeMap, 100);
-        return;
-      }
-      
-      if (!currentLat || !currentLng) {
-        retries++;
-        initTimeout = setTimeout(initializeMap, 100);
-        return;
-      }
-      
       try {
-        if (container.innerHTML) container.innerHTML = "";
-        map.current = L.map(container).setView([currentLat, currentLng], 13);
+        // Initialize map centered on first order
+        const firstOrder = shippedOrders[0];
+        map.current = L.map(mapContainer.current).setView([firstOrder.deliveryLat!, firstOrder.deliveryLng!], 13);
         
+        // Add tiles
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
           attribution: '&copy; OpenStreetMap',
           maxZoom: 19,
         }).addTo(map.current);
         
-        L.marker([currentLat, currentLng], {
-          icon: L.icon({
-            iconUrl: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDMyIDMyIj48Y2lyY2xlIGN4PSIxNiIgY3k9IjE2IiByPSIxMiIgZmlsbD0iIzIyYzU1ZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIyIi8+PC9zdmc+',
+        // Add order markers only
+        shippedOrders.forEach((order, idx) => {
+          const markerIcon = L.divIcon({
+            html: `<div style="width: 32px; height: 32px; background-color: #3B82F6; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">${idx + 1}</div>`,
             iconSize: [32, 32],
             iconAnchor: [16, 16],
-          })
-        }).addTo(map.current).bindPopup(language === "ar" ? "📍 موقعك الحالي" : "📍 Your Location");
+            popupAnchor: [0, -16],
+            className: ''
+          });
+          
+          L.marker([order.deliveryLat!, order.deliveryLng!], { icon: markerIcon })
+            .addTo(map.current!)
+            .bindPopup(`<strong>Order #${order.orderNumber}</strong><br/>${order.shippingAddress || 'No address'}`);
+        });
         
         map.current.invalidateSize();
         setMapLoading(false);
-        console.log("Map initialized successfully");
+        console.log("✅ Map loaded with", shippedOrders.length, "orders");
       } catch (error) {
-        console.error("Map init error:", error);
-        retries++;
-        initTimeout = setTimeout(initializeMap, 100);
+        console.error("Map error:", error);
+        setMapLoading(false);
       }
-    };
+    }, 100);
     
-    initTimeout = setTimeout(initializeMap, 100);
-    
-    return () => {
-      if (initTimeout) clearTimeout(initTimeout);
-    };
-  }, [viewMode, currentLat, currentLng, language]);
-
-  // Add order markers to map
-  useEffect(() => {
-    if (viewMode !== "map" || orders.length === 0) return;
-    
-    const addMarkers = () => {
-      if (!map.current) {
-        // Retry if map not ready
-        setTimeout(addMarkers, 100);
-        return;
-      }
-      
-      console.log("Adding markers to map...");
-      
-      // Remove old markers
-      orderMarkersRef.current.forEach(m => {
-        try { map.current?.removeLayer(m); } catch (e) {}
-      });
-      orderMarkersRef.current = [];
-      
-      const pendingOrders = orders.filter(o => o.status === "shipped");
-      console.log("Pending orders:", pendingOrders.length);
-      
-      let markerCount = 0;
-      pendingOrders.forEach((order, idx) => {
-        const lat = order.deliveryLat;
-        const lng = order.deliveryLng;
-        
-        if (typeof lat === "number" && typeof lng === "number" && lat && lng) {
-          markerCount++;
-          try {
-            const markerIcon = L.divIcon({
-              html: `<div style="font-size: 18px; text-align: center; line-height: 28px; width: 28px; height: 28px; background-color: #3B82F6; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">${idx + 1}</div>`,
-              iconSize: [28, 28],
-              iconAnchor: [14, 14],
-              popupAnchor: [0, -14],
-              className: ''
-            });
-            
-            if (map.current) {
-              const marker = L.marker([lat, lng], { icon: markerIcon })
-                .addTo(map.current)
-                .bindPopup(`Order #${order.orderNumber}<br/>${order.shippingAddress}`);
-              orderMarkersRef.current.push(marker);
-            }
-          } catch (e) {
-            console.error("Error adding marker:", e);
-          }
-        }
-      });
-      console.log("Total markers added:", markerCount);
-    };
-    
-    const timer = setTimeout(addMarkers, 50);
     return () => clearTimeout(timer);
   }, [viewMode, orders]);
 
@@ -469,32 +369,14 @@ export default function DeliveryPage() {
                     <span className="text-blue-600 font-semibold">{language === "ar" ? "جاري تحميل الخريطة..." : "Loading map..."}</span>
                   </div>
                 ) : (
-                  <div className="space-y-4">
-                    {/* Interactive Map */}
-                    <div className="relative bg-white border border-gray-200 rounded-2xl overflow-hidden" style={{ height: "500px" }}>
-                      <div 
-                        ref={mapContainer}
-                        id="map-container"
-                        style={{ height: "100%", width: "100%", position: "relative", backgroundColor: "#f0f0f0" }}
-                        className="rounded-2xl"
-                        data-testid="map-container"
-                      />
-                      {/* Update Location Button */}
-                      <button
-                        onClick={() => {
-                          if (map.current && currentLat && currentLng) {
-                            map.current.setView([currentLat, currentLng], 13);
-                            map.current.invalidateSize();
-                          }
-                        }}
-                        className="absolute top-4 right-4 bg-blue-500 hover:bg-blue-600 text-white rounded-lg p-3 shadow-lg transition-colors z-20 flex items-center gap-2"
-                        data-testid="button-set-location"
-                        title={language === "ar" ? "تحديث الموقع" : "Update Location"}
-                      >
-                        <Navigation size={20} />
-                        <span className="text-sm font-semibold">{language === "ar" ? "تحديث" : "Update"}</span>
-                      </button>
-                    </div>
+                  <div className="relative bg-white border border-gray-200 rounded-2xl overflow-hidden" style={{ height: "500px" }}>
+                    <div 
+                      ref={mapContainer}
+                      id="map-container"
+                      style={{ height: "100%", width: "100%", position: "relative", backgroundColor: "#f0f0f0" }}
+                      className="rounded-2xl"
+                      data-testid="map-container"
+                    />
                   </div>
                 )}
               </>
