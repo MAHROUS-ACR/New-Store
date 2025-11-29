@@ -216,9 +216,9 @@ export default function OrdersPage() {
       .openPopup();
   }, [mapLat, mapLng]);
 
-  // Update driver marker and route - don't recreate map
+  // Update driver marker and route after map is ready
   useEffect(() => {
-    if (!map.current) return;
+    if (!map.current || !mapLat || !mapLng) return;
     
     const driverLat = selectedOrder?.driverLat;
     const driverLng = selectedOrder?.driverLng;
@@ -253,7 +253,7 @@ export default function OrdersPage() {
         driverMarker.current = null;
       }
     }
-  }, [selectedOrder?.driverLat, selectedOrder?.driverLng]);
+  }, [selectedOrder?.driverLat, selectedOrder?.driverLng, mapLat, mapLng]);
 
   // Update selectedOrder when orders list changes (real-time sync)
   useEffect(() => {

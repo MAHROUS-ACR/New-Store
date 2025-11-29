@@ -157,9 +157,9 @@ export default function OrderDetailsPage() {
       .openPopup();
   }, [mapLat, mapLng, language]);
 
-  // Update driver marker and route - don't recreate map
+  // Update driver marker and route after map is ready
   useEffect(() => {
-    if (!map.current) return;
+    if (!map.current || !mapLat || !mapLng) return;
     
     const driverLat = order?.driverLat;
     const driverLng = order?.driverLng;
@@ -194,7 +194,7 @@ export default function OrderDetailsPage() {
         driverMarker.current = null;
       }
     }
-  }, [order?.driverLat, order?.driverLng]);
+  }, [order?.driverLat, order?.driverLng, mapLat, mapLng]);
 
   // Geocode address when order is loaded - use deliveryLat/deliveryLng if available
   useEffect(() => {
