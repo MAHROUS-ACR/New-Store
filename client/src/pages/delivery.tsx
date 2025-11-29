@@ -157,9 +157,12 @@ export default function DeliveryPage() {
 
   // Initialize map when switching to map view
   useEffect(() => {
-    if (viewMode !== "map" || !currentLat || !currentLng) return;
+    if (viewMode !== "map") return;
     
     setMapLoading(true);
+    let initTimeout: NodeJS.Timeout;
+    let retries = 0;
+    const maxRetries = 20;
     
     // Reset map if already exists
     if (map.current) {
@@ -176,14 +179,27 @@ export default function DeliveryPage() {
     orderMarkersRef.current = [];
     
     const initializeMap = () => {
-      // Use getElementById as direct fallback
+      if (retries > maxRetries) {
+        console.error("Map init failed after max retries");
+        setMapLoading(false);
+        return;
+      }
+      
       const container = document.getElementById("map-container");
       if (!container) {
-        setTimeout(initializeMap, 50);
+        retries++;
+        initTimeout = setTimeout(initializeMap, 100);
+        return;
+      }
+      
+      if (!currentLat || !currentLng) {
+        retries++;
+        initTimeout = setTimeout(initializeMap, 100);
         return;
       }
       
       try {
+        if (container.innerHTML) container.innerHTML = "";
         map.current = L.map(container).setView([currentLat, currentLng], 13);
         
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -191,7 +207,6 @@ export default function DeliveryPage() {
           maxZoom: 19,
         }).addTo(map.current);
         
-        // Add marker for current location
         L.marker([currentLat, currentLng], {
           icon: L.icon({
             iconUrl: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDMyIDMyIj48Y2lyY2xlIGN4PSIxNiIgY3k9IjE2IiByPSIxMiIgZmlsbD0iIzIyYzU1ZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIyIi8+PC9zdmc+',
@@ -202,16 +217,20 @@ export default function DeliveryPage() {
         
         map.current.invalidateSize();
         setMapLoading(false);
+        console.log("Map initialized successfully");
       } catch (error) {
         console.error("Map init error:", error);
-        setMapLoading(false);
+        retries++;
+        initTimeout = setTimeout(initializeMap, 100);
       }
     };
     
-    const timer = setTimeout(initializeMap, 50);
+    initTimeout = setTimeout(initializeMap, 100);
     
-    return () => clearTimeout(timer);
-  }, [viewMode, currentLat, currentLng]);
+    return () => {
+      if (initTimeout) clearTimeout(initTimeout);
+    };
+  }, [viewMode, currentLat, currentLng, language]);
 
   // Add order markers to map
   useEffect(() => {
