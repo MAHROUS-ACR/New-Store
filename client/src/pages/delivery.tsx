@@ -185,21 +185,6 @@ export default function DeliveryPage() {
     }
   };
 
-  // Initialize map when view mode changes to map
-  useEffect(() => {
-    if (viewMode === "map" && mapContainer.current && !map.current) {
-      try {
-        map.current = L.map(mapContainer.current, { preferCanvas: true }).setView([currentLat || 30.0444, currentLng || 31.2357], 13);
-        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-          attribution: '&copy; OpenStreetMap',
-          maxZoom: 19,
-        }).addTo(map.current);
-      } catch (error) {
-        console.error("Map init error:", error);
-      }
-    }
-  }, [viewMode]);
-
   // Calculate route for all pending orders
   const calculateOptimizedRoute = async () => {
     if (!currentLat || !currentLng) {
@@ -239,6 +224,24 @@ export default function DeliveryPage() {
     }
 
     setMapLoading(true);
+
+    // Ensure map is initialized FIRST with proper delay
+    await new Promise(resolve => setTimeout(resolve, 50));
+    
+    if (!map.current && mapContainer.current) {
+      try {
+        map.current = L.map(mapContainer.current, { preferCanvas: true }).setView([currentLat, currentLng], 13);
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          attribution: '&copy; OpenStreetMap',
+          maxZoom: 19,
+        }).addTo(map.current);
+        map.current.invalidateSize();
+      } catch (error) {
+        console.error("Map init error:", error);
+        setMapLoading(false);
+        return;
+      }
+    }
 
     // Clear old markers and route
     markersRef.current.forEach(m => m.remove());
