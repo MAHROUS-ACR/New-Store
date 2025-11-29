@@ -149,16 +149,8 @@ export default function DeliveryPage() {
 
     setMapError(null);
     let isMounted = true;
-    let shippedOrders = orders.filter(o => o.status === "shipped" && o.deliveryLat && o.deliveryLng);
 
-    if (shippedOrders.length === 0 && (!userLat || !userLng)) {
-      setMapError("No orders or location data");
-      return;
-    }
-
-    const timer = setTimeout(() => {
-      if (!isMounted) return;
-      
+    const initMap = () => {
       try {
         const container = document.getElementById("leaflet-map");
         if (!container) {
@@ -167,8 +159,12 @@ export default function DeliveryPage() {
         }
 
         const existingMap = (container as any)._leaflet_map;
-        if (existingMap) {
-          existingMap.remove();
+        if (existingMap) return;
+
+        let shippedOrders = orders.filter(o => o.status === "shipped" && o.deliveryLat && o.deliveryLng);
+        if (shippedOrders.length === 0 && (!userLat || !userLng)) {
+          if (isMounted) setMapError("No orders or location data");
+          return;
         }
 
         let ordersWithDistance: any[] = [];
@@ -206,9 +202,7 @@ export default function DeliveryPage() {
         
         ordersWithDistance.forEach((order, idx) => {
           const routeColor = idx === 0 ? '#ef4444' : '#ff8c00';
-          const url = `https://router.project-osrm.org/route/v1/driving/${startLng},${startLat};${order.deliveryLng},${order.deliveryLat}?geometries=geojson`;
-          
-          fetch(url)
+          fetch(`https://router.project-osrm.org/route/v1/driving/${startLng},${startLat};${order.deliveryLng},${order.deliveryLat}?geometries=geojson`)
             .then(res => res.json())
             .then(data => {
               if (isMounted && data.routes?.[0]) {
@@ -225,7 +219,6 @@ export default function DeliveryPage() {
         ordersWithDistance.forEach((order, idx) => {
           const isFirst = idx === 0;
           const markerColor = isFirst ? '#ef4444' : '#3B82F6';
-          
           L.marker([order.deliveryLat!, order.deliveryLng!], {
             icon: L.divIcon({
               html: `<div style="width: ${isFirst ? 40 : 32}px; height: ${isFirst ? 40 : 32}px; background: ${markerColor}; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: ${isFirst ? 18 : 14}px; box-shadow: 0 2px 4px rgba(0,0,0,0.3); ${isFirst ? 'border: 3px solid white;' : ''}">${idx + 1}</div>`,
@@ -237,18 +230,19 @@ export default function DeliveryPage() {
         });
 
         setTimeout(() => {
-          if (isMounted) map.invalidateSize();
+          if (isMounted && map) map.invalidateSize();
         }, 100);
       } catch (err) {
         if (isMounted) setMapError("Failed to load map");
       }
-    }, 100);
+    };
 
+    const timer = setTimeout(initMap, 100);
     return () => {
       isMounted = false;
       clearTimeout(timer);
     };
-  }, [viewMode, userLat, userLng, language]);
+  }, [viewMode, language]);
 
   useEffect(() => {
     const unsubscribe = setupOrdersListener();
