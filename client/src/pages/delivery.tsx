@@ -51,6 +51,8 @@ export default function DeliveryPage() {
   const [mapError, setMapError] = useState<string | null>(null);
   const [userLat, setUserLat] = useState<number | null>(null);
   const [userLng, setUserLng] = useState<number | null>(null);
+  const [totalDistance, setTotalDistance] = useState<number>(0);
+  const [totalTime, setTotalTime] = useState<number>(0);
 
   useEffect(() => {
     if (!isLoading && (!user || user.role !== "delivery")) {
@@ -148,6 +150,8 @@ export default function DeliveryPage() {
     if (viewMode !== "map") return;
 
     setMapError(null);
+    setTotalDistance(0);
+    setTotalTime(0);
     let isMounted = true;
 
     const initMap = () => {
@@ -199,6 +203,9 @@ export default function DeliveryPage() {
 
         let startLat = userLat || centerLat;
         let startLng = userLng || centerLng;
+        let accumulatedDistance = 0;
+        let accumulatedTime = 0;
+        let routesCount = 0;
         
         ordersWithDistance.forEach((order, idx) => {
           const routeColor = idx === 0 ? '#ef4444' : '#ff8c00';
@@ -206,8 +213,20 @@ export default function DeliveryPage() {
             .then(res => res.json())
             .then(data => {
               if (isMounted && data.routes?.[0]) {
-                const latlngs = data.routes[0].geometry.coordinates.map((c: [number, number]) => [c[1], c[0]]);
+                const route = data.routes[0];
+                const latlngs = route.geometry.coordinates.map((c: [number, number]) => [c[1], c[0]]);
                 L.polyline(latlngs, { color: routeColor, weight: 3, opacity: 0.7 }).addTo(map);
+                
+                accumulatedDistance += route.distance / 1000;
+                accumulatedTime += route.duration;
+                routesCount++;
+                
+                if (routesCount === ordersWithDistance.length) {
+                  if (isMounted) {
+                    setTotalDistance(accumulatedDistance);
+                    setTotalTime(accumulatedTime);
+                  }
+                }
               }
             })
             .catch(() => {});
@@ -344,7 +363,19 @@ export default function DeliveryPage() {
                 {mapError ? (
                   <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700 text-sm">{mapError}</div>
                 ) : (
-                  <div id="leaflet-map" style={{ flex: 1, height: "100%", borderRadius: "16px", border: "1px solid #e5e7eb" }} />
+                  <>
+                    <div id="leaflet-map" style={{ flex: 1, height: "calc(100% - 100px)", borderRadius: "16px", border: "1px solid #e5e7eb" }} />
+                    <div className="mt-4 p-4 bg-gray-50 rounded-2xl border border-gray-200 flex gap-6">
+                      <div className="flex-1">
+                        <p className="text-xs text-gray-600 font-semibold">{language === "ar" ? "المسافة الإجمالية" : "Total Distance"}</p>
+                        <p className="text-xl font-bold text-orange-600 mt-1">{totalDistance.toFixed(1)} <span className="text-sm">km</span></p>
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-xs text-gray-600 font-semibold">{language === "ar" ? "الوقت المتوقع" : "Estimated Time"}</p>
+                        <p className="text-xl font-bold text-blue-600 mt-1">{Math.round(totalTime / 60)} <span className="text-sm">{language === "ar" ? "دقيقة" : "min"}</span></p>
+                      </div>
+                    </div>
+                  </>
                 )}
               </div>
             )}
