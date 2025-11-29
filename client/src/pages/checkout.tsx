@@ -242,9 +242,6 @@ export default function CheckoutPage() {
         latitude: deliveryLat,
         longitude: deliveryLng,
         
-        // Test: Assign to first available driver or keep empty for admin assignment
-        deliveryUserId: "test-driver-id",  // Will be set by admin
-        
         notes: notes.trim(),
         
         items: items.map(item => ({

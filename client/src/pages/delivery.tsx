@@ -82,13 +82,12 @@ export default function DeliveryPage() {
   }, []);
 
   const setupOrdersListener = () => {
-    if (!user?.id) return;
     setOrdersLoading(true);
     try {
       const db = getFirestore();
       const ordersRef = collection(db, "orders");
-      // Query orders assigned to this driver OR with status shipped for assignment
-      const q = query(ordersRef, where("deliveryUserId", "==", user.id));
+      // Get all orders with status shipped
+      const q = query(ordersRef, where("status", "==", "shipped"));
       
       const unsubscribe = onSnapshot(q, (snapshot) => {
         const ordersList = snapshot.docs.map(doc => ({
@@ -98,7 +97,7 @@ export default function DeliveryPage() {
         
         console.log("📦 Loaded orders:", ordersList.length);
         ordersList.forEach(o => {
-          console.log(`Order #${o.orderNumber}: status=${o.status}, lat=${o.latitude}, lng=${o.longitude}, deliveryUserId=${o.deliveryUserId}`);
+          console.log(`Order #${o.orderNumber}: status=${o.status}, lat=${o.latitude}, lng=${o.longitude}`);
         });
         
         setOrders(ordersList.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
