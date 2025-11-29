@@ -239,6 +239,9 @@ export default function DeliveryPage() {
           markersRef.current = [];
           if (routePolylineRef.current) routePolylineRef.current.remove();
 
+          // Trigger map resize
+          setTimeout(() => mapInstance.invalidateSize(), 100);
+
           // Draw route
           const coords = route.geometry.coordinates.map((c: [number, number]): L.LatLngExpression => [c[1], c[0]]);
           routePolylineRef.current = L.polyline(coords, {
