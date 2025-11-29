@@ -8,9 +8,19 @@ import { t } from "@/lib/translations";
 import { getStatusColor } from "@/lib/statusColors";
 import { getFirestore, collection, onSnapshot, doc, updateDoc } from "firebase/firestore";
 import { toast } from "sonner";
-import { Check, Map, List, Loader } from "lucide-react";
+import { Check, Map, List, Loader, Navigation } from "lucide-react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+
+// Calculate distance between two coordinates using Haversine formula
+const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2: number) => {
+  const R = 6371; // Earth's radius in km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+};
 
 interface DeliveryOrder {
   id: string;
@@ -160,6 +170,20 @@ export default function DeliveryPage() {
           existingMap.remove();
         }
 
+        // Calculate distances and find nearest order
+        let nearestOrder = null;
+        let nearestDistance = Infinity;
+        
+        if (userLat && userLng) {
+          shippedOrders.forEach(order => {
+            const distance = calculateDistance(userLat, userLng, order.deliveryLat!, order.deliveryLng!);
+            if (distance < nearestDistance) {
+              nearestDistance = distance;
+              nearestOrder = { ...order, distance };
+            }
+          });
+        }
+
         // Create new map - center on user location
         const centerLat = userLat || (shippedOrders[0]?.deliveryLat || 30.0444);
         const centerLng = userLng || (shippedOrders[0]?.deliveryLng || 31.2357);
@@ -180,18 +204,31 @@ export default function DeliveryPage() {
               className: 'user-marker'
             })
           }).addTo(map).bindPopup(language === "ar" ? "موقعك الحالي" : "Your Location");
+
+          // Draw route line to nearest order
+          if (nearestOrder) {
+            L.polyline([[userLat, userLng], [nearestOrder.deliveryLat!, nearestOrder.deliveryLng!]], {
+              color: '#ef4444',
+              weight: 3,
+              opacity: 0.7,
+              dashArray: '5, 5'
+            }).addTo(map);
+          }
         }
 
-        // Add markers for each order (blue with number)
+        // Add markers for each order (blue with number, red for nearest)
         shippedOrders.forEach((order, idx) => {
+          const isNearest = nearestOrder && nearestOrder.id === order.id;
+          const distance = isNearest ? nearestOrder.distance : null;
+          
           L.marker([order.deliveryLat!, order.deliveryLng!], {
             icon: L.divIcon({
-              html: `<div style="width: 32px; height: 32px; background: #3B82F6; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">${idx + 1}</div>`,
-              iconSize: [32, 32],
-              iconAnchor: [16, 16],
+              html: `<div style="width: ${isNearest ? 40 : 32}px; height: ${isNearest ? 40 : 32}px; background: ${isNearest ? '#ef4444' : '#3B82F6'}; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: ${isNearest ? 16 : 14}px; box-shadow: 0 2px 4px rgba(0,0,0,0.3); ${isNearest ? 'border: 3px solid white;' : ''}">${idx + 1}</div>`,
+              iconSize: [isNearest ? 40 : 32, isNearest ? 40 : 32],
+              iconAnchor: [isNearest ? 20 : 16, isNearest ? 20 : 16],
               className: 'order-marker'
             })
-          }).addTo(map).bindPopup(`Order #${order.orderNumber}<br/>${order.shippingAddress || ''}`);
+          }).addTo(map).bindPopup(`<strong>Order #${order.orderNumber}</strong><br/>${order.shippingAddress || ''}<br/>${distance ? `<strong>Distance: ${distance.toFixed(1)} km</strong>` : ''}`);
         });
 
         map.invalidateSize();
