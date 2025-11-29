@@ -200,11 +200,16 @@ export default function DeliveryPage() {
     
     const pendingOrders = orders.filter(o => o.status === "shipped");
     
+    let markerCount = 0;
     pendingOrders.forEach((order, idx) => {
-      const lat = order.deliveryLat;
-      const lng = order.deliveryLng;
+      // Try deliveryLat/deliveryLng first, then fallback to latitude/longitude
+      const lat = order.deliveryLat || order.latitude;
+      const lng = order.deliveryLng || order.longitude;
+      
+      console.log(`Processing order #${order.orderNumber}: lat=${lat}, lng=${lng}`);
       
       if (typeof lat === "number" && typeof lng === "number" && lat && lng) {
+        markerCount++;
         try {
           const markerIcon = L.divIcon({
             html: `<div style="font-size: 18px; text-align: center; line-height: 28px; width: 28px; height: 28px; background-color: #3B82F6; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">${idx + 1}</div>`,
@@ -223,8 +228,11 @@ export default function DeliveryPage() {
         } catch (e) {
           console.error("Error adding marker:", e);
         }
+      } else {
+        console.warn(`Order #${order.orderNumber}: Missing coordinates - lat=${lat}, lng=${lng}`);
       }
     });
+    console.log(`Total markers added to map: ${markerCount} out of ${pendingOrders.length}`);
   }, [viewMode, orders]);
 
   useEffect(() => {
