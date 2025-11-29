@@ -7,7 +7,7 @@ import { useUser } from "@/lib/userContext";
 import { useLanguage } from "@/lib/languageContext";
 import { t } from "@/lib/translations";
 import { toast } from "sonner";
-import { getOrders, updateOrder, sendOrderEmailWithBrevo } from "@/lib/firebaseOps";
+import { getOrders, updateOrder, sendOrderEmailWithBrevo, sendOrderStatusUpdateEmail } from "@/lib/firebaseOps";
 import { getStatusColor } from "@/lib/statusColors";
 import { getFirestore, doc, getDoc } from "firebase/firestore";
 import L from "leaflet";
@@ -333,6 +333,8 @@ export default function OrderDetailsPage() {
     
     setIsProcessing(true);
     try {
+      const oldStatus = order.status;
+      
       // Update the same document with new status
       const success = await updateOrder(order.id, { 
         status,
@@ -344,7 +346,7 @@ export default function OrderDetailsPage() {
         const userEmail = orderUser?.email || order?.userEmail || order?.customerEmail;
         if (userEmail && order) {
           const updatedOrder = { ...order, status };
-          await sendOrderEmailWithBrevo(updatedOrder, userEmail).catch(() => {
+          await sendOrderStatusUpdateEmail(updatedOrder, userEmail, oldStatus).catch(() => {
             // Silent fail for email - order was still updated
           });
         }

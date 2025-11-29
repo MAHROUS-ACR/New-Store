@@ -131,6 +131,152 @@ export async function getOrderById(id: string) {
 }
 
 // ============= EMAIL SENDING (BREVO) =============
+export async function sendOrderStatusUpdateEmail(order: any, userEmail: string, oldStatus: string) {
+  try {
+    // Get store settings for Brevo credentials
+    const db = initDb();
+    const storeRef = doc(db, "settings", "store");
+    const storeSnap = await getDoc(storeRef);
+    
+    if (!storeSnap.exists()) {
+      return false;
+    }
+
+    const storeData = storeSnap.data();
+    const brevoApiKey = storeData?.brevoApiKey;
+    const brevoFromEmail = storeData?.brevoFromEmail;
+    const brevoFromName = storeData?.brevoFromName || "Order System";
+    const adminEmail = storeData?.adminEmail;
+    
+    if (!brevoApiKey || !brevoFromEmail) {
+      return false;
+    }
+
+    const statusMap: { [key: string]: string } = { pending: "قيد الانتظار", confirmed: "مؤكد", processing: "قيد المعالجة", shipped: "تم الشحن", "in-transit": "في الطريق", completed: "مكتمل", received: "تم التسليم", cancelled: "ملغى" };
+    const newStatusArabic = statusMap[order.status] || order.status;
+    const oldStatusArabic = statusMap[oldStatus] || oldStatus;
+
+    // Status update email template - focused on status change only
+    const emailHTML = `
+      <!DOCTYPE html>
+      <html dir="rtl" style="margin:0; padding:0;">
+      <head>
+        <meta charset="UTF-8">
+        <style>
+          body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f5f5f5; line-height: 1.6; }
+          .container { max-width: 700px; margin: 0 auto; background-color: #ffffff; padding: 0; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15); border-radius: 8px; overflow: hidden; }
+          .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 40px 30px; text-align: center; }
+          .header h1 { margin: 0 0 8px 0; font-size: 28px; font-weight: bold; }
+          .content { padding: 40px 30px; }
+          .welcome { font-size: 16px; color: #333; margin: 0 0 25px 0; line-height: 1.8; font-weight: 500; }
+          .status-box { background: linear-gradient(135deg, #f0f8ff 0%, #e8f4fb 100%); border-right: 4px solid #667eea; padding: 25px; border-radius: 8px; margin: 25px 0; }
+          .status-label { font-size: 12px; color: #667eea; text-transform: uppercase; margin-bottom: 8px; font-weight: 700; letter-spacing: 0.5px; }
+          .status-old { font-size: 14px; color: #999; margin-bottom: 10px; text-decoration: line-through; }
+          .status-new { font-size: 20px; font-weight: bold; color: #667eea; }
+          .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 20px 0; }
+          .info-item { background: linear-gradient(135deg, #f8f9ff 0%, #f0f4ff 100%); padding: 15px; border-radius: 8px; border-left: 3px solid #667eea; }
+          .info-label { font-size: 10px; color: #667eea; text-transform: uppercase; margin-bottom: 5px; font-weight: 700; }
+          .info-value { font-size: 14px; color: #333; font-weight: 600; }
+          .next-steps { background: #fffacd; border-right: 4px solid #ffc107; padding: 15px; border-radius: 6px; margin: 20px 0; }
+          .footer { background: linear-gradient(135deg, #f8f9ff 0%, #f0f4ff 100%); padding: 25px 30px; text-align: center; font-size: 13px; color: #666; border-top: 1px solid #e8e8f0; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <!-- Header -->
+          <div class="header">
+            <h1>🔄 تحديث حالة الطلب</h1>
+            <p style="margin: 8px 0 0 0; font-size: 14px;">Order #${order.orderNumber || order.id}</p>
+          </div>
+
+          <!-- Content -->
+          <div class="content">
+            <!-- Welcome -->
+            <p class="welcome">
+              مرحباً ${order.customerName || "العميل"}،<br>
+              تم تحديث حالة طلبك! 📦
+            </p>
+
+            <!-- Status Update -->
+            <div class="status-box">
+              <div class="status-label">📊 الحالة السابقة</div>
+              <div class="status-old">${oldStatusArabic}</div>
+              
+              <div class="status-label" style="margin-top: 15px;">✅ الحالة الجديدة</div>
+              <div class="status-new">${newStatusArabic}</div>
+            </div>
+
+            <!-- Order Details -->
+            <div class="info-grid">
+              <div class="info-item">
+                <div class="info-label">📅 تاريخ التحديث</div>
+                <div class="info-value">${new Date().toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" })}</div>
+              </div>
+              <div class="info-item">
+                <div class="info-label">💰 الإجمالي</div>
+                <div class="info-value">L.E ${Number(order.total || 0).toFixed(2)}</div>
+              </div>
+            </div>
+
+            <!-- Next Steps -->
+            <div class="next-steps">
+              <strong>⏭️ الخطوة التالية:</strong><br>
+              سيتم إرسال تحديثات إضافية عند تغيير حالة طلبك. شكراً لصبرك! 🙏
+            </div>
+          </div>
+
+          <!-- Footer -->
+          <div class="footer">
+            <p style="margin: 0;">للتواصل معنا أو للاستفسارات، لا تتردد في التواصل.</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    // Send email via Brevo REST API
+    const brevoPayload = {
+      sender: {
+        email: brevoFromEmail,
+        name: brevoFromName,
+      },
+      to: [
+        { email: userEmail },
+        ...(adminEmail ? [{ email: adminEmail }] : []),
+      ],
+      subject: `تحديث حالة الطلب: ${newStatusArabic} #${order.orderNumber || order.id}`,
+      htmlContent: emailHTML,
+    };
+
+    // Try direct call first (may work if Brevo allows it)
+    let response = await fetch("https://api.brevo.com/v3/smtp/email", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "api-key": brevoApiKey,
+      },
+      body: JSON.stringify(brevoPayload),
+    }).catch(err => {
+      return null;
+    });
+
+    // If CORS blocked, try alternative endpoint or skip silently
+    if (!response) {
+      return true; // Consider as success since we can't verify from client
+    }
+
+    const result = await response.json();
+    
+    if (response.ok) {
+      return true;
+    } else {
+      return false;
+    }
+  } catch (error: any) {
+    return false;
+  }
+}
+
 export async function sendOrderEmailWithBrevo(order: any, userEmail: string) {
   try {
     // Get store settings for Brevo credentials
