@@ -496,9 +496,9 @@ export default function CheckoutPage() {
                       </div>
                     )}
                     
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">📍 {language === "ar" ? "العنوان الكامل" : "Full Address"}</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">📍 {t("fullAddress", language)}</label>
                     <textarea
-                      placeholder={language === "ar" ? "الشارع، الحي، المدينة أو اختر من الخريطة" : "Street, District, City or choose from map"}
+                      placeholder={t("enterAddress", language)}
                       value={deliveryAddress}
                       onChange={(e) => setDeliveryAddress(e.target.value)}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none bg-white"
@@ -508,9 +508,9 @@ export default function CheckoutPage() {
                 )}
                 {shippingSelected === "saved" && (
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">📍 {language === "ar" ? "العنوان المحفوظ" : "Saved Address"}</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">📍 {t("savedAddressLabel", language)}</label>
                     <textarea
-                      placeholder={language === "ar" ? "عنوانك المحفوظ" : "Your saved address"}
+                      placeholder={t("savedAddressPlaceholder", language)}
                       value={deliveryAddress}
                       disabled
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-100 text-gray-600 cursor-not-allowed resize-none"
@@ -520,7 +520,7 @@ export default function CheckoutPage() {
                 )}
                 {shippingSelected === "saved" && (
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">✉️ {language === "ar" ? "البريد الإلكتروني" : "Email"}</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">✉️ {t("email", language)}</label>
                     <input
                       type="email"
                       value={user?.email || ""}
@@ -534,12 +534,12 @@ export default function CheckoutPage() {
               {/* Zone Selection Inside */}
               <div className="border-t-2 border-blue-200 pt-6">
                 <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                  <span className="text-lg">🚚</span> {language === "ar" ? "منطقة التوصيل" : "Delivery Zone"}
+                  <span className="text-lg">🚚</span> {t("deliveryZone", language)}
                 </label>
                 {isLoadingZones ? (
-                  <p className="text-center py-4 text-gray-600">{language === "ar" ? "⏳ جاري تحميل المناطق..." : "⏳ Loading zones..."}</p>
+                  <p className="text-center py-4 text-gray-600">{t("loadingZones", language)}</p>
                 ) : zonesList.length === 0 ? (
-                  <p className="text-center py-4 text-gray-600">{language === "ar" ? "لا توجد مناطق متاحة" : "No zones available"}</p>
+                  <p className="text-center py-4 text-gray-600">{t("noZonesAvailable", language)}</p>
                 ) : (
                   <select
                     value={zoneSelected?.id || ""}
@@ -554,7 +554,7 @@ export default function CheckoutPage() {
                         : "bg-white border-gray-300 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     }`}
                   >
-                    <option value="">{language === "ar" ? "-- اختر منطقة التوصيل --" : "-- Select delivery zone --"}</option>
+                    <option value="">{t("selectDeliveryZone", language)}</option>
                     {zonesList.map((z) => (
                       <option key={z.id} value={z.id}>
                         {z.name} - L.E {z.shippingCost}
@@ -568,7 +568,7 @@ export default function CheckoutPage() {
 
           {/* Payment Method */}
           <section className="bg-white rounded-xl p-5 mb-5 border border-gray-200 shadow-sm">
-            <h3 className="font-bold text-lg text-gray-900 mb-4">💳 {language === "ar" ? "طريقة الدفع" : "Payment Method"}</h3>
+            <h3 className="font-bold text-lg text-gray-900 mb-4">💳 {t("paymentMethod", language)}</h3>
             <div className="space-y-2">
               <button
                 onClick={() => setPaymentSelected("delivery")}
@@ -577,7 +577,7 @@ export default function CheckoutPage() {
                 }`}
               >
                 <span className="text-xl">💵</span>
-                {language === "ar" ? "الدفع عند الاستلام" : "Pay on Delivery"}
+                {t("payOnDelivery", language)}
               </button>
               <button
                 onClick={() => setPaymentSelected("card")}
@@ -586,7 +586,7 @@ export default function CheckoutPage() {
                 }`}
               >
                 <span className="text-xl">💳</span>
-                {language === "ar" ? "بطاقة ائتمان" : "Credit Card"}
+                {t("creditCard", language)}
               </button>
             </div>
           </section>
@@ -594,18 +594,18 @@ export default function CheckoutPage() {
           {/* Card Payment Details */}
           {paymentSelected === "card" && (
             <section className="bg-purple-50 rounded-xl p-5 mb-5 border-2 border-purple-200">
-              <h3 className="font-bold text-lg text-gray-900 mb-4">💳 {language === "ar" ? "بيانات البطاقة" : "Card Details"}</h3>
+              <h3 className="font-bold text-lg text-gray-900 mb-4">💳 {t("cardDetails", language)}</h3>
               <div className="space-y-3">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">{language === "ar" ? "اسم حامل البطاقة" : "Cardholder Name"}</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">{t("cardholderName", language)}</label>
                   <input
                     type="text"
-                    placeholder={language === "ar" ? "اسمك كما يظهر على البطاقة" : "Your name as shown on card"}
+                    placeholder={t("cardNamePlaceholder", language)}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">{language === "ar" ? "رقم البطاقة" : "Card Number"}</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">{t("cardNumber", language)}</label>
                   <input
                     type="text"
                     placeholder={language === "ar" ? "1234 5678 9012 3456" : "1234 5678 9012 3456"}
@@ -615,7 +615,7 @@ export default function CheckoutPage() {
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">{language === "ar" ? "انتهاء الصلاحية" : "Expiry"}</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">{t("expiry", language)}</label>
                     <input
                       type="text"
                       placeholder={language === "ar" ? "MM/YY" : "MM/YY"}
@@ -624,7 +624,7 @@ export default function CheckoutPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">{language === "ar" ? "CVV" : "CVV"}</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">{t("cvv", language)}</label>
                     <input
                       type="text"
                       placeholder={language === "ar" ? "123" : "123"}
@@ -640,10 +640,10 @@ export default function CheckoutPage() {
           {/* Notes */}
           <section className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm">
             <h3 className="font-bold text-lg text-gray-900 mb-4 flex items-center gap-2">
-              <FileText className="w-5 h-5" /> {language === "ar" ? "ملاحظات إضافية (اختياري)" : "Additional Notes (Optional)"}
+              <FileText className="w-5 h-5" /> {t("additionalNotes", language)}
             </h3>
             <textarea
-              placeholder={language === "ar" ? "أي ملاحظات خاصة بالطلب؟" : "Any special notes for the order?"}
+              placeholder={t("notesPlaceholder", language)}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent resize-none"
@@ -664,7 +664,7 @@ export default function CheckoutPage() {
                 : "bg-gradient-to-r from-black to-gray-800 text-white hover:shadow-lg active:scale-95"
             }`}
           >
-            {isSubmitting ? "⏳ جاري المعالجة..." : `✅ اطلب الآن - L.E ${grandTotal.toFixed(2)}`}
+            {isSubmitting ? t("processing", language) : `${t("orderNow", language)} ${grandTotal.toFixed(2)}`}
           </button>
         </div>
       </div>

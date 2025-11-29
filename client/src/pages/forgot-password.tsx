@@ -57,9 +57,9 @@ export default function ForgotPasswordPage() {
       } else if (error.code === "auth/invalid-email") {
         toast.error(t("invalidEmail", language));
       } else if (error.message?.includes("email-not-configured")) {
-        toast.error(language === "ar" ? "البريد غير مفعل في إعدادات Firebase" : "Email not configured in Firebase settings");
+        toast.error(t("emailNotConfigured", language));
       } else {
-        toast.error(error.message || (language === "ar" ? "خطأ في الإرسال" : "Failed to send reset email"));
+        toast.error(error.message || t("sendResetError", language));
       }
     } finally {
       setIsLoading(false);
@@ -88,9 +88,7 @@ export default function ForgotPasswordPage() {
             <p className="text-muted-foreground text-sm">
               {isSent
                 ? t("checkEmail", language)
-                : (language === "ar" 
-                    ? "أدخل بريدك الإلكتروني وسنرسل لك رابط استعادة كلمة المرور"
-                    : "Enter your email and we'll send you a password reset link")}
+                : t("resetDescription", language)}
             </p>
           </div>
 

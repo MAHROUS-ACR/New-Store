@@ -142,6 +142,16 @@ export const translations = {
     paymentMethod: "Payment Method",
     payOnDelivery: "Pay on Delivery",
     creditCard: "Credit Card",
+    cardDetails: "Card Details",
+    cardNamePlaceholder: "Your name as shown on card",
+    additionalNotes: "Additional Notes (Optional)",
+    notesPlaceholder: "Any special notes for the order?",
+    processing: "⏳ Processing...",
+    orderNow: "✅ Order Now - L.E",
+    resetDescription: "Enter your email and we'll send you a password reset link",
+    emailNotConfigured: "Email not configured in Firebase settings",
+    sendResetError: "Failed to send reset email",
+    deliveryZone: "Delivery Zone",
     
     // Admin & Menu
     editProduct: "Edit Product",
@@ -447,6 +457,16 @@ export const translations = {
     paymentMethod: "طريقة الدفع",
     payOnDelivery: "الدفع عند الاستلام",
     creditCard: "بطاقة ائتمان",
+    cardDetails: "بيانات البطاقة",
+    cardNamePlaceholder: "اسمك كما يظهر على البطاقة",
+    additionalNotes: "ملاحظات إضافية (اختياري)",
+    notesPlaceholder: "أي ملاحظات خاصة بالطلب؟",
+    processing: "⏳ جاري المعالجة...",
+    orderNow: "✅ اطلب الآن - L.E",
+    resetDescription: "أدخل بريدك الإلكتروني وسنرسل لك رابط استعادة كلمة المرور",
+    emailNotConfigured: "البريد غير مفعل في إعدادات Firebase",
+    sendResetError: "خطأ في الإرسال",
+    deliveryZone: "منطقة التوصيل",
     
     // Admin & Menu
     editProduct: "تعديل المنتج",

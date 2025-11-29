@@ -4,6 +4,7 @@ import { BottomNav } from "@/components/bottom-nav";
 import { ArrowLeft, Copy, Check } from "lucide-react";
 import { useLocation } from "wouter";
 import { useLanguage } from "@/lib/languageContext";
+import { t } from "@/lib/translations";
 
 export default function NotificationSetupPage() {
   const [, setLocation] = useLocation();
@@ -90,12 +91,12 @@ service cloud.firestore {
           {copiedStep === 4 ? (
             <>
               <Check className="w-4 h-4" />
-              {language === "ar" ? "تم النسخ!" : "Copied!"}
+              {t("copied", language)}
             </>
           ) : (
             <>
               <Copy className="w-4 h-4" />
-              {language === "ar" ? "انسخ القواعس" : "Copy Rules"}
+              {t("copyRules", language)}
             </>
           )}
         </button>
@@ -136,7 +137,7 @@ service cloud.firestore {
           onClick={() => setLocation("/")}
           className="mt-3 w-full bg-green-600 text-white px-5 py-2 rounded-lg hover:bg-green-700"
         >
-          {language === "ar" ? "العودة للتطبيق" : "Back to App"}
+          {t("backToApp", language)}
         </button>
       ),
     },
@@ -155,7 +156,7 @@ service cloud.firestore {
             <ArrowLeft className="w-5 h-5" />
           </button>
           <h1 className="text-lg font-bold">
-            {language === "ar" ? "إعداد الإشعارات" : "Setup Notifications"}
+            {t("setupNotifications", language)}
           </h1>
         </div>
 
