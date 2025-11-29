@@ -168,28 +168,28 @@ export default function CartPage() {
         </div>
 
         {/* Order Summary & Checkout Button - Fixed at bottom */}
-        <div className="fixed left-0 right-0 px-4 py-3 bg-white border-t border-gray-200 space-y-3 shadow-2xl" style={{ bottom: "72px", width: "100%", boxSizing: "border-box" }}>
-          <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-3.5 space-y-2 border border-gray-200">
+        <div className="fixed left-0 right-0 px-4 py-2.5 bg-white border-t border-gray-200 space-y-2 shadow-2xl" style={{ bottom: "60px", width: "100%", boxSizing: "border-box" }}>
+          <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-3 space-y-1.5 border border-gray-200">
             {totalWithDiscounts < total && (
-              <div className="flex justify-between text-xs">
+              <div className="flex justify-between text-[11px]">
                 <span className="text-gray-600">{t("subtotal", language)}</span>
                 <span className="text-gray-600">L.E {total.toFixed(2)}</span>
               </div>
             )}
             {totalWithDiscounts < total && (
-              <div className="flex justify-between text-xs text-green-600">
+              <div className="flex justify-between text-[11px] text-green-600">
                 <span>{t("discountSavings", language)}</span>
                 <span className="font-semibold">-L.E {(total - totalWithDiscounts).toFixed(2)}</span>
               </div>
             )}
-            <div className="flex justify-between text-lg font-bold text-gray-900 pt-2 border-t border-gray-200">
+            <div className="flex justify-between text-base font-bold text-gray-900 pt-1.5 border-t border-gray-200">
               <span>{t("total", language)}</span>
               <span className="text-green-600">L.E {(totalWithDiscounts || total).toFixed(2)}</span>
             </div>
           </div>
           <button
             onClick={handleCheckout}
-            className="w-full bg-gradient-to-r from-black to-gray-800 text-white py-3.5 rounded-xl font-bold hover:shadow-lg active:scale-95 transition-all"
+            className="w-full bg-gradient-to-r from-black to-gray-800 text-white py-3 rounded-lg font-bold hover:shadow-lg active:scale-95 transition-all text-sm"
             data-testid="button-checkout"
           >
             {t("proceedToPayment", language)}
