@@ -194,17 +194,33 @@ export default function DeliveryPage() {
 
     setMapLoading(true);
 
-    // Ensure map is initialized
-    if (!map.current && mapContainer.current) {
+    // Ensure map container exists and map is initialized
+    if (!mapContainer.current) {
+      console.error("Map container not found");
+      setMapLoading(false);
+      return;
+    }
+
+    if (!map.current) {
       try {
-        map.current = L.map(mapContainer.current).setView([currentLat, currentLng], 13);
+        map.current = L.map(mapContainer.current, { 
+          preferCanvas: true,
+          zoomControl: true,
+          attributionControl: true 
+        }).setView([currentLat, currentLng], 13);
+        
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-          attribution: '&copy; OpenStreetMap',
+          attribution: '&copy; OpenStreetMap contributors',
           maxZoom: 19,
+          minZoom: 10
         }).addTo(map.current);
+        
+        // Wait a bit for tiles to load
+        await new Promise(resolve => setTimeout(resolve, 200));
         map.current.invalidateSize();
       } catch (error) {
-        console.error("Map reinit error:", error);
+        console.error("Map initialization error:", error);
+        map.current = null;
         setMapLoading(false);
         return;
       }
@@ -309,28 +325,8 @@ export default function DeliveryPage() {
     }
   }, [user?.id, user?.role]);
 
-  // Initialize map container when switching to map view
   useEffect(() => {
-    if (viewMode === "map" && mapContainer.current && !map.current) {
-      setTimeout(() => {
-        if (mapContainer.current) {
-          try {
-            map.current = L.map(mapContainer.current).setView([currentLat || 30.0444, currentLng || 31.2357], 13);
-            L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-              attribution: '&copy; OpenStreetMap',
-              maxZoom: 19,
-            }).addTo(map.current);
-            map.current.invalidateSize();
-          } catch (error) {
-            console.error("Map init error:", error);
-          }
-        }
-      }, 100);
-    }
-  }, [viewMode]);
-
-  useEffect(() => {
-    if (viewMode === "map") {
+    if (viewMode === "map" && orders.length > 0) {
       calculateOptimizedRoute();
       
       // Recalculate route every 15 seconds as driver moves
