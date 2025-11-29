@@ -10,9 +10,7 @@ import { getFirestore, collection, onSnapshot, doc, updateDoc } from "firebase/f
 import { toast } from "sonner";
 import { Check, Map, List, Loader, Navigation } from "lucide-react";
 import L from "leaflet";
-import LRM from "leaflet-routing-machine";
 import "leaflet/dist/leaflet.css";
-import "leaflet-routing-machine/dist/leaflet-routing-machine.css";
 
 // Calculate distance between two coordinates using Haversine formula
 const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2: number) => {
@@ -209,32 +207,30 @@ export default function DeliveryPage() {
 
           // Draw real route to nearest order using OSRM
           if (nearestOrder) {
-            try {
-              LRM.Routing.control({
-                waypoints: [
-                  L.latLng(userLat, userLng),
-                  L.latLng(nearestOrder.deliveryLat!, nearestOrder.deliveryLng!)
-                ],
-                router: LRM.osrmv1({
-                  serviceUrl: 'https://router.project-osrm.org/route/v1'
-                }),
-                routeWhileDragging: false,
-                fitSelectedRoutes: false,
-                showAlternatives: false,
-                lineOptions: {
-                  styles: [{ color: '#ef4444', opacity: 0.8, weight: 4 }]
+            // Fetch actual street route from OSRM
+            fetch(`https://router.project-osrm.org/route/v1/driving/${userLng},${userLat};${nearestOrder.deliveryLng},${nearestOrder.deliveryLat}?geometries=geojson`)
+              .then(res => res.json())
+              .then(data => {
+                if (data.routes && data.routes[0]) {
+                  const route = data.routes[0].geometry.coordinates;
+                  const latlngs = route.map((coord: [number, number]) => [coord[1], coord[0]]);
+                  L.polyline(latlngs, {
+                    color: '#ef4444',
+                    weight: 4,
+                    opacity: 0.8
+                  }).addTo(map);
                 }
-              }).addTo(map);
-            } catch (err) {
-              console.error("Routing error:", err);
-              // Fallback to straight line if routing fails
-              L.polyline([[userLat, userLng], [nearestOrder.deliveryLat!, nearestOrder.deliveryLng!]], {
-                color: '#ef4444',
-                weight: 3,
-                opacity: 0.7,
-                dashArray: '5, 5'
-              }).addTo(map);
-            }
+              })
+              .catch(err => {
+                console.error("Routing error:", err);
+                // Fallback to straight line if routing fails
+                L.polyline([[userLat, userLng], [nearestOrder.deliveryLat!, nearestOrder.deliveryLng!]], {
+                  color: '#ef4444',
+                  weight: 3,
+                  opacity: 0.7,
+                  dashArray: '5, 5'
+                }).addTo(map);
+              });
           }
         }
 
