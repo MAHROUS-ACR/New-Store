@@ -65,6 +65,13 @@ export default function DeliveryPage() {
 
   // Watch driver location continuously
   useEffect(() => {
+    // Use default location (Cairo) as fallback
+    const DEFAULT_LAT = 30.0444;
+    const DEFAULT_LNG = 31.2357;
+    
+    setCurrentLat(DEFAULT_LAT);
+    setCurrentLng(DEFAULT_LNG);
+    
     if (navigator.geolocation) {
       const watchId = navigator.geolocation.watchPosition(
         (position) => {
@@ -72,6 +79,7 @@ export default function DeliveryPage() {
           const lng = position.coords.longitude;
           setCurrentLat(lat);
           setCurrentLng(lng);
+          console.log("Got location:", lat, lng);
           
           // Update driver marker on map if it exists
           if (map.current && markersRef.current.length > 0) {
@@ -79,10 +87,11 @@ export default function DeliveryPage() {
             driverMarker.setLatLng([lat, lng]);
           }
         },
-        () => {
-          // Location access denied, use default
+        (error) => {
+          console.log("Geolocation error:", error.code);
+          // Keep default location
         },
-        { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+        { enableHighAccuracy: false, timeout: 10000, maximumAge: 30000 }
       );
       
       return () => navigator.geolocation.clearWatch(watchId);
