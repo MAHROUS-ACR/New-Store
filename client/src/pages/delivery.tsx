@@ -306,9 +306,9 @@ export default function DeliveryPage() {
           </div>
 
           {/* Content */}
-          <div className="flex-1 overflow-y-auto px-5 py-4 pb-32 h-0">
+          <div className="flex-1 overflow-hidden flex flex-col">
             {viewMode === "list" ? (
-              <div className="w-full">
+              <div className="flex-1 overflow-y-auto px-5 py-4 pb-32">
                 {ordersLoading ? (
                   <div className="flex items-center justify-center py-8">
                     <div className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
@@ -362,11 +362,11 @@ export default function DeliveryPage() {
                 )}
               </div>
             ) : (
-              <div className="w-full h-full flex flex-col">
+              <div className="flex-1 overflow-hidden flex flex-col px-5 py-4">
                 {mapError ? (
                   <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700 text-sm">{mapError}</div>
                 ) : (
-                  <div id="leaflet-map" style={{ height: "calc(100vh - 250px)", width: "100%", borderRadius: "16px", border: "1px solid #e5e7eb", flex: 1 }} />
+                  <div id="leaflet-map" style={{ flex: 1, borderRadius: "16px", border: "1px solid #e5e7eb" }} />
                 )}
               </div>
             )}
