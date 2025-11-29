@@ -285,6 +285,8 @@ export const translations = {
     userRole: "👤 User",
     adminRole: "👑 Admin",
     deliveryRole: "🚚 Delivery",
+    latitudeLabel: "Lat",
+    longitudeLabel: "Lng",
     
     // Admin & Menu
     editProduct: "Edit Product",
@@ -733,6 +735,8 @@ export const translations = {
     userRole: "👤 يوزر",
     adminRole: "👑 ادمن",
     deliveryRole: "🚚 ديليفري",
+    latitudeLabel: "خط العرض",
+    longitudeLabel: "خط الطول",
     
     // Admin & Menu
     editProduct: "تعديل المنتج",

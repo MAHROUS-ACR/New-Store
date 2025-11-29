@@ -884,7 +884,7 @@ export default function ProfilePage() {
                         onClick={() => setShowMapSelector(!showMapSelector)}
                         className="w-full px-4 py-2 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition text-sm mb-3"
                       >
-                        {showMapSelector ? (`{language === "ar" ? "❌ " : "❌ "}` + t("closeMap", language)) : (`{language === "ar" ? "🗺️ " : "🗺️ "}` + t("chooseFromMap", language))}
+                        {showMapSelector ? "❌ " + t("closeMap", language) : "🗺️ " + t("chooseFromMap", language)}
                       </button>
                       
                       {showMapSelector && (
@@ -894,7 +894,7 @@ export default function ProfilePage() {
                               setUserAddress(address);
                               setUserLocationCoords({ lat, lng });
                               setShowMapSelector(false);
-                              toast.success(`(language === "ar" ? "✅ " : "✅ ")` + t("locationSet", language));
+                              toast.success("✅ " + t("locationSet", language));
                             }}
                             initialAddress={userAddress}
                             initialLat={userLocationCoords?.lat}
@@ -916,7 +916,7 @@ export default function ProfilePage() {
                       />
                       {userLocationCoords && (
                         <p className="text-xs text-gray-600 mt-1">
-                          📍 {language === "ar" ? `خط العرض: ${userLocationCoords.lat.toFixed(6)}, خط الطول: ${userLocationCoords.lng.toFixed(6)}` : `Lat: ${userLocationCoords.lat.toFixed(6)}, Lng: ${userLocationCoords.lng.toFixed(6)}`}
+                          📍 {t("latitudeLabel", language)}: {userLocationCoords.lat.toFixed(6)}, {t("longitudeLabel", language)}: {userLocationCoords.lng.toFixed(6)}
                         </p>
                       )}
                     </div>
