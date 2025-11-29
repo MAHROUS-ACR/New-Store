@@ -140,12 +140,12 @@ export default function DeliveryDetailsPage() {
     saveLocationToFirebase();
   }, [currentLat, currentLng, orderId]);
 
-  // Create motorcycle delivery icon using emoji
+  // Create package delivery icon using emoji
   const createDeliveryIcon = (isActive: boolean = false) => {
     const size = isActive ? 60 : 50;
     const fontSize = isActive ? 48 : 40;
     return L.divIcon({
-      html: `<div style="font-size: ${fontSize}px; text-align: center; line-height: ${size}px; width: ${size}px; height: ${size}px;">🏍️</div>`,
+      html: `<div style="font-size: ${fontSize}px; text-align: center; line-height: ${size}px; width: ${size}px; height: ${size}px;">📦</div>`,
       iconSize: [size, size],
       iconAnchor: [size / 2, size / 2],
       popupAnchor: [0, -(size / 2)],
@@ -198,10 +198,10 @@ export default function DeliveryDetailsPage() {
       userInteractedWithMap.current = true;
     });
 
-    // Delivery destination marker (RED)
+    // Delivery destination marker (BLUE PERSON)
     L.marker([deliveryLat, deliveryLng], {
       icon: L.divIcon({
-        html: '<div style="font-size: 30px; text-align: center; line-height: 35px;">📍</div>',
+        html: '<div style="font-size: 30px; text-align: center; line-height: 35px;">👤</div>',
         iconSize: [35, 35],
         iconAnchor: [17, 35],
         popupAnchor: [0, -35],
