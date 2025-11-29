@@ -198,15 +198,25 @@ export default function OrderDetailsPage() {
 
   // Geocode address when order is loaded - use deliveryLat/deliveryLng if available
   useEffect(() => {
-    if (order && !mapLat) {
+    if (order && orderId) {
+      // Reset map when order changes
+      if (map.current) {
+        map.current.remove();
+        map.current = null;
+      }
+      driverMarker.current = null;
+      userInteractedWithMap.current = false;
+      
       if (order.deliveryLat && order.deliveryLng) {
         setMapLat(order.deliveryLat);
         setMapLng(order.deliveryLng);
       } else {
+        setMapLat(null);
+        setMapLng(null);
         geocodeAddress(order.shippingAddress || order.deliveryAddress || "");
       }
     }
-  }, [order?.shippingAddress, order?.deliveryAddress, order?.deliveryLat, order?.deliveryLng, mapLat]);
+  }, [orderId]);
 
   // Determine back path based on user role and store tab preference
   const handleBack = () => {

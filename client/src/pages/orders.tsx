@@ -181,40 +181,41 @@ export default function OrdersPage() {
     }
   };
 
-  // Initialize map only once
+  // Initialize map - recreate if needed
   useEffect(() => {
     if (!mapContainer.current || !mapLat || !mapLng) return;
     
-    if (map.current) return; // Don't recreate if already exists
-    
-    map.current = L.map(mapContainer.current).setView([mapLat, mapLng], 14);
+    // Create map if it doesn't exist
+    if (!map.current) {
+      map.current = L.map(mapContainer.current).setView([mapLat, mapLng], 14);
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: '&copy; OpenStreetMap',
       maxZoom: 19,
     }).addTo(map.current);
 
-    // Track user interactions to prevent auto-centering
-    map.current.on('zoom', () => {
-      userInteractedWithMap.current = true;
-    });
-    map.current.on('drag', () => {
-      userInteractedWithMap.current = true;
-    });
+      // Track user interactions to prevent auto-centering
+      map.current.on('zoom', () => {
+        userInteractedWithMap.current = true;
+      });
+      map.current.on('drag', () => {
+        userInteractedWithMap.current = true;
+      });
 
-    // Destination marker (red)
-    L.marker([mapLat, mapLng], {
-      icon: L.divIcon({
-        html: '<div style="font-size: 30px; text-align: center; line-height: 35px;">📍</div>',
-        iconSize: [35, 35],
-        iconAnchor: [17, 35],
-        popupAnchor: [0, -35],
-        className: ''
+      // Destination marker (red)
+      L.marker([mapLat, mapLng], {
+        icon: L.divIcon({
+          html: '<div style="font-size: 30px; text-align: center; line-height: 35px;">📍</div>',
+          iconSize: [35, 35],
+          iconAnchor: [17, 35],
+          popupAnchor: [0, -35],
+          className: ''
+        })
       })
-    })
-      .addTo(map.current)
-      .bindPopup(`<div style="text-align: center"><strong>${language === "ar" ? "موقع التسليم" : "Delivery Location"}</strong></div>`)
-      .openPopup();
-  }, [mapLat, mapLng]);
+        .addTo(map.current)
+        .bindPopup(`<div style="text-align: center"><strong>${language === "ar" ? "موقع التسليم" : "Delivery Location"}</strong></div>`)
+        .openPopup();
+    }
+  }, [mapLat, mapLng, language]);
 
   // Update driver marker and route after map is ready
   useEffect(() => {
@@ -286,6 +287,14 @@ export default function OrdersPage() {
   // Update map location when order is selected - use deliveryLat/deliveryLng if available
   useEffect(() => {
     if (selectedOrder?.id) {
+      // Reset map to recreate it
+      if (map.current) {
+        map.current.remove();
+        map.current = null;
+      }
+      driverMarker.current = null;
+      userInteractedWithMap.current = false;
+      
       // Use deliveryLat/deliveryLng if available, otherwise geocode
       if (selectedOrder.deliveryLat && selectedOrder.deliveryLng) {
         setMapLat(selectedOrder.deliveryLat);
@@ -293,8 +302,18 @@ export default function OrdersPage() {
       } else if (selectedOrder.shippingAddress || selectedOrder.deliveryAddress) {
         geocodeAddress(selectedOrder.shippingAddress || selectedOrder.deliveryAddress || "");
       }
+    } else {
+      // Clean up map when order is closed
+      if (map.current) {
+        map.current.remove();
+        map.current = null;
+      }
+      driverMarker.current = null;
+      setMapLat(null);
+      setMapLng(null);
+      userInteractedWithMap.current = false;
     }
-  }, [selectedOrder?.id, selectedOrder?.deliveryLat, selectedOrder?.deliveryLng]);
+  }, [selectedOrder?.id]);
 
 
   return (
