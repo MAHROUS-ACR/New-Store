@@ -545,7 +545,7 @@ export const translations = {
     received: "✅ تم التسليم",
     completed: "🎉 مكتمل",
     cancelled: "ملغى",
-    markAsReceived: "تم الاستقبال",
+    markAsReceived: "تم التسليم",
     deliveryLocation: "موقع التسليم",
     driverLocation: "موقع السائق",
     loadingMap: "جاري تحميل الخريطة...",
@@ -631,7 +631,7 @@ export const translations = {
     allOrders: "الكل",
     shipped: "🚚 تم الشحن",
     completed: "🎉 مكتمل",
-    confirmDelivery: "تأكيد الاستقبال",
+    confirmDelivery: "تأكيد الاستلام",
     recipientName: "اسم المستلم",
     deliveryRemarks: "ملاحظات التسليم (اختياري)",
     deliveryRemarksPlaceholder: "مثال: الباب مقفول، تم الاتفاق على المخزن...",
@@ -661,8 +661,8 @@ export const translations = {
     orderShippedMessage: "تم شحن طلبك وهو في الطريق",
     outForDelivery: "📍 الطلب في الطريق",
     outForDeliveryMessage: "طلبك في الطريق للتسليم",
-    delivered: "✅ تم استقبال طلبك",
-    deliveredMessage: "تم استقبال طلبك",
+    delivered: "✅ تم تسليم طلبك",
+    deliveredMessage: "تم تسليم طلبك",
     backButton: "رجوع",
     orderNotFound: "لم يتم العثور على الطلب",
     navigate: "ملاحة",
