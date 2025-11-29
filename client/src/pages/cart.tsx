@@ -21,7 +21,7 @@ export default function CartPage() {
         const data = await getAllDiscounts();
         setDiscounts(data || []);
       } catch (error) {
-
+        
       }
     };
     fetchDiscounts();
@@ -73,8 +73,8 @@ export default function CartPage() {
 
   return (
     <MobileWrapper>
-      <div className="w-full flex-1 flex flex-col overflow-hidden bg-gradient-to-b from-gray-50 to-white">
-        {/* Header */}
+      <div className="w-full h-full flex flex-col bg-gradient-to-b from-gray-50 to-white">
+        {/* Header - Fixed */}
         <div className="px-5 py-4 flex items-center gap-3 bg-white border-b border-gray-200 flex-shrink-0 shadow-sm">
           <button
             onClick={() => setLocation("/")}
@@ -84,12 +84,12 @@ export default function CartPage() {
             <ArrowLeft className="w-4 h-4" />
           </button>
           <h1 className="text-xl font-bold text-gray-900">{t("cart", language)}</h1>
-          <span className="ml-auto text-xs font-semibold bg-black text-white px-2.5 py-1 rounded-full">{items.length} {language === "ar" ? "منتج" : "items"}</span>
+          <span className="ml-auto text-xs font-semibold bg-black text-white px-2.5 py-1 rounded-full">{items.length}</span>
         </div>
 
         {/* Items List - Scrollable */}
-        <div className="flex-1 overflow-y-auto w-full" style={{ minHeight: 0, paddingBottom: "100px" }}>
-          <div className="w-full px-4 py-3 space-y-2.5 pb-4">
+        <div className="flex-1 overflow-y-auto" style={{ minHeight: 0 }}>
+          <div className="w-full px-4 py-3 space-y-2.5">
             {items.map((item) => (
               <div
                 key={item._uniqueId}
@@ -99,13 +99,13 @@ export default function CartPage() {
                 <img
                   src={item.image}
                   alt={item.title}
-                  className="w-24 h-24 rounded-lg object-cover flex-shrink-0"
+                  className="w-20 h-20 rounded-lg object-cover flex-shrink-0"
                 />
                 <div className="flex-1 min-w-0 flex flex-col justify-between">
                   <div>
                     <p className="font-semibold text-sm text-gray-900 line-clamp-2">{item.title}</p>
                     {(item.selectedColor || item.selectedSize || item.selectedUnit) && (
-                      <div className="flex flex-wrap gap-1 mt-1.5">
+                      <div className="flex flex-wrap gap-1 mt-1">
                         {item.selectedUnit && <span className="inline-block px-2 py-0.5 bg-blue-50 text-blue-700 rounded text-[8px] font-medium">{item.selectedUnit}</span>}
                         {item.selectedSize && <span className="inline-block px-2 py-0.5 bg-purple-50 text-purple-700 rounded text-[8px] font-medium">{item.selectedSize}</span>}
                         {item.selectedColor && (() => {
@@ -119,38 +119,38 @@ export default function CartPage() {
                       </div>
                     )}
                   </div>
-                  <div className="flex items-center justify-between mt-2">
+                  <div className="flex items-center justify-between mt-1">
                     {(() => {
                       const activeDiscount = getActiveDiscount(item.id, discounts);
                       const discountedPrice = calculateItemPrice(item);
                       return (
                         <div>
                           {activeDiscount ? (
-                            <div className="flex items-baseline gap-1.5">
-                              <p className="text-base font-bold text-green-600">L.E {discountedPrice.toFixed(2)}</p>
+                            <div className="flex items-baseline gap-1">
+                              <p className="text-sm font-bold text-green-600">L.E {discountedPrice.toFixed(2)}</p>
                               <p className="text-xs text-gray-400 line-through">L.E {item.price.toFixed(2)}</p>
                             </div>
                           ) : (
-                            <p className="text-base font-bold text-gray-900">L.E {item.price.toFixed(2)}</p>
+                            <p className="text-sm font-bold text-gray-900">L.E {item.price.toFixed(2)}</p>
                           )}
                         </div>
                       );
                     })()}
-                    <div className="flex items-center gap-1.5 bg-gray-100 rounded-lg p-1">
+                    <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
                       <button
                         onClick={() => updateQuantity(item._uniqueId, item.quantity - 1)}
                         className="p-1 rounded hover:bg-gray-200 transition"
                         data-testid={`button-decrease-${item._uniqueId}`}
                       >
-                        <Minus className="w-3.5 h-3.5 text-gray-600" />
+                        <Minus className="w-3 h-3 text-gray-600" />
                       </button>
-                      <span className="w-5 text-center text-xs font-bold text-gray-900">{item.quantity}</span>
+                      <span className="w-4 text-center text-xs font-bold text-gray-900">{item.quantity}</span>
                       <button
                         onClick={() => updateQuantity(item._uniqueId, item.quantity + 1)}
                         className="p-1 rounded hover:bg-gray-200 transition"
                         data-testid={`button-increase-${item._uniqueId}`}
                       >
-                        <Plus className="w-3.5 h-3.5 text-gray-600" />
+                        <Plus className="w-3 h-3 text-gray-600" />
                       </button>
                     </div>
                   </div>
@@ -164,25 +164,26 @@ export default function CartPage() {
                 </button>
               </div>
             ))}
+            <div className="h-4" />
           </div>
         </div>
 
-        {/* Order Summary & Checkout Button - Fixed at bottom */}
-        <div className="fixed left-0 right-0 px-4 py-2 bg-white border-t border-gray-200 space-y-1.5 shadow-2xl" style={{ bottom: "65px", width: "100%", boxSizing: "border-box" }}>
-          <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-3 space-y-1.5 border border-gray-200">
+        {/* Bottom Summary - Fixed */}
+        <div className="flex-shrink-0 px-4 py-2 bg-white border-t border-gray-200 shadow-2xl">
+          <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-3 space-y-1 border border-gray-200 mb-2">
             {totalWithDiscounts < total && (
-              <div className="flex justify-between text-[11px]">
-                <span className="text-gray-600">{t("subtotal", language)}</span>
-                <span className="text-gray-600">L.E {total.toFixed(2)}</span>
-              </div>
+              <>
+                <div className="flex justify-between text-xs">
+                  <span className="text-gray-600">{t("subtotal", language)}</span>
+                  <span className="text-gray-600">L.E {total.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-xs text-green-600">
+                  <span>{t("discountSavings", language)}</span>
+                  <span className="font-semibold">-L.E {(total - totalWithDiscounts).toFixed(2)}</span>
+                </div>
+              </>
             )}
-            {totalWithDiscounts < total && (
-              <div className="flex justify-between text-[11px] text-green-600">
-                <span>{t("discountSavings", language)}</span>
-                <span className="font-semibold">-L.E {(total - totalWithDiscounts).toFixed(2)}</span>
-              </div>
-            )}
-            <div className="flex justify-between text-base font-bold text-gray-900 pt-1.5 border-t border-gray-200">
+            <div className="flex justify-between text-base font-bold text-gray-900 pt-1 border-t border-gray-200">
               <span>{t("total", language)}</span>
               <span className="text-green-600">L.E {(totalWithDiscounts || total).toFixed(2)}</span>
             </div>
