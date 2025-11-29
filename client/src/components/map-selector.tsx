@@ -3,6 +3,17 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useLanguage } from "@/lib/languageContext";
 
+// Create location marker icon using emoji
+const createLocationIcon = () => {
+  return L.divIcon({
+    html: '<div style="font-size: 30px; text-align: center; line-height: 35px;">📍</div>',
+    iconSize: [35, 35],
+    iconAnchor: [17, 35],
+    popupAnchor: [0, -35],
+    className: ''
+  });
+};
+
 interface MapSelectorProps {
   onLocationSelect: (address: string, lat: number, lng: number) => void;
   initialLat?: number;
@@ -46,8 +57,8 @@ export function MapSelector({
       maxZoom: 19,
     }).addTo(map.current);
 
-    // Add marker
-    marker.current = L.marker([selectedLat, selectedLng])
+    // Add marker with emoji icon
+    marker.current = L.marker([selectedLat, selectedLng], { icon: createLocationIcon() })
       .addTo(map.current)
       .bindPopup(
         `<div style="text-align: ${language === "ar" ? "right" : "left"}; direction: ${language === "ar" ? "rtl" : "ltr"}">
