@@ -360,7 +360,7 @@ export default function DeliveryPage() {
 
             {/* Map View */}
             {viewMode === "map" && (
-              <div className="flex-1 overflow-hidden flex flex-col px-5 py-1 pb-32 gap-1">
+              <div className="flex-1 overflow-hidden flex flex-col px-5 py-1 pb-24 gap-1">
                 {mapError ? (
                   <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700 text-sm">{mapError}</div>
                 ) : (
