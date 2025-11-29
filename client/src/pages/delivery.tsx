@@ -143,41 +143,28 @@ export default function DeliveryPage() {
     }
   };
 
-  // Simple map initialization
-  const initializeMap = async () => {
-    if (!mapContainer.current || !currentLat || !currentLng) {
-      return;
+  // Initialize map when switching to map view
+  useEffect(() => {
+    if (viewMode === "map" && currentLat && currentLng && !map.current) {
+      const timer = setTimeout(() => {
+        if (mapContainer.current && !map.current) {
+          try {
+            map.current = L.map(mapContainer.current).setView([currentLat, currentLng], 13);
+            L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+              attribution: '&copy; OpenStreetMap',
+              maxZoom: 19,
+            }).addTo(map.current);
+            map.current.invalidateSize();
+            setMapLoading(false);
+          } catch (error) {
+            console.error("Map init error:", error);
+            setMapLoading(false);
+          }
+        }
+      }, 100);
+      return () => clearTimeout(timer);
     }
-
-    setMapLoading(true);
-
-    try {
-      if (!map.current) {
-        map.current = L.map(mapContainer.current, { 
-          preferCanvas: true,
-          zoomControl: true,
-          attributionControl: true 
-        }).setView([currentLat, currentLng], 13);
-        
-        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-          attribution: '&copy; OpenStreetMap contributors',
-          maxZoom: 19,
-          minZoom: 10
-        }).addTo(map.current);
-      } else {
-        // Update map center
-        map.current.setView([currentLat, currentLng], 13);
-      }
-
-      await new Promise(resolve => setTimeout(resolve, 200));
-      map.current.invalidateSize();
-      setMapLoading(false);
-    } catch (error) {
-      console.error("Map error:", error);
-      map.current = null;
-      setMapLoading(false);
-    }
-  };
+  }, [viewMode, currentLat, currentLng]);
 
   useEffect(() => {
     const unsubscribe = setupOrdersListener();
@@ -362,25 +349,25 @@ export default function DeliveryPage() {
                 ) : (
                   <div className="space-y-4">
                     {/* Interactive Map */}
-                    <div className="relative bg-white border border-gray-200 rounded-2xl overflow-hidden">
+                    <div className="relative bg-white border border-gray-200 rounded-2xl overflow-hidden" style={{ height: "600px" }}>
                       <div 
                         ref={mapContainer}
-                        style={{ height: "500px", width: "100%" }}
+                        style={{ height: "100%", width: "100%", position: "relative" }}
                         className="rounded-2xl"
                       />
                       {/* Update Location Button */}
                       <button
-                        onClick={() => initializeMap()}
-                        disabled={mapLoading}
-                        className="absolute top-4 right-4 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white rounded-lg p-3 shadow-lg transition-colors z-10 flex items-center gap-2"
+                        onClick={() => {
+                          if (map.current && currentLat && currentLng) {
+                            map.current.setView([currentLat, currentLng], 13);
+                            map.current.invalidateSize();
+                          }
+                        }}
+                        className="absolute top-4 right-4 bg-blue-500 hover:bg-blue-600 text-white rounded-lg p-3 shadow-lg transition-colors z-20 flex items-center gap-2"
                         data-testid="button-set-location"
                         title={language === "ar" ? "تحديث الموقع" : "Update Location"}
                       >
-                        {mapLoading ? (
-                          <Loader size={20} className="animate-spin" />
-                        ) : (
-                          <Navigation size={20} />
-                        )}
+                        <Navigation size={20} />
                         <span className="text-sm font-semibold">{language === "ar" ? "تحديث" : "Update"}</span>
                       </button>
                     </div>
