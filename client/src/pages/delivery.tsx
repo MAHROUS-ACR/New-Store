@@ -345,7 +345,7 @@ export default function DeliveryPage() {
             </div>
 
             {/* Map View */}
-            <div style={{ display: viewMode === "map" ? "flex" : "none", flexDirection: "column" }} className="flex-1 overflow-hidden px-5 py-4">
+            <div style={{ display: viewMode === "map" ? "flex" : "none", flexDirection: "column" }} className="flex-1 overflow-hidden px-5 py-4 pb-32">
                 {mapError ? (
                   <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700 text-sm">{mapError}</div>
                 ) : (
