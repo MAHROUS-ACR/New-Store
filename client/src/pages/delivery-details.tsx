@@ -209,7 +209,7 @@ export default function DeliveryDetailsPage() {
       })
     })
       .addTo(map.current)
-      .bindPopup(`<div style="text-align: center; direction: ${language === "ar" ? "rtl" : "ltr"}"><strong>${language === "ar" ? "موقع التسليم" : "Delivery Location"}</strong></div>`)
+      .bindPopup(`<div style="text-align: center; direction: ${language === "ar" ? "rtl" : "ltr"}"><strong>${t("deliveryLocationLabel", language)}</strong></div>`)
       .openPopup();
 
     // Mark that map was initialized (don't auto-pan unless user clicks center button)
@@ -226,7 +226,7 @@ export default function DeliveryDetailsPage() {
         icon: createDeliveryIcon(isNavigating)
       })
         .addTo(map.current)
-        .bindPopup(`<div style="text-align: center; direction: ${language === "ar" ? "rtl" : "ltr"}"><strong>${language === "ar" ? "موقعك الحالي" : "Your Location"}</strong></div>`);
+        .bindPopup(`<div style="text-align: center; direction: ${language === "ar" ? "rtl" : "ltr"}"><strong>${t("yourLocationLabel", language)}</strong></div>`);
       
       currentMarker.current = marker;
       
