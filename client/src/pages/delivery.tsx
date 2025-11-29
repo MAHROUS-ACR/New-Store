@@ -179,24 +179,24 @@ export default function DeliveryPage() {
     }
   }, [viewMode, currentLat, currentLng]);
 
-  // Add order markers to map (only after map is initialized)
+  // Add order markers to map
   useEffect(() => {
-    if (!map.current || viewMode !== "map") return;
+    if (!map.current || viewMode !== "map" || orders.length === 0) return;
     
-    // Remove old order markers
-    orderMarkersRef.current.forEach(marker => {
-      try { map.current?.removeLayer(marker); } catch (e) {}
+    // Remove old markers
+    orderMarkersRef.current.forEach(m => {
+      try { map.current?.removeLayer(m); } catch (e) {}
     });
     orderMarkersRef.current = [];
     
-    if (orders.length > 0) {
-      const pendingOrders = orders.filter(o => o.status !== "received" && o.status !== "cancelled" && o.status !== "completed");
+    const pendingOrders = orders.filter(o => o.status === "shipped");
+    
+    pendingOrders.forEach((order, idx) => {
+      const lat = order.latitude;
+      const lng = order.longitude;
       
-      pendingOrders.forEach((order, idx) => {
-        const lat = order.latitude;
-        const lng = order.longitude;
-        
-        if (lat && lng) {
+      if (typeof lat === "number" && typeof lng === "number" && lat && lng) {
+        try {
           const markerIcon = L.divIcon({
             html: `<div style="font-size: 18px; text-align: center; line-height: 28px; width: 28px; height: 28px; background-color: #3B82F6; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">${idx + 1}</div>`,
             iconSize: [28, 28],
@@ -207,13 +207,15 @@ export default function DeliveryPage() {
           
           const marker = L.marker([lat, lng], { icon: markerIcon })
             .addTo(map.current)
-            .bindPopup(`Order #${order.orderNumber || "N/A"}<br/>${order.shippingAddress || "No address"}`);
+            .bindPopup(`Order #${order.orderNumber}<br/>${order.shippingAddress}`);
           
           orderMarkersRef.current.push(marker);
+        } catch (e) {
+          console.error("Error adding marker:", e);
         }
-      });
-    }
-  }, [viewMode, orders, map]);
+      }
+    });
+  }, [viewMode, orders]);
 
   useEffect(() => {
     const unsubscribe = setupOrdersListener();
