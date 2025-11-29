@@ -442,34 +442,36 @@ export default function CheckoutPage() {
               {/* Customer Info Fields */}
               <div className="space-y-4 mb-6">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">👤 {t("name", language)}</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">👤 {t("name", language)} {!customerName.trim() && <span className="text-red-500">*</span>}</label>
                   <input
                     type="text"
                     placeholder={shippingSelected === "saved" ? t("fullName", language) : t("recipientName", language)}
                     value={customerName}
                     onChange={(e) => setCustomerName(e.target.value)}
                     disabled={shippingSelected === "saved"}
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                    className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition ${
                       shippingSelected === "saved" 
                         ? "bg-gray-100 border-gray-300 text-gray-600 cursor-not-allowed" 
-                        : "bg-white border-gray-300"
+                        : customerName.trim() ? "bg-white border-green-500" : "bg-white border-red-400"
                     }`}
                   />
+                  {!customerName.trim() && <p className="text-xs text-red-500 mt-1">⚠️ {t("enterName", language)}</p>}
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">📱 {t("phone", language)}</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">📱 {t("phone", language)} {!customerPhone.trim() && <span className="text-red-500">*</span>}</label>
                   <input
                     type="tel"
                     placeholder={t("fullPhone", language)}
                     value={customerPhone}
                     onChange={(e) => setCustomerPhone(e.target.value)}
                     disabled={shippingSelected === "saved"}
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                    className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition ${
                       shippingSelected === "saved" 
                         ? "bg-gray-100 border-gray-300 text-gray-600 cursor-not-allowed" 
-                        : "bg-white border-gray-300"
+                        : customerPhone.trim() ? "bg-white border-green-500" : "bg-white border-red-400"
                     }`}
                   />
+                  {!customerPhone.trim() && <p className="text-xs text-red-500 mt-1">⚠️ {t("enterPhone", language)}</p>}
                 </div>
                 {shippingSelected === "new" && (
                   <div>
@@ -499,14 +501,17 @@ export default function CheckoutPage() {
                       </div>
                     )}
                     
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">📍 {t("fullAddress", language)}</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">📍 {t("fullAddress", language)} {!deliveryAddress.trim() && <span className="text-red-500">*</span>}</label>
                     <textarea
                       placeholder={t("enterAddress", language)}
                       value={deliveryAddress}
                       onChange={(e) => setDeliveryAddress(e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none bg-white"
+                      className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none bg-white transition ${
+                        deliveryAddress.trim() ? "border-green-500" : "border-red-400"
+                      }`}
                       rows={3}
                     />
+                    {!deliveryAddress.trim() && <p className="text-xs text-red-500 mt-1">⚠️ {t("enterAddress", language)}</p>}
                   </div>
                 )}
                 {shippingSelected === "saved" && (
