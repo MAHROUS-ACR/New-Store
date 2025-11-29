@@ -192,9 +192,8 @@ export default function DeliveryPage() {
     const pendingOrders = orders.filter(o => o.status === "shipped");
     
     pendingOrders.forEach((order, idx) => {
-      // Use the correct delivery coordinates from checkout
-      const lat = order.deliveryLat || order.latitude;
-      const lng = order.deliveryLng || order.longitude;
+      const lat = order.latitude;
+      const lng = order.longitude;
       
       if (typeof lat === "number" && typeof lng === "number" && lat && lng) {
         try {
