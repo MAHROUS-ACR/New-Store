@@ -194,13 +194,19 @@ export default function DeliveryPage() {
     if (viewMode === "map" && orders.length > 0) {
       const pendingOrders = orders.filter(o => o.status !== "received" && o.status !== "cancelled" && o.status !== "completed");
       
+      console.log("Pending orders:", pendingOrders.length);
+      
       pendingOrders.forEach((order, idx) => {
         // Use deliveryLat/deliveryLng for delivery location (destination)
         const lat = order.deliveryLat;
         const lng = order.deliveryLng;
         
+        console.log(`Order ${order.orderNumber}: deliveryLat=${lat}, deliveryLng=${lng}`);
+        
         // Only add marker if coordinates exist
         if (lat && lng) {
+          console.log(`Adding marker for order ${order.orderNumber} at [${lat}, ${lng}]`);
+          
           const markerIcon = L.divIcon({
             html: `<div style="font-size: 18px; text-align: center; line-height: 28px; width: 28px; height: 28px; background-color: #3B82F6; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">${idx + 1}</div>`,
             iconSize: [28, 28],
