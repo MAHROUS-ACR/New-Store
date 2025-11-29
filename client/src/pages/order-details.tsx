@@ -114,11 +114,19 @@ export default function OrderDetailsPage() {
     }
   };
 
-  // Initialize map only once
+  // Initialize map only once when location coordinates are available
   useEffect(() => {
     if (!mapContainer.current || !mapLat || !mapLng) return;
     
-    if (map.current) return; // Don't recreate if already exists
+    // Don't recreate if already exists with same order
+    if (map.current && map.current.getContainer().parentElement) {
+      return;
+    }
+    
+    // Remove old map if needed
+    if (map.current) {
+      map.current.remove();
+    }
     
     map.current = L.map(mapContainer.current).setView([mapLat, mapLng], 14);
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -134,7 +142,7 @@ export default function OrderDetailsPage() {
       userInteractedWithMap.current = true;
     });
 
-    // Destination marker (red)
+    // Destination marker
     L.marker([mapLat, mapLng], {
       icon: L.divIcon({
         html: '<div style="font-size: 30px; text-align: center; line-height: 35px;">📍</div>',
@@ -147,7 +155,7 @@ export default function OrderDetailsPage() {
       .addTo(map.current)
       .bindPopup(`<div style="text-align: center"><strong>${language === "ar" ? "موقع التسليم" : "Delivery Location"}</strong></div>`)
       .openPopup();
-  }, [mapLat, mapLng]);
+  }, [mapLat, mapLng, language]);
 
   // Update driver marker and route - don't recreate map
   useEffect(() => {

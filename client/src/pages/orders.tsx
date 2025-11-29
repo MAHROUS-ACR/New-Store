@@ -283,13 +283,9 @@ export default function OrdersPage() {
     return () => clearInterval(pollInterval);
   }, [user?.id]);
 
-  // Reset map and geocode when order is selected - use deliveryLat/deliveryLng if available
+  // Update map location when order is selected - use deliveryLat/deliveryLng if available
   useEffect(() => {
     if (selectedOrder?.id) {
-      // Reset map state for new order
-      setMapLat(null);
-      setMapLng(null);
-      
       // Use deliveryLat/deliveryLng if available, otherwise geocode
       if (selectedOrder.deliveryLat && selectedOrder.deliveryLng) {
         setMapLat(selectedOrder.deliveryLat);
@@ -298,7 +294,7 @@ export default function OrdersPage() {
         geocodeAddress(selectedOrder.shippingAddress || selectedOrder.deliveryAddress || "");
       }
     }
-  }, [selectedOrder?.id]);
+  }, [selectedOrder?.id, selectedOrder?.deliveryLat, selectedOrder?.deliveryLng]);
 
 
   return (
