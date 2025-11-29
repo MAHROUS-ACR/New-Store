@@ -199,9 +199,9 @@ export default function DeliveryPage() {
       let lat = order.deliveryLat || order.latitude;
       let lng = order.deliveryLng || order.longitude;
 
-      if (!lat || !lng && order.shippingAddress) {
+      if ((!lat || !lng) && order.shippingAddress) {
         try {
-          const response = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(order.shippingAddress)}&format=json&limit=1`);
+          const response = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(order.shippingAddress || "")}&format=json&limit=1`);
           const results = await response.json();
           if (results.length > 0) {
             lat = parseFloat(results[0].lat);
@@ -443,13 +443,16 @@ export default function DeliveryPage() {
                 </div>
               ) : routeInfo ? (
                 <div className="space-y-4">
-                  {/* Static Map Image */}
+                  {/* Static Map Image - Using StaticMap service */}
                   <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
                     <img 
-                      src={`https://tile.openstreetmap.org/12/${Math.floor(Math.pow(2, 12) * (currentLng + 180) / 360)}/7936.png`}
+                      src={`https://maps.googleapis.com/maps/api/staticmap?center=${currentLat || 30},${currentLng || 31}&zoom=13&size=400x300&style=feature:water|color:0xb3d9ff&style=feature:land|color:0xf3f3f3&style=feature:road|color:0xffffff&style=feature:building|color:0xcccccc&markers=color:green|label:D|${currentLat || 30},${currentLng || 31}&key=AIzaSyDVXo6gXW_lHGpJxCqX6m0JZQT9Ty8GE`}
                       alt="Delivery map"
-                      style={{ width: "100%", height: "400px", objectFit: "cover" }}
+                      style={{ width: "100%", height: "300px", objectFit: "cover" }}
                       className="rounded-2xl"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect fill='%23f0f0f0' width='400' height='300'/%3E%3Ctext x='50%25' y='50%25' font-size='14' text-anchor='middle' dy='.3em' fill='%23666'%3E📍 Map at ${(currentLat || 30).toFixed(2)}, ${(currentLng || 31).toFixed(2)}%3C/text%3E%3C/svg%3E`;
+                      }}
                     />
                   </div>
                   
@@ -487,7 +490,7 @@ export default function DeliveryPage() {
                             </div>
                             <div className="flex-1 min-w-0">
                               <p className="text-xs font-semibold text-gray-900 truncate">Order #{order.orderNumber}</p>
-                              <p className="text-xs text-gray-600 truncate">{order.deliveryAddress || order.shippingAddress}</p>
+                              <p className="text-xs text-gray-600 truncate">{order.shippingAddress}</p>
                             </div>
                             <span className={`text-xs font-semibold px-2 py-1 rounded-full flex-shrink-0 ${getStatusColor(order.status)}`}>
                               {t(order.status as any, language)}
