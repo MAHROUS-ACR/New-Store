@@ -148,7 +148,7 @@ export default function DeliveryPage() {
     if (viewMode !== "map") return;
 
     setMapError(null);
-    const shippedOrders = orders.filter(o => o.status === "shipped" && o.deliveryLat && o.deliveryLng);
+    let shippedOrders = orders.filter(o => o.status === "shipped" && o.deliveryLat && o.deliveryLng);
 
     if (shippedOrders.length === 0 && (!userLat || !userLng)) {
       setMapError("No orders or location data");
@@ -170,18 +170,16 @@ export default function DeliveryPage() {
           existingMap.remove();
         }
 
-        // Calculate distances and find nearest order
-        let nearestOrder = null;
-        let nearestDistance = Infinity;
+        // Calculate distances for all orders and sort by distance
+        let ordersWithDistance: any[] = [];
         
         if (userLat && userLng) {
-          shippedOrders.forEach(order => {
-            const distance = calculateDistance(userLat, userLng, order.deliveryLat!, order.deliveryLng!);
-            if (distance < nearestDistance) {
-              nearestDistance = distance;
-              nearestOrder = { ...order, distance };
-            }
-          });
+          ordersWithDistance = shippedOrders.map(order => ({
+            ...order,
+            distance: calculateDistance(userLat, userLng, order.deliveryLat!, order.deliveryLng!)
+          })).sort((a, b) => a.distance - b.distance);
+        } else {
+          ordersWithDistance = shippedOrders;
         }
 
         // Create new map - center on user location
@@ -205,48 +203,41 @@ export default function DeliveryPage() {
             })
           }).addTo(map).bindPopup(language === "ar" ? "موقعك الحالي" : "Your Location");
 
-          // Draw real route to nearest order using OSRM
-          if (nearestOrder) {
-            // Fetch actual street route from OSRM
-            fetch(`https://router.project-osrm.org/route/v1/driving/${userLng},${userLat};${nearestOrder.deliveryLng},${nearestOrder.deliveryLat}?geometries=geojson`)
+          // Draw real routes to all orders by delivery sequence
+          ordersWithDistance.forEach((order, idx) => {
+            const routeColor = idx === 0 ? '#ef4444' : '#ff8c00'; // Red for first, orange for others
+            fetch(`https://router.project-osrm.org/route/v1/driving/${userLng},${userLat};${order.deliveryLng},${order.deliveryLat}?geometries=geojson`)
               .then(res => res.json())
               .then(data => {
                 if (data.routes && data.routes[0]) {
                   const route = data.routes[0].geometry.coordinates;
                   const latlngs = route.map((coord: [number, number]) => [coord[1], coord[0]]);
                   L.polyline(latlngs, {
-                    color: '#ef4444',
-                    weight: 4,
-                    opacity: 0.8
+                    color: routeColor,
+                    weight: 3,
+                    opacity: 0.7
                   }).addTo(map);
                 }
               })
               .catch(err => {
                 console.error("Routing error:", err);
-                // Fallback to straight line if routing fails
-                L.polyline([[userLat, userLng], [nearestOrder.deliveryLat!, nearestOrder.deliveryLng!]], {
-                  color: '#ef4444',
-                  weight: 3,
-                  opacity: 0.7,
-                  dashArray: '5, 5'
-                }).addTo(map);
               });
-          }
+          });
         }
 
-        // Add markers for each order (blue with number, red for nearest)
-        shippedOrders.forEach((order, idx) => {
-          const isNearest = nearestOrder && nearestOrder.id === order.id;
-          const distance = isNearest ? nearestOrder.distance : null;
+        // Add markers for each order with delivery sequence numbers
+        ordersWithDistance.forEach((order, idx) => {
+          const isFirst = idx === 0;
+          const markerColor = isFirst ? '#ef4444' : '#3B82F6';
           
           L.marker([order.deliveryLat!, order.deliveryLng!], {
             icon: L.divIcon({
-              html: `<div style="width: ${isNearest ? 40 : 32}px; height: ${isNearest ? 40 : 32}px; background: ${isNearest ? '#ef4444' : '#3B82F6'}; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: ${isNearest ? 16 : 14}px; box-shadow: 0 2px 4px rgba(0,0,0,0.3); ${isNearest ? 'border: 3px solid white;' : ''}">${idx + 1}</div>`,
-              iconSize: [isNearest ? 40 : 32, isNearest ? 40 : 32],
-              iconAnchor: [isNearest ? 20 : 16, isNearest ? 20 : 16],
+              html: `<div style="width: ${isFirst ? 40 : 32}px; height: ${isFirst ? 40 : 32}px; background: ${markerColor}; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: ${isFirst ? 18 : 14}px; box-shadow: 0 2px 4px rgba(0,0,0,0.3); ${isFirst ? 'border: 3px solid white;' : ''}">${idx + 1}</div>`,
+              iconSize: [isFirst ? 40 : 32, isFirst ? 40 : 32],
+              iconAnchor: [isFirst ? 20 : 16, isFirst ? 20 : 16],
               className: 'order-marker'
             })
-          }).addTo(map).bindPopup(`<strong>Order #${order.orderNumber}</strong><br/>${order.shippingAddress || ''}<br/>${distance ? `<strong>Distance: ${distance.toFixed(1)} km</strong>` : ''}`);
+          }).addTo(map).bindPopup(`<strong>Order #${order.orderNumber}</strong><br/>📍 ${language === "ar" ? "التسليم:" : "Delivery:"} ${idx + 1}<br/>${order.shippingAddress || ''}<br/><strong>Distance: ${order.distance.toFixed(1)} km</strong>`);
         });
 
         map.invalidateSize();
