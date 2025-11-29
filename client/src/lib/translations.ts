@@ -625,6 +625,7 @@ export const translations = {
     completedOrders: "الأوردرات المكتملة",
     totalOrders: "إجمالي الأوردرات",
     completedOrdersValue: "قيمة الأوردرات المكتملة",
+    delivery: "التسليم",
     deliveryOrders: "طلبات التسليم",
     noOrdersToDeliver: "لا توجد طلبات للتسليم",
     filter: "التصفية",

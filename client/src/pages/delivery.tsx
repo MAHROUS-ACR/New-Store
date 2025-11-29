@@ -213,11 +213,12 @@ export default function DeliveryPage() {
             className: ''
           });
           
-          const marker = L.marker([lat, lng], { icon: markerIcon })
-            .addTo(map.current)
-            .bindPopup(`Order #${order.orderNumber}<br/>${order.shippingAddress}`);
-          
-          orderMarkersRef.current.push(marker);
+          if (map.current) {
+            const marker = L.marker([lat, lng], { icon: markerIcon })
+              .addTo(map.current)
+              .bindPopup(`Order #${order.orderNumber}<br/>${order.shippingAddress}`);
+            orderMarkersRef.current.push(marker);
+          }
         } catch (e) {
           console.error("Error adding marker:", e);
         }
