@@ -199,6 +199,8 @@ export default function DeliveryPage() {
       let lat = order.deliveryLat || order.latitude;
       let lng = order.deliveryLng || order.longitude;
 
+      console.log(`Order ${order.orderNumber}: lat=${lat}, lng=${lng}, address=${order.shippingAddress}`);
+
       if ((!lat || !lng) && order.shippingAddress) {
         try {
           const response = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(order.shippingAddress || "")}&format=json&limit=1`);
@@ -206,16 +208,23 @@ export default function DeliveryPage() {
           if (results.length > 0) {
             lat = parseFloat(results[0].lat);
             lng = parseFloat(results[0].lon);
+            console.log(`Geocoded: lat=${lat}, lng=${lng}`);
           }
         } catch (error) {
+          console.error(`Geocode error for ${order.shippingAddress}:`, error);
           continue;
         }
       }
 
       if (lat && lng) {
         orderLocations.push({ id: order.id, orderNumber: order.orderNumber, lat, lng, status: order.status });
+        console.log(`Added marker for order ${order.orderNumber} at ${lat}, ${lng}`);
+      } else {
+        console.warn(`No location for order ${order.orderNumber}`);
       }
     }
+    
+    console.log(`Total order locations: ${orderLocations.length}`, orderLocations);
 
     if (orderLocations.length === 0) {
       setRouteInfo(null);
@@ -232,6 +241,7 @@ export default function DeliveryPage() {
 
     // Add driver marker (green car)
     if (map.current) {
+      console.log(`Adding driver marker at ${currentLat}, ${currentLng}`);
       const driverMarker = L.marker([currentLat, currentLng], { icon: createDriverIcon() })
         .addTo(map.current)
         .bindPopup("🚗 " + (language === "ar" ? "موقعك الحالي" : "Your Location"));
@@ -239,14 +249,17 @@ export default function DeliveryPage() {
 
       // Add order markers with numbers
       orderLocations.forEach((order, index) => {
+        console.log(`Adding order marker ${index + 1} at ${order.lat}, ${order.lng}`);
         const marker = L.marker([order.lat, order.lng], { icon: createDeliveryLocationIcon(index + 1) })
           .addTo(map.current!)
           .bindPopup(`Order #${order.orderNumber}`);
         markersRef.current.push(marker);
       });
 
-      // Fit all markers in view
-      const bounds = L.latLngBounds([[currentLat, currentLng], ...orderLocations.map(o => [o.lat, o.lng] as L.LatLngExpression)]);
+      // Fit all markers in view with all points
+      const allPoints: L.LatLngExpression[] = [[currentLat, currentLng], ...orderLocations.map(o => [o.lat, o.lng] as L.LatLngExpression)];
+      console.log("Fitting bounds to points:", allPoints);
+      const bounds = L.latLngBounds(allPoints);
       map.current.fitBounds(bounds, { padding: [50, 50] });
     }
 
