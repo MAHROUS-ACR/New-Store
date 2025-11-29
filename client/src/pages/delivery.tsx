@@ -250,6 +250,9 @@ export default function DeliveryPage() {
         try { routePolylineRef.current.remove(); } catch (e) {}
       }
 
+      // Small delay to ensure map is ready
+      await new Promise(resolve => setTimeout(resolve, 50));
+
       // Add driver marker (green car)
       const driverMarker = L.marker([currentLat, currentLng], { icon: createDriverIcon() })
         .addTo(map.current)
@@ -268,6 +271,7 @@ export default function DeliveryPage() {
       const allPoints: L.LatLngExpression[] = [[currentLat, currentLng], ...orderLocations.map(o => [o.lat, o.lng] as L.LatLngExpression)];
       const bounds = L.latLngBounds(allPoints);
       map.current.fitBounds(bounds, { padding: [50, 50] });
+      map.current.invalidateSize();
 
       // Calculate route using OSRM
       const coordinates = [[currentLng, currentLat], ...orderLocations.map(o => [o.lng, o.lat])];
@@ -522,7 +526,7 @@ export default function DeliveryPage() {
                     <button
                       onClick={() => calculateOptimizedRoute()}
                       disabled={mapLoading}
-                      className="absolute bottom-4 right-4 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white rounded-lg p-3 shadow-lg transition-colors z-10 flex items-center gap-2"
+                      className="absolute top-4 right-4 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white rounded-lg p-3 shadow-lg transition-colors z-10 flex items-center gap-2"
                       data-testid="button-set-location"
                       title={language === "ar" ? "تحديد الموقع الحالي" : "Set Current Location"}
                     >
