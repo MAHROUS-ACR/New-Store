@@ -203,25 +203,21 @@ export default function DeliveryPage() {
             })
           }).addTo(map).bindPopup(language === "ar" ? "موقعك الحالي" : "Your Location");
 
-          // Draw real routes to all orders by delivery sequence
+          // Draw real routes to all orders by delivery sequence (async)
           ordersWithDistance.forEach((order, idx) => {
-            const routeColor = idx === 0 ? '#ef4444' : '#ff8c00'; // Red for first, orange for others
-            fetch(`https://router.project-osrm.org/route/v1/driving/${userLng},${userLat};${order.deliveryLng},${order.deliveryLat}?geometries=geojson`)
+            const routeColor = idx === 0 ? '#ef4444' : '#ff8c00';
+            const url = `https://router.project-osrm.org/route/v1/driving/${userLng},${userLat};${order.deliveryLng},${order.deliveryLat}?geometries=geojson`;
+            
+            fetch(url)
               .then(res => res.json())
               .then(data => {
-                if (data.routes && data.routes[0]) {
+                if (data.routes && data.routes[0] && map) {
                   const route = data.routes[0].geometry.coordinates;
                   const latlngs = route.map((coord: [number, number]) => [coord[1], coord[0]]);
-                  L.polyline(latlngs, {
-                    color: routeColor,
-                    weight: 3,
-                    opacity: 0.7
-                  }).addTo(map);
+                  L.polyline(latlngs, { color: routeColor, weight: 3, opacity: 0.7 }).addTo(map);
                 }
               })
-              .catch(err => {
-                console.error("Routing error:", err);
-              });
+              .catch(() => {});
           });
         }
 
