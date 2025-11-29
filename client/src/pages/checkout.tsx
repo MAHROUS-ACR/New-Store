@@ -132,7 +132,7 @@ export default function CheckoutPage() {
     zoneSelected &&
     customerName.trim() &&
     customerPhone.trim() &&
-    (shippingSelected === "saved" || deliveryAddress.trim());
+    (shippingSelected === "saved" || (locationCoords?.lat && locationCoords?.lng));
 
   const handleSubmit = async () => {
 
@@ -145,8 +145,8 @@ export default function CheckoutPage() {
       toast.error(t("enterPhone", language));
       return;
     }
-    if (shippingSelected === "new" && !deliveryAddress.trim()) {
-      toast.error(t("enterAddress", language));
+    if (shippingSelected === "new" && (!locationCoords?.lat || !locationCoords?.lng)) {
+      toast.error(t("selectLocationFromMap", language));
       return;
     }
     if (!paymentSelected || !shippingSelected || !zoneSelected) {
@@ -501,17 +501,17 @@ export default function CheckoutPage() {
                       </div>
                     )}
                     
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">📍 {t("fullAddress", language)} {!deliveryAddress.trim() && <span className="text-red-500">*</span>}</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">📍 {t("fullAddress", language)} {(!locationCoords?.lat || !locationCoords?.lng) && <span className="text-red-500">*</span>}</label>
                     <textarea
                       placeholder={t("enterAddress", language)}
                       value={deliveryAddress}
                       onChange={(e) => setDeliveryAddress(e.target.value)}
                       className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none bg-white transition ${
-                        deliveryAddress.trim() ? "border-green-500" : "border-red-400"
+                        locationCoords?.lat && locationCoords?.lng ? "border-green-500" : "border-red-400"
                       }`}
                       rows={3}
                     />
-                    {!deliveryAddress.trim() && <p className="text-xs text-red-500 mt-1">⚠️ {t("enterAddress", language)}</p>}
+                    {(!locationCoords?.lat || !locationCoords?.lng) && <p className="text-xs text-red-500 mt-1">⚠️ اختر الموقع من الخريطة أولاً (اضغط على زر "اختيار من الخريطة")</p>}
                   </div>
                 )}
                 {shippingSelected === "saved" && (
