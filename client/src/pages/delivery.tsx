@@ -185,14 +185,14 @@ export default function DeliveryPage() {
     }
   };
 
-  // Calculate optimized route for all pending orders
+  // Calculate route for all pending orders
   const calculateOptimizedRoute = async () => {
     if (!currentLat || !currentLng) {
       toast.error("Cannot determine your location");
       return;
     }
 
-    const pendingOrders = orders.filter(o => o.status !== "received" && o.status !== "cancelled");
+    const pendingOrders = orders.filter(o => o.status !== "received" && o.status !== "cancelled" && o.status !== "completed");
     const orderLocations: OrderLocation[] = [];
 
     for (const order of pendingOrders) {
@@ -217,69 +217,35 @@ export default function DeliveryPage() {
       }
     }
 
+    if (orderLocations.length === 0) {
+      setRouteInfo(null);
+      setMapLoading(false);
+      return;
+    }
+
     setMapLoading(true);
 
-    // Delay to ensure DOM is ready
-    await new Promise(resolve => setTimeout(resolve, 100));
-
-    if (!map.current && mapContainer.current) {
-      try {
-        // Ensure container is visible and has proper height
-        mapContainer.current.style.height = "500px";
-        map.current = L.map(mapContainer.current, { preferCanvas: true }).setView([currentLat, currentLng], 13);
-        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-          attribution: '&copy; OpenStreetMap',
-          maxZoom: 19,
-        }).addTo(map.current);
-        map.current.invalidateSize();
-      } catch (error) {
-        console.error("Map init error:", error);
-        setMapLoading(false);
-        return;
+    // Calculate route using OSRM
+    const coordinates = [[currentLng, currentLat], ...orderLocations.map(o => [o.lng, o.lat])];
+    const coordsStr = coordinates.map(c => `${c[0]},${c[1]}`).join(";");
+    
+    try {
+      const res = await fetch(`https://router.project-osrm.org/route/v1/driving/${coordsStr}?geometries=geojson&overview=full`);
+      const data = await res.json();
+      if (data.routes?.[0]) {
+        const route = data.routes[0];
+        setRouteInfo({
+          distance: Math.round(route.distance / 1000 * 10) / 10,
+          duration: Math.round(route.duration / 60),
+          ordersCount: orderLocations.length
+        });
       }
+    } catch (error) {
+      console.error("Route error:", error);
+      setRouteInfo(null);
+    } finally {
+      setMapLoading(false);
     }
-
-    if (map.current && orderLocations.length > 0) {
-      markersRef.current.forEach(m => m.remove());
-      markersRef.current = [];
-      if (routePolylineRef.current) routePolylineRef.current.remove();
-
-      const driverMarker = L.marker([currentLat, currentLng], { icon: createDriverIcon() })
-        .addTo(map.current)
-        .bindPopup("Your Location");
-      markersRef.current.push(driverMarker);
-
-      orderLocations.forEach((order, index) => {
-        const marker = L.marker([order.lat, order.lng], { icon: createDeliveryLocationIcon(index + 1) })
-          .addTo(map.current!)
-          .bindPopup(`Order #${order.orderNumber}`);
-        markersRef.current.push(marker);
-      });
-
-      const bounds = L.latLngBounds([[currentLat, currentLng], ...orderLocations.map(o => [o.lat, o.lng] as L.LatLngExpression)]);
-      map.current.fitBounds(bounds, { padding: [50, 50] });
-      map.current.invalidateSize();
-
-      const coordinates = [[currentLng, currentLat], ...orderLocations.map(o => [o.lng, o.lat])];
-      const coordsStr = coordinates.map(c => `${c[0]},${c[1]}`).join(";");
-      try {
-        const res = await fetch(`https://router.project-osrm.org/route/v1/driving/${coordsStr}?geometries=geojson&overview=full`);
-        const data = await res.json();
-        if (data.routes?.[0]) {
-          const route = data.routes[0];
-          setRouteInfo({
-            distance: Math.round(route.distance / 1000 * 10) / 10,
-            duration: Math.round(route.duration / 60)
-          });
-          const coords = route.geometry.coordinates.map((c: [number, number]) => [c[1], c[0]] as L.LatLngExpression);
-          if (map.current) routePolylineRef.current = L.polyline(coords, { color: '#2563eb', weight: 3, opacity: 0.7 }).addTo(map.current);
-        }
-      } catch (error) {
-        console.error("Route error:", error);
-      }
-    }
-
-    setMapLoading(false);
   };
 
   useEffect(() => {
@@ -468,32 +434,62 @@ export default function DeliveryPage() {
               )}
             </>
           ) : (
-            // MAP VIEW
+            // ROUTE SUMMARY VIEW
             <>
               {mapLoading ? (
                 <div className="flex items-center justify-center py-8 gap-2">
                   <Loader size={20} className="animate-spin text-blue-600" />
-                  <span className="text-blue-600 font-semibold">{language === "ar" ? "جاري تحسين المسار..." : "Optimizing route..."}</span>
+                  <span className="text-blue-600 font-semibold">{language === "ar" ? "جاري حساب المسار..." : "Calculating route..."}</span>
+                </div>
+              ) : routeInfo ? (
+                <div className="space-y-4">
+                  <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-300 rounded-2xl p-4">
+                    <p className="text-xs font-semibold text-blue-700 mb-3">
+                      {language === "ar" ? "📍 أفضل مسار التسليم" : "📍 Optimized Delivery Route"}
+                    </p>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-blue-600">{language === "ar" ? "المسافة:" : "Distance:"}</span>
+                        <span className="text-lg font-bold text-blue-700">{routeInfo.distance} km</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-blue-600">{language === "ar" ? "الوقت المتوقع:" : "Estimated Time:"}</span>
+                        <span className="text-lg font-bold text-blue-700">{routeInfo.duration} {language === "ar" ? "دقيقة" : "mins"}</span>
+                      </div>
+                      <div className="flex items-center justify-between pt-2 border-t border-blue-200">
+                        <span className="text-sm text-blue-600">{language === "ar" ? "عدد الطلبات:" : "Orders:"}</span>
+                        <span className="text-lg font-bold text-blue-700">{routeInfo.ordersCount} 🚚</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-white border border-gray-200 rounded-2xl p-4">
+                    <p className="text-sm font-bold text-gray-900 mb-3">{language === "ar" ? "الطلبات في الطريق:" : "Orders in Route:"}</p>
+                    <div className="space-y-2 max-h-48 overflow-y-auto">
+                      {orders
+                        .filter(o => o.status !== "received" && o.status !== "cancelled" && o.status !== "completed")
+                        .map((order, idx) => (
+                          <div key={order.id} className="flex items-center gap-3 p-2 bg-gray-50 rounded-lg">
+                            <div className="flex items-center justify-center w-6 h-6 bg-blue-500 text-white text-xs font-bold rounded-full">
+                              {idx + 1}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs font-semibold text-gray-900 truncate">Order #{order.orderNumber}</p>
+                              <p className="text-xs text-gray-600 truncate">{order.deliveryAddress || order.shippingAddress}</p>
+                            </div>
+                            <span className={`text-xs font-semibold px-2 py-1 rounded-full flex-shrink-0 ${getStatusColor(order.status)}`}>
+                              {t(order.status as any, language)}
+                            </span>
+                          </div>
+                        ))}
+                    </div>
+                  </div>
                 </div>
               ) : (
-                <>
-                  {routeInfo && (
-                    <div className="bg-blue-50 border border-blue-200 rounded-2xl p-3 mb-4">
-                      <p className="text-xs font-semibold text-blue-700 mb-1">
-                        {language === "ar" ? "📍 أفضل مسار" : "📍 Optimized Route"}
-                      </p>
-                      <p className="text-sm text-blue-600">
-                        <span className="font-bold">{routeInfo.distance}</span> km • 
-                        <span className="font-bold"> {routeInfo.duration}</span> {language === "ar" ? "دقيقة" : "mins"}
-                      </p>
-                    </div>
-                  )}
-                  <div 
-                    ref={mapContainer} 
-                    style={{ height: "500px", background: "#f5f5f5" }} 
-                    className="rounded-2xl border border-gray-200 overflow-hidden leaflet-container"
-                  ></div>
-                </>
+                <div className="text-center py-12 text-gray-500">
+                  <p className="text-lg font-semibold mb-2">📍</p>
+                  <p>{language === "ar" ? "لا توجد طلبات للتسليم" : "No orders to deliver"}</p>
+                </div>
               )}
             </>
           )}
