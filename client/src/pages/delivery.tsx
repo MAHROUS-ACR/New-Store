@@ -86,8 +86,8 @@ export default function DeliveryPage() {
     try {
       const db = getFirestore();
       const ordersRef = collection(db, "orders");
-      // Get all orders with status shipped
-      const q = query(ordersRef, where("status", "==", "shipped"));
+      // Get ALL orders - filter on client side
+      const q = query(ordersRef);
       
       const unsubscribe = onSnapshot(q, (snapshot) => {
         const ordersList = snapshot.docs.map(doc => ({
@@ -95,7 +95,8 @@ export default function DeliveryPage() {
           ...doc.data(),
         })) as DeliveryOrder[];
         
-        console.log("📦 Loaded orders:", ordersList.length);
+        console.log("📦 Total orders in DB:", ordersList.length);
+        console.log("📦 Shipped orders:", ordersList.filter(o => o.status === "shipped").length);
         ordersList.forEach(o => {
           console.log(`Order #${o.orderNumber}: status=${o.status}, lat=${o.deliveryLat}, lng=${o.deliveryLng}`);
         });
