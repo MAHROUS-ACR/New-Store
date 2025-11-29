@@ -58,6 +58,8 @@ export default function DeliveryDetailsPage() {
   const [isNavigating, setIsNavigating] = useState(false);
   const [remainingDistance, setRemainingDistance] = useState<number | null>(null);
   const [isAutoCentering, setIsAutoCentering] = useState(false);
+  const [routeDistance2, setRouteDistance2] = useState<number>(0);
+  const [selectedSpeed, setSelectedSpeed] = useState<number>(30);
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<L.Map | null>(null);
   const currentMarker = useRef<L.Marker | null>(null);
@@ -214,7 +216,13 @@ export default function DeliveryDetailsPage() {
 
     // Mark that map was initialized (don't auto-pan unless user clicks center button)
     userInteractedWithMap.current = true;
-  }, [orderId, deliveryLat, deliveryLng, language, showMap, order?.status]);
+
+    // Calculate route distance from current location to delivery location
+    if (currentLat && currentLng && deliveryLat && deliveryLng) {
+      const distance = calculateDistance(currentLat, currentLng, deliveryLat, deliveryLng);
+      setRouteDistance2(distance);
+    }
+  }, [orderId, deliveryLat, deliveryLng, language, showMap, order?.status, currentLat, currentLng]);
 
   // Add current location marker and route when location becomes available
   useEffect(() => {
@@ -511,69 +519,22 @@ export default function DeliveryDetailsPage() {
         {/* Content */}
         <div className="flex-1 flex flex-col overflow-y-auto px-5 py-4 space-y-4">
 
-          {/* Delivery Info */}
-          <div className="bg-white rounded-2xl p-4 border border-gray-200">
-            <h2 className="font-bold text-base mb-3">{t("deliveryInfoTitle", language)}</h2>
-            <div className="space-y-3">
-              {address && (
-                <div className="flex gap-2">
-                  <MapPin size={18} className="text-orange-600 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-semibold text-gray-600">{t("address", language)}</p>
-                    <p className="text-base">{address}</p>
-                  </div>
-                </div>
-              )}
-              
-              {order.shippingPhone && (
-                <div className="flex gap-2">
-                  <Phone size={18} className="text-blue-600 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-semibold text-gray-600">{t("phone", language)}</p>
-                    <a href={`tel:${order.shippingPhone}`} className="text-base text-blue-600 hover:underline">{order.shippingPhone}</a>
-                  </div>
-                </div>
-              )}
-
-              {order.customerName && (
-                <div className="flex gap-2">
-                  <User size={18} className="text-green-600 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-semibold text-gray-600">{t("customer", language)}</p>
-                    <p className="text-base">{order.customerName}</p>
-                  </div>
-                </div>
-              )}
-
-              {order.recipientName && (
-                <div className="flex gap-2">
-                  <User size={18} className="text-purple-600 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-semibold text-gray-600">{t("recipient", language)}</p>
-                    <p className="text-base">{order.recipientName}</p>
-                  </div>
-                </div>
-              )}
-
-              {order.deliveryUsername && (
-                <div className="flex gap-2">
-                  <User size={18} className="text-blue-600 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-semibold text-gray-600">{t("driver", language)}</p>
-                    <p className="text-base">{order.deliveryUsername}</p>
-                  </div>
-                </div>
-              )}
-
-              {order.deliveryRemarks && (
-                <div className="flex gap-2">
-                  <FileText size={18} className="text-orange-600 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-semibold text-gray-600">{t("remarks", language)}</p>
-                    <p className="text-base">{order.deliveryRemarks}</p>
-                  </div>
-                </div>
-              )}
+          {/* Distance and Time with Speed Selection */}
+          <div className="bg-gray-50 rounded-2xl p-3 border border-gray-200">
+            <div className="grid grid-cols-2 gap-2 mb-2">
+              <div>
+                <p className="text-xs font-semibold text-gray-600">{language === "ar" ? "المسافة" : "Distance"}</p>
+                <p className="text-lg font-bold text-orange-600">{routeDistance2.toFixed(1)} <span className="text-xs">km</span></p>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-gray-600">{language === "ar" ? "الوقت" : "Time"}</p>
+                <p className="text-lg font-bold text-blue-600">{Math.round((routeDistance2 / selectedSpeed) * 60)} <span className="text-xs">{language === "ar" ? "د" : "m"}</span></p>
+              </div>
+            </div>
+            <div className="flex gap-1.5">
+              <button onClick={() => setSelectedSpeed(30)} className={`flex-1 py-1 px-2 rounded-lg font-semibold text-sm ${selectedSpeed === 30 ? "bg-orange-500 text-white" : "bg-white text-gray-700 border border-gray-200"}`} data-testid="button-speed-30">30</button>
+              <button onClick={() => setSelectedSpeed(50)} className={`flex-1 py-1 px-2 rounded-lg font-semibold text-sm ${selectedSpeed === 50 ? "bg-orange-500 text-white" : "bg-white text-gray-700 border border-gray-200"}`} data-testid="button-speed-50">50</button>
+              <button onClick={() => setSelectedSpeed(70)} className={`flex-1 py-1 px-2 rounded-lg font-semibold text-sm ${selectedSpeed === 70 ? "bg-orange-500 text-white" : "bg-white text-gray-700 border border-gray-200"}`} data-testid="button-speed-70">70</button>
             </div>
           </div>
 
