@@ -92,6 +92,19 @@ export default function DeliveryDetailsPage() {
           setCurrentLat(lat);
           setCurrentLng(lng);
 
+          // Calculate route distance using OSRM when location is available
+          if (deliveryLat && deliveryLng && routeDistance2 === 0) {
+            fetch(`https://router.project-osrm.org/route/v1/driving/${lng},${lat};${deliveryLng},${deliveryLat}?geometries=geojson`)
+              .then(res => res.json())
+              .then(data => {
+                if (data.routes?.[0]) {
+                  const distance = data.routes[0].distance / 1000;
+                  setRouteDistance2(distance);
+                }
+              })
+              .catch(() => {});
+          }
+
           // Update marker if navigating
           if (isNavigating && map.current && currentMarker.current) {
             currentMarker.current.setLatLng([lat, lng]);
@@ -216,13 +229,7 @@ export default function DeliveryDetailsPage() {
 
     // Mark that map was initialized (don't auto-pan unless user clicks center button)
     userInteractedWithMap.current = true;
-
-    // Calculate route distance from current location to delivery location
-    if (currentLat && currentLng && deliveryLat && deliveryLng) {
-      const distance = calculateDistance(currentLat, currentLng, deliveryLat, deliveryLng);
-      setRouteDistance2(distance);
-    }
-  }, [orderId, deliveryLat, deliveryLng, language, showMap, order?.status, currentLat, currentLng]);
+  }, [orderId, deliveryLat, deliveryLng, language, showMap, order?.status]);
 
   // Add current location marker and route when location becomes available
   useEffect(() => {
