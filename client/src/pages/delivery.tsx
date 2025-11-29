@@ -39,12 +39,37 @@ export default function DeliveryPage() {
   const [deliveryRemarks, setDeliveryRemarks] = useState("");
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
   const [mapError, setMapError] = useState<string | null>(null);
+  const [userLat, setUserLat] = useState<number | null>(null);
+  const [userLng, setUserLng] = useState<number | null>(null);
 
   useEffect(() => {
     if (!isLoading && (!user || user.role !== "delivery")) {
       setLocation("/");
     }
   }, [isLoading, user, setLocation]);
+
+  // Get user's current location
+  useEffect(() => {
+    if (navigator.geolocation) {
+      const watchId = navigator.geolocation.watchPosition(
+        (position) => {
+          setUserLat(position.coords.latitude);
+          setUserLng(position.coords.longitude);
+        },
+        (error) => {
+          console.log("Geolocation error:", error.code);
+          // Default to Cairo if permission denied
+          setUserLat(30.0444);
+          setUserLng(31.2357);
+        },
+        { enableHighAccuracy: false, timeout: 10000, maximumAge: 30000 }
+      );
+      return () => navigator.geolocation.clearWatch(watchId);
+    } else {
+      setUserLat(30.0444);
+      setUserLng(31.2357);
+    }
+  }, []);
 
   const setupOrdersListener = () => {
     setOrdersLoading(true);
@@ -115,8 +140,8 @@ export default function DeliveryPage() {
     setMapError(null);
     const shippedOrders = orders.filter(o => o.status === "shipped" && o.deliveryLat && o.deliveryLng);
 
-    if (shippedOrders.length === 0) {
-      setMapError("No orders with locations");
+    if (shippedOrders.length === 0 && (!userLat || !userLng)) {
+      setMapError("No orders or location data");
       return;
     }
 
@@ -135,16 +160,29 @@ export default function DeliveryPage() {
           existingMap.remove();
         }
 
-        // Create new map
-        const firstOrder = shippedOrders[0];
-        const map = L.map(container).setView([firstOrder.deliveryLat!, firstOrder.deliveryLng!], 13);
+        // Create new map - center on user location
+        const centerLat = userLat || (shippedOrders[0]?.deliveryLat || 30.0444);
+        const centerLng = userLng || (shippedOrders[0]?.deliveryLng || 31.2357);
+        const map = L.map(container).setView([centerLat, centerLng], 13);
 
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
           attribution: '&copy; OpenStreetMap',
           maxZoom: 19,
         }).addTo(map);
 
-        // Add markers for each order
+        // Add current user location marker (green)
+        if (userLat && userLng) {
+          L.marker([userLat, userLng], {
+            icon: L.divIcon({
+              html: `<div style="width: 40px; height: 40px; background: #10b981; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 20px; box-shadow: 0 2px 6px rgba(0,0,0,0.3); border: 3px solid white;">📍</div>`,
+              iconSize: [40, 40],
+              iconAnchor: [20, 20],
+              className: 'user-marker'
+            })
+          }).addTo(map).bindPopup(language === "ar" ? "موقعك الحالي" : "Your Location");
+        }
+
+        // Add markers for each order (blue with number)
         shippedOrders.forEach((order, idx) => {
           L.marker([order.deliveryLat!, order.deliveryLng!], {
             icon: L.divIcon({
@@ -164,7 +202,7 @@ export default function DeliveryPage() {
     }, 50);
 
     return () => clearTimeout(timer);
-  }, [viewMode, orders]);
+  }, [viewMode, orders, userLat, userLng, language]);
 
   useEffect(() => {
     const unsubscribe = setupOrdersListener();
