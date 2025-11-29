@@ -231,11 +231,25 @@ export default function DeliveryPage() {
           zoomControl: true
         }).setView([currentLat, currentLng], 13);
         
-        // Use OpenStreetMap tiles
-        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        // Use multiple tile providers as fallback
+        const osmTile = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
           attribution: '&copy; OpenStreetMap',
           maxZoom: 19,
-        }).addTo(map.current);
+        });
+        
+        const fallbackTile = L.tileLayer("https://tile.openstreetmap.de/{z}/{x}/{y}.png", {
+          attribution: '&copy; OpenStreetMap',
+          maxZoom: 19,
+        });
+        
+        osmTile.addTo(map.current);
+        
+        osmTile.on('tileload', () => console.log("Tiles loading..."));
+        osmTile.on('tileerror', () => {
+          console.log("OSM tiles failed, trying fallback");
+          osmTile.remove();
+          fallbackTile.addTo(map.current);
+        });
         
         console.log("Map initialized successfully");
       } catch (error) {
@@ -540,7 +554,11 @@ export default function DeliveryPage() {
                       </p>
                     </div>
                   )}
-                  <div ref={mapContainer} style={{ height: "500px" }} className="rounded-2xl border border-gray-200 overflow-hidden"></div>
+                  <div 
+                    ref={mapContainer} 
+                    style={{ height: "500px", background: "#f5f5f5" }} 
+                    className="rounded-2xl border border-gray-200 overflow-hidden leaflet-container"
+                  ></div>
                 </>
               )}
             </>
