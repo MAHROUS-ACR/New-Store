@@ -1,0 +1,113 @@
+delivery:5  GET https://bea76b91-40a8-4399-818f-3ee3b0ab5fe8-00-57ym5n4zlr1o.kirk.replit.dev/@vite/client net::ERR_ABORTED 404 (Not Found)
+react-dom_client.js?v=851215ed:20103 Download the React DevTools for a better development experience: https://react.dev/link/react-devtools
+delivery.tsx:104 Got location: 31.2639488 30.0220416
+delivery.tsx:104 Got location: 31.2639488 30.0220416
+delivery.tsx:483 In HTML, <button> cannot be a descendant of <button>.
+This will cause a hydration error.
+
+  ...
+    <TooltipProviderProvider scope={undefined} isOpenDelayedRef={{current:true}} delayDuration={700} onOpen={function} ...>
+      <Toaster2>
+      <AppRouter data-replit-metadata="client/src..." data-component-name="AppRouter">
+        <Switch data-replit-metadata="client/src..." data-component-name="Switch">
+          <Route data-replit-metadata="client/src..." data-component-name="Route" path="/delivery" ...>
+            <DeliveryPage params={{}}>
+              <MobileWrapper data-replit-metadata="client/src..." data-component-name="MobileWrapper">
+                <div data-replit-metadata="client/src..." data-component-name="div" className="fixed inse...">
+                  <div data-replit-metadata="client/src..." data-component-name="div" className="relative w...">
+                    <div data-replit-metadata="client/src..." data-component-name="div" className="flex-1 fle...">
+                      <div data-replit-metadata="client/src..." data-component-name="div" className="w-full fle...">
+                        <div>
+                        <div data-replit-metadata="client/src..." data-component-name="div" className="flex-1 ove...">
+                          <div data-replit-metadata="client/src..." data-component-name="div" className="space-y-3">
+                            <div>
+>                           <button
+>                             data-replit-metadata="client/src/pages/delivery.tsx:453:22"
+>                             data-component-name="button"
+>                             onClick={function onClick}
+>                             className="w-full text-left p-4 bg-white border border-gray-200 rounded-2xl hover:border..."
+>                             data-testid="card-order-ord_1764415726714_4vb4dsd"
+>                           >
+                              <div>
+                              <p>
+>                             <button
+>                               data-replit-metadata="client/src/pages/delivery.tsx:483:26"
+>                               data-component-name="button"
+>                               onClick={function onClick}
+>                               className="w-full py-2 px-4 bg-green-500 hover:bg-green-600 text-white font-semibold r..."
+>                               data-testid="button-mark-received-ord_1764415726714_4vb4dsd"
+>                             >
+                            ...
+                      ...
+
+validateDOMNesting @ react-dom_client.js?v=851215ed:2156
+completeWork @ react-dom_client.js?v=851215ed:9002
+runWithFiberInDEV @ react-dom_client.js?v=851215ed:997
+completeUnitOfWork @ react-dom_client.js?v=851215ed:12669
+performUnitOfWork @ react-dom_client.js?v=851215ed:12575
+workLoopSync @ react-dom_client.js?v=851215ed:12424
+renderRootSync @ react-dom_client.js?v=851215ed:12408
+performWorkOnRoot @ react-dom_client.js?v=851215ed:11766
+performWorkOnRootViaSchedulerTask @ react-dom_client.js?v=851215ed:13505
+performWorkUntilDeadline @ react-dom_client.js?v=851215ed:36
+<button>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=851215ed:247
+(anonymous) @ delivery.tsx:483
+DeliveryPage @ delivery.tsx:452
+react_stack_bottom_frame @ react-dom_client.js?v=851215ed:18509
+renderWithHooks @ react-dom_client.js?v=851215ed:5654
+updateFunctionComponent @ react-dom_client.js?v=851215ed:7475
+beginWork @ react-dom_client.js?v=851215ed:8525
+runWithFiberInDEV @ react-dom_client.js?v=851215ed:997
+performUnitOfWork @ react-dom_client.js?v=851215ed:12561
+workLoopSync @ react-dom_client.js?v=851215ed:12424
+renderRootSync @ react-dom_client.js?v=851215ed:12408
+performWorkOnRoot @ react-dom_client.js?v=851215ed:11766
+performWorkOnRootViaSchedulerTask @ react-dom_client.js?v=851215ed:13505
+performWorkUntilDeadline @ react-dom_client.js?v=851215ed:36
+<DeliveryPage>
+exports.createElement @ chunk-KMU3Z7QX.js?v=851215ed:793
+h_route @ wouter.js?v=851215ed:255
+Route @ wouter.js?v=851215ed:274
+react_stack_bottom_frame @ react-dom_client.js?v=851215ed:18509
+renderWithHooks @ react-dom_client.js?v=851215ed:5654
+updateFunctionComponent @ react-dom_client.js?v=851215ed:7475
+beginWork @ react-dom_client.js?v=851215ed:8525
+runWithFiberInDEV @ react-dom_client.js?v=851215ed:997
+performUnitOfWork @ react-dom_client.js?v=851215ed:12561
+workLoopSync @ react-dom_client.js?v=851215ed:12424
+renderRootSync @ react-dom_client.js?v=851215ed:12408
+performWorkOnRoot @ react-dom_client.js?v=851215ed:11766
+performWorkOnRootViaSchedulerTask @ react-dom_client.js?v=851215ed:13505
+performWorkUntilDeadline @ react-dom_client.js?v=851215ed:36
+<Route>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=851215ed:247
+AppRouter @ App.tsx:31
+react_stack_bottom_frame @ react-dom_client.js?v=851215ed:18509
+renderWithHooks @ react-dom_client.js?v=851215ed:5654
+updateFunctionComponent @ react-dom_client.js?v=851215ed:7475
+beginWork @ react-dom_client.js?v=851215ed:8525
+runWithFiberInDEV @ react-dom_client.js?v=851215ed:997
+performUnitOfWork @ react-dom_client.js?v=851215ed:12561
+workLoopSync @ react-dom_client.js?v=851215ed:12424
+renderRootSync @ react-dom_client.js?v=851215ed:12408
+performWorkOnRoot @ react-dom_client.js?v=851215ed:11766
+performWorkOnRootViaSchedulerTask @ react-dom_client.js?v=851215ed:13505
+performWorkUntilDeadline @ react-dom_client.js?v=851215ed:36
+<AppRouter>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=851215ed:247
+App @ App.tsx:55
+react_stack_bottom_frame @ react-dom_client.js?v=851215ed:18509
+renderWithHooks @ react-dom_client.js?v=851215ed:5654
+updateFunctionComponent @ react-dom_client.js?v=851215ed:7475
+beginWork @ react-dom_client.js?v=851215ed:8525
+runWithFiberInDEV @ react-dom_client.js?v=851215ed:997
+performUnitOfWork @ react-dom_client.js?v=851215ed:12561
+workLoopSync @ react-dom_client.js?v=851215ed:12424
+renderRootSync @ react-dom_client.js?v=851215ed:12408
+performWorkOnRoot @ react-dom_client.js?v=851215ed:11766
+performWorkOnRootViaSchedulerTask @ react-dom_client.js?v=851215ed:13505
+performWorkUntilDeadline @ react-dom_client.js?v=851215ed:36
+<App>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=851215ed:247
+(anonymous) @ main.tsx:5
