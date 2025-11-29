@@ -178,7 +178,7 @@ export default function DeliveryPage() {
                         : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                     }`}
                   >
-                    {language === "ar" ? "✅ تم الاستقبال" : "✅ Received"}
+                    {t("received", language)}
                   </button>
                   <button
                     onClick={() => setSelectedStatusFilter("completed")}
@@ -215,7 +215,7 @@ export default function DeliveryPage() {
                       </div>
                       <div className="flex flex-col items-end gap-1">
                         <span className={`text-xs font-semibold px-3 py-1 rounded-full ${getStatusColor(order.status)}`}>
-                          {order.status === "received" ? (language === "ar" ? "✅ تم الاستقبال" : "✅ Received") : t(order.status as any, language)}
+                          {t(order.status as any, language)}
                         </span>
                         {order.recipientName && (
                           <p className="text-xs text-gray-600">{order.recipientName}</p>
@@ -235,7 +235,7 @@ export default function DeliveryPage() {
                         data-testid={`button-mark-received-${order.id}`}
                       >
                         <Check size={16} />
-                        {language === "ar" ? "تم الاستقبال" : "Mark as Received"}
+                        {t("markAsReceived", language)}
                       </button>
                     )}
                   </button>

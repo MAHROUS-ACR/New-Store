@@ -4,6 +4,7 @@ import { BottomNav } from "@/components/bottom-nav";
 import { ArrowLeft, MapPin, Phone, User, CreditCard, Truck, FileText, Loader, ChevronDown, ChevronUp, Navigation, Target } from "lucide-react";
 import { useLocation } from "wouter";
 import { useLanguage } from "@/lib/languageContext";
+import { t } from "@/lib/translations";
 import { getFirestore, doc, getDoc, updateDoc, onSnapshot } from "firebase/firestore";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";

@@ -1064,7 +1064,7 @@ export default function ProfilePage() {
                           }`}
                           data-testid="filter-received"
                         >
-                          {language === "ar" ? "✅ تم الاستقبال" : "✅ Received"}
+                          {t("received", language)}
                         </button>
                         <button
                           onClick={() => setSelectedStatusFilter("completed")}
