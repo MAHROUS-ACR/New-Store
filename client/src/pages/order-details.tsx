@@ -153,7 +153,7 @@ export default function OrderDetailsPage() {
       })
     })
       .addTo(map.current)
-      .bindPopup(`<div style="text-align: center"><strong>${language === "ar" ? "موقع التسليم" : "Delivery Location"}</strong></div>`)
+      .bindPopup(`<div style="text-align: center"><strong>${t("deliveryLocation", language)}</strong></div>`)
       .openPopup();
   }, [mapLat, mapLng, language]);
 
@@ -172,7 +172,7 @@ export default function OrderDetailsPage() {
           icon: createDeliveryIcon()
         })
           .addTo(map.current)
-          .bindPopup(`<div style="text-align: center"><strong>${language === "ar" ? "موقع السائق" : "Driver Location"}</strong></div>`);
+          .bindPopup(`<div style="text-align: center"><strong>${t("driverLocation", language)}</strong></div>`);
       }
 
       // Fetch and display route
@@ -419,14 +419,14 @@ export default function OrderDetailsPage() {
                 {mapLoading ? (
                   <div className="w-full bg-blue-50 border-b border-blue-200 flex items-center justify-center gap-2 py-3">
                     <Loader size={18} className="animate-spin text-blue-600" />
-                    <span className="text-blue-600 font-semibold text-sm">{language === "ar" ? "جاري تحميل الخريطة..." : "Loading map..."}</span>
+                    <span className="text-blue-600 font-semibold text-sm">{t("loadingMap", language)}</span>
                   </div>
                 ) : mapLat && mapLng ? (
                   <div className="w-full bg-blue-100 border-b border-blue-300 overflow-hidden h-64" ref={mapContainer}></div>
                 ) : (
                   <div className="w-full bg-gray-200 border-b border-gray-300 py-8 flex items-center justify-center gap-2">
                     <MapPin size={20} className="text-gray-600" />
-                    <span className="text-gray-600 font-semibold">{language === "ar" ? "لا توجد معلومات موقع" : "No location info"}</span>
+                    <span className="text-gray-600 font-semibold">{t("noLocationInfo", language)}</span>
                   </div>
                 )}
               </div>
@@ -434,7 +434,7 @@ export default function OrderDetailsPage() {
             {(order.shippingAddress || order.deliveryAddress) && (order?.status === "completed" || order?.status === "received") && (
               <div className="w-full bg-green-50 border-b border-green-300 py-8 flex items-center justify-center gap-2">
                 <MapPin size={20} className="text-green-600" />
-                <span className="text-green-600 font-semibold">{language === "ar" ? "تم التسليم - الخريطة غير متاحة" : "Delivered - Map unavailable"}</span>
+                <span className="text-green-600 font-semibold">{t("deliveredMapUnavailable", language)}</span>
               </div>
             )}
             

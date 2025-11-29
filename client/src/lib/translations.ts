@@ -95,6 +95,13 @@ export const translations = {
     received: "✅ Received",
     completed: "🎉 Completed",
     cancelled: "Cancelled",
+    markAsReceived: "Mark as Received",
+    deliveryLocation: "Delivery Location",
+    driverLocation: "Driver Location",
+    loadingMap: "Loading map...",
+    noLocationInfo: "No location info",
+    deliveredMapUnavailable: "Delivered - Map unavailable",
+    cancelledMapUnavailable: "Cancelled - Map unavailable",
     
     // Admin & Menu
     editProduct: "Edit Product",
@@ -353,6 +360,13 @@ export const translations = {
     received: "✅ تم التسليم",
     completed: "🎉 مكتمل",
     cancelled: "ملغى",
+    markAsReceived: "تم الاستقبال",
+    deliveryLocation: "موقع التسليم",
+    driverLocation: "موقع السائق",
+    loadingMap: "جاري تحميل الخريطة...",
+    noLocationInfo: "لا توجد معلومات موقع",
+    deliveredMapUnavailable: "تم التسليم - الخريطة غير متاحة",
+    cancelledMapUnavailable: "تم الإلغاء - الخريطة غير متاحة",
     
     // Admin & Menu
     editProduct: "تعديل المنتج",
