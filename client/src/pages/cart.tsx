@@ -168,7 +168,7 @@ export default function CartPage() {
         </div>
 
         {/* Order Summary & Checkout Button - Fixed at bottom */}
-        <div className="fixed left-0 right-0 px-4 py-2.5 bg-white border-t border-gray-200 space-y-2 shadow-2xl" style={{ bottom: "60px", width: "100%", boxSizing: "border-box" }}>
+        <div className="fixed left-0 right-0 px-4 py-2 bg-white border-t border-gray-200 space-y-1.5 shadow-2xl" style={{ bottom: "65px", width: "100%", boxSizing: "border-box" }}>
           <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-3 space-y-1.5 border border-gray-200">
             {totalWithDiscounts < total && (
               <div className="flex justify-between text-[11px]">
@@ -189,7 +189,7 @@ export default function CartPage() {
           </div>
           <button
             onClick={handleCheckout}
-            className="w-full bg-gradient-to-r from-black to-gray-800 text-white py-3 rounded-lg font-bold hover:shadow-lg active:scale-95 transition-all text-sm"
+            className="w-full bg-gradient-to-r from-black to-gray-800 text-white py-2.5 rounded-lg font-bold hover:shadow-lg active:scale-95 transition-all text-sm"
             data-testid="button-checkout"
           >
             {t("proceedToPayment", language)}
