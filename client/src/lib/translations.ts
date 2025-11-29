@@ -350,7 +350,7 @@ export const translations = {
     // Status
     pending: "قيد الانتظار",
     shipped: "🚚 تم الشحن",
-    received: "✅ تم الاستقبال",
+    received: "✅ تم التسليم",
     completed: "🎉 مكتمل",
     cancelled: "ملغى",
     
