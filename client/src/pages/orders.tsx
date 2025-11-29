@@ -196,32 +196,34 @@ export default function OrdersPage() {
 
     // Destination marker (red)
     L.marker([mapLat, mapLng], {
-      icon: L.icon({
-        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
-        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-        iconSize: [25, 41],
-        iconAnchor: [12, 41],
-        popupAnchor: [1, -34],
+      icon: L.divIcon({
+        html: '<div style="font-size: 30px; text-align: center; line-height: 35px;">📍</div>',
+        iconSize: [35, 35],
+        iconAnchor: [17, 35],
+        popupAnchor: [0, -35],
+        className: ''
       })
     })
       .addTo(map.current)
       .bindPopup(`<div style="text-align: center"><strong>${language === "ar" ? "موقع التسليم" : "Delivery Location"}</strong></div>`)
       .openPopup();
 
-    // Add driver location marker if available - ONLY use driverLat/driverLng (not fallback to delivery location)
+    // Update driver marker position in real-time when order changes
     const driverLat = selectedOrder?.driverLat;
     const driverLng = selectedOrder?.driverLng;
     
     if (driverLat !== undefined && driverLat !== null && driverLng !== undefined && driverLng !== null && map.current) {
-      console.log("✅ Adding driver marker in orders:", driverLat, driverLng);
       if (driverMarker.current) {
-        driverMarker.current.remove();
+        // Update existing marker position
+        driverMarker.current.setLatLng([driverLat, driverLng]);
+      } else {
+        // Create new marker
+        driverMarker.current = L.marker([driverLat, driverLng], {
+          icon: createDeliveryIcon()
+        })
+          .addTo(map.current)
+          .bindPopup(`<div style="text-align: center"><strong>${language === "ar" ? "موقع السائق" : "Driver Location"}</strong></div>`);
       }
-      driverMarker.current = L.marker([driverLat, driverLng], {
-        icon: createDeliveryIcon()
-      })
-        .addTo(map.current)
-        .bindPopup(`<div style="text-align: center"><strong>${language === "ar" ? "موقع السائق" : "Driver Location"}</strong></div>`);
 
       // Fetch and display route
       if (typeof driverLng === 'number' && typeof driverLat === 'number' && typeof mapLng === 'number' && typeof mapLat === 'number') {
@@ -237,9 +239,22 @@ export default function OrdersPage() {
           .catch(err => console.log("Route error:", err));
       }
     } else {
-      console.log("❌ Driver location not available in orders - no marker shown");
+      if (driverMarker.current) {
+        driverMarker.current.remove();
+        driverMarker.current = null;
+      }
     }
   }, [mapLat, mapLng, language, selectedOrder?.driverLat, selectedOrder?.driverLng, selectedOrder?.latitude, selectedOrder?.longitude]);
+
+  // Update selectedOrder when orders list changes (real-time sync)
+  useEffect(() => {
+    if (selectedOrder?.id && orders.length > 0) {
+      const updatedOrder = orders.find(o => o.id === selectedOrder.id);
+      if (updatedOrder) {
+        setSelectedOrder(updatedOrder);
+      }
+    }
+  }, [orders]);
 
   // Reset map and geocode when order is selected - use deliveryLat/deliveryLng if available
   useEffect(() => {

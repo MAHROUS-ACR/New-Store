@@ -528,7 +528,7 @@ export default function DeliveryDetailsPage() {
                 <div className="flex gap-2">
                   <User size={18} className="text-green-600 flex-shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-sm font-semibold text-gray-600">{language === "ar" ? "الزبون" : "Customer"}</p>
+                    <p className="text-sm font-semibold text-gray-600">{language === "ar" ? "العميل" : "Customer"}</p>
                     <p className="text-base">{order.customerName}</p>
                   </div>
                 </div>
