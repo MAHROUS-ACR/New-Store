@@ -188,7 +188,7 @@ export default function DeliveryPage() {
         // Create new map - center on user location
         const centerLat = userLat || (shippedOrders[0]?.deliveryLat || 30.0444);
         const centerLng = userLng || (shippedOrders[0]?.deliveryLng || 31.2357);
-        const map = L.map(container).setView([centerLat, centerLng], 13);
+        const map = L.map(container, { zoomControl: true }).setView([centerLat, centerLng], 13);
 
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
           attribution: '&copy; OpenStreetMap',
@@ -205,31 +205,35 @@ export default function DeliveryPage() {
               className: 'user-marker'
             })
           }).addTo(map).bindPopup(language === "ar" ? "موقعك الحالي" : "Your Location");
+        }
 
-          // Draw routes for delivery sequence (from current location to order 1, order 1 to order 2, etc)
-          let startLat = userLat;
-          let startLng = userLng;
+        // Draw routes for delivery sequence (from current location to order 1, order 1 to order 2, etc)
+        let startLat = userLat || centerLat;
+        let startLng = userLng || centerLng;
+        
+        ordersWithDistance.forEach((order, idx) => {
+          const routeColor = idx === 0 ? '#ef4444' : '#ff8c00';
+          const url = `https://router.project-osrm.org/route/v1/driving/${startLng},${startLat};${order.deliveryLng},${order.deliveryLat}?geometries=geojson`;
           
-          ordersWithDistance.forEach((order, idx) => {
-            const routeColor = idx === 0 ? '#ef4444' : '#ff8c00';
-            const url = `https://router.project-osrm.org/route/v1/driving/${startLng},${startLat};${order.deliveryLng},${order.deliveryLat}?geometries=geojson`;
-            
-            fetch(url)
-              .then(res => res.json())
-              .then(data => {
-                if (isMounted && data.routes && data.routes[0] && map) {
+          fetch(url)
+            .then(res => res.json())
+            .then(data => {
+              if (isMounted && data.routes && data.routes[0]) {
+                try {
                   const route = data.routes[0].geometry.coordinates;
                   const latlngs = route.map((coord: [number, number]) => [coord[1], coord[0]]);
                   L.polyline(latlngs, { color: routeColor, weight: 3, opacity: 0.7 }).addTo(map);
+                } catch (e) {
+                  // Silent fail for route drawing
                 }
-              })
-              .catch(() => {});
-            
-            // Update start point for next route
-            startLat = order.deliveryLat!;
-            startLng = order.deliveryLng!;
-          });
-        }
+              }
+            })
+            .catch(() => {});
+          
+          // Update start point for next route
+          startLat = order.deliveryLat!;
+          startLng = order.deliveryLng!;
+        });
 
         // Add markers for each order with delivery sequence numbers
         ordersWithDistance.forEach((order, idx) => {
@@ -246,10 +250,14 @@ export default function DeliveryPage() {
           }).addTo(map).bindPopup(`<strong>Order #${order.orderNumber}</strong><br/>📍 ${language === "ar" ? "التسليم:" : "Delivery:"} ${idx + 1}<br/>${order.shippingAddress || ''}<br/><strong>Distance: ${order.distance.toFixed(1)} km</strong>`);
         });
 
-        map.invalidateSize();
-      } catch (err) {
+        setTimeout(() => {
+          if (isMounted && map) {
+            map.invalidateSize();
+          }
+        }, 100);
+      } catch (err: any) {
         if (isMounted) {
-          console.error("Map init error:", err);
+          console.error("Map init error:", err?.message || err);
           setMapError("Failed to load map");
         }
       }
