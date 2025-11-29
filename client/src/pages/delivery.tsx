@@ -26,6 +26,8 @@ interface DeliveryOrder {
   longitude?: number;
   deliveryLat?: number;
   deliveryLng?: number;
+  driverLat?: number;
+  driverLng?: number;
 }
 
 export default function DeliveryPage() {
@@ -193,8 +195,9 @@ export default function DeliveryPage() {
       const pendingOrders = orders.filter(o => o.status !== "received" && o.status !== "cancelled" && o.status !== "completed");
       
       pendingOrders.forEach((order, idx) => {
-        const lat = order.latitude;
-        const lng = order.longitude;
+        // Use deliveryLat/deliveryLng for delivery location (destination)
+        const lat = order.deliveryLat;
+        const lng = order.deliveryLng;
         
         // Only add marker if coordinates exist
         if (lat && lng) {
