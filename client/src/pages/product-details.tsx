@@ -365,7 +365,7 @@ export default function ProductDetailsPage() {
                   </div>
 
                   {/* Quantity - Below Buttons */}
-                  <div className="flex gap-2 items-center mt-4">
+                  <div className="flex gap-2 items-center justify-center mt-4">
                     <p className="text-sm font-semibold">{t("quantity", language)}:</p>
                     <button
                       onClick={() => setQuantity(Math.max(1, quantity - 1))}
