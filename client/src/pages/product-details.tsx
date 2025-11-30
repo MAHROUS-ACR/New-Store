@@ -279,10 +279,10 @@ export default function ProductDetailsPage() {
                 <div className="relative mb-4">
                   <button
                     onClick={() => setShowShareMenu(!showShareMenu)}
-                    className="w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                     data-testid="button-share"
                   >
-                    <Share2 className="w-5 h-5" />
+                    <Share2 className="w-6 h-6 text-gray-700" />
                   </button>
                   
                   {/* Share Menu */}
@@ -490,7 +490,7 @@ export default function ProductDetailsPage() {
             </div>
 
             {/* Bottom Actions */}
-            <div className="flex gap-3 mt-8 pb-24">
+            <div className="flex gap-3 mt-2 pb-24">
               <button
                 onClick={() => setLocation("/")}
                 className="flex-1 px-5 py-3 border border-gray-200 rounded-lg font-semibold text-sm hover:bg-gray-50 transition-colors"
