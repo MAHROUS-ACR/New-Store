@@ -60,10 +60,24 @@ export default function SettingsPage() {
         
         if (firebaseConfigSnap.exists()) {
           const serverConfig = firebaseConfigSnap.data();
-          // Load only the 3 required fields from Firestore
-          if (serverConfig.firebaseApiKey) setFirebaseApiKey(serverConfig.firebaseApiKey);
-          if (serverConfig.firebaseProjectId) setFirebaseProjectId(serverConfig.firebaseProjectId);
-          if (serverConfig.firebaseAppId) setFirebaseAppId(serverConfig.firebaseAppId);
+          // Load the 3 required fields from Firestore if they exist
+          if (serverConfig.firebaseApiKey) {
+            setFirebaseApiKey(serverConfig.firebaseApiKey);
+          } else {
+            setFirebaseApiKey(import.meta.env.VITE_FIREBASE_API_KEY || "");
+          }
+          
+          if (serverConfig.firebaseProjectId) {
+            setFirebaseProjectId(serverConfig.firebaseProjectId);
+          } else {
+            setFirebaseProjectId(import.meta.env.VITE_FIREBASE_PROJECT_ID || "");
+          }
+          
+          if (serverConfig.firebaseAppId) {
+            setFirebaseAppId(serverConfig.firebaseAppId);
+          } else {
+            setFirebaseAppId(import.meta.env.VITE_FIREBASE_APP_ID || "");
+          }
           
           // Optional fields: try to get from environment if Firestore doesn't have them
           setFirebaseAuthDomain(serverConfig.firebaseAuthDomain || import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "");
@@ -71,7 +85,10 @@ export default function SettingsPage() {
           setFirebaseMessagingSenderId((serverConfig.firebaseMessagingSenderId || import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "").trim());
           setFirebaseMeasurementId(serverConfig.firebaseMeasurementId || import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || "");
         } else {
-          // If Firestore doesn't have config, load from environment
+          // If Firestore doesn't have config, load all from environment
+          setFirebaseApiKey(import.meta.env.VITE_FIREBASE_API_KEY || "");
+          setFirebaseProjectId(import.meta.env.VITE_FIREBASE_PROJECT_ID || "");
+          setFirebaseAppId(import.meta.env.VITE_FIREBASE_APP_ID || "");
           setFirebaseAuthDomain(import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "");
           setFirebaseStorageBucket(import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "");
           setFirebaseMessagingSenderId((import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "").trim());
