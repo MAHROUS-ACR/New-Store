@@ -62,7 +62,7 @@ export default function Home() {
   const [storeLogo, setStoreLogo] = useState<string>("");
   const [isInitialized, setIsInitialized] = useState(false);
   const [discounts, setDiscounts] = useState<Discount[]>([]);
-  const [isDemo, setIsDemo] = useState(isDemoMode());
+  const [isDemo, setIsDemo] = useState(true); // Show settings gear by default
 
   const fetchStoreSettings = async (): Promise<void> => {
     try {
@@ -115,7 +115,16 @@ export default function Home() {
   useEffect(() => {
     // Load data only on component mount, not on location changes
     Promise.all([fetchProductsData(), fetchStoreSettings(), fetchDiscounts()]);
-  }, []);
+    
+    // Hide settings gear after 10 seconds if successfully loaded from Firebase
+    const timer = setTimeout(() => {
+      if (products.length > 0) {
+        setIsDemo(false);
+      }
+    }, 10000);
+    
+    return () => clearTimeout(timer);
+  }, [products.length]);
 
   // Extract unique categories from products
   const categories = ["All", ...Array.from(new Set(products
