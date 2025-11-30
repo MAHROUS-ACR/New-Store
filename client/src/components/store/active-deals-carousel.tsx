@@ -54,8 +54,11 @@ export function ActiveDealsCarousel({ products, discounts }: ActiveDealsCarousel
   }, [discountedProducts]);
 
   if (discountedProducts.length === 0) {
+    console.log("No discounted products available");
     return null;
   }
+  
+  console.log("Discounted products:", discountedProducts.length);
 
   const nextSlide = () => {
     setCarouselIndex((prev) => (prev + 1) % discountedProducts.length);
@@ -133,7 +136,7 @@ export function ActiveDealsCarousel({ products, discounts }: ActiveDealsCarousel
       </div>
 
       {/* Mobile Carousel */}
-      <div className="block md:hidden px-3">
+      <div className="md:hidden px-3">
         <div className="relative">
           <motion.div
             key={carouselIndex}
@@ -233,11 +236,13 @@ export function ActiveDealsCarousel({ products, discounts }: ActiveDealsCarousel
       </div>
 
       {/* Desktop Grid */}
-      <div className="hidden md:flex justify-center w-full px-3 md:px-6 lg:px-8">
-        <div className="grid grid-cols-3 gap-4 lg:gap-6">
-          {discountedProducts.map((product, index) => (
-            <ProductCard key={product.id} product={product} index={index} />
-          ))}
+      <div className="max-md:hidden">
+        <div className="flex justify-center px-3 md:px-6 lg:px-8">
+          <div className="grid grid-cols-3 gap-4 lg:gap-6 w-fit">
+            {discountedProducts.map((product, index) => (
+              <ProductCard key={product.id} product={product} index={index} />
+            ))}
+          </div>
         </div>
       </div>
     </div>
