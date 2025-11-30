@@ -490,7 +490,7 @@ export default function ProductDetailsPage() {
             </div>
 
             {/* Bottom Actions */}
-            <div className="flex gap-3 mt-8">
+            <div className="flex gap-3 mt-8 pb-24">
               <button
                 onClick={() => setLocation("/")}
                 className="flex-1 px-5 py-3 border border-gray-200 rounded-lg font-semibold text-sm hover:bg-gray-50 transition-colors"
