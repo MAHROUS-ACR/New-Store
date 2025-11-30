@@ -92,7 +92,7 @@ export function ActiveDealsCarousel({ products, discounts }: ActiveDealsCarousel
           </button>
 
           {/* Card Container */}
-          <div className="aspect-[20/9] md:aspect-[32/7] w-full">
+          <div className="aspect-[20/9] md:aspect-[48/8] w-full">
             <FlipCard product={currentProduct} discount={activeDiscount} />
           </div>
 
