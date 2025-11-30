@@ -135,6 +135,18 @@ export default function SettingsPage() {
     }
   };
 
+  // Load credentials from environment variables
+  const handleLoadFromEnvironment = () => {
+    setFirebaseApiKey(import.meta.env.VITE_FIREBASE_API_KEY || "");
+    setFirebaseProjectId(import.meta.env.VITE_FIREBASE_PROJECT_ID || "");
+    setFirebaseAppId(import.meta.env.VITE_FIREBASE_APP_ID || "");
+    setFirebaseAuthDomain(import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "");
+    setFirebaseStorageBucket(import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "");
+    setFirebaseMessagingSenderId(import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "");
+    setFirebaseMeasurementId(import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || "");
+    toast.success("Loaded Firebase credentials from environment!");
+  };
+
   // Validate Firebase credentials
   const validateFirebaseConfig = async (): Promise<boolean> => {
     if (!firebaseApiKey || !firebaseProjectId || !firebaseAppId) {
@@ -313,7 +325,16 @@ export default function SettingsPage() {
 
             {/* Firebase Configuration Section */}
             <div className="mb-8">
-              <h2 className="text-lg font-bold mb-4">Firebase Authentication</h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-bold">Firebase Authentication</h2>
+                <button
+                  onClick={handleLoadFromEnvironment}
+                  className="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded-full hover:bg-blue-200 transition-colors"
+                  data-testid="button-load-env"
+                >
+                  📥 Load from Environment
+                </button>
+              </div>
               <p className="text-sm text-muted-foreground mb-6">
                 Configure your Firebase project for client-side authentication (sign up/login)
               </p>
