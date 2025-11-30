@@ -185,7 +185,7 @@ export function ActiveDealsCarousel({ products, discounts }: ActiveDealsCarousel
 
       {/* Desktop: Grid View */}
       <div className="hidden md:flex md:justify-center">
-        <div className="grid grid-cols-3 lg:grid-cols-4 gap-3 lg:gap-4 max-w-6xl w-full">
+        <div className="grid grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-5 max-w-full w-full px-0">
           {discountedProducts.map((product, index) => (
             <motion.div
               key={product.id}
