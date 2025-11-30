@@ -520,7 +520,7 @@ export default function ProductDetailsPage() {
             </div>
 
             {/* Spacing for mobile bottom nav */}
-            <div className="pb-24"></div>
+            <div className="pb-4"></div>
           </div>
         </div>
       </div>
