@@ -33,9 +33,9 @@ export function FlipCard({ product, discount }: FlipCardProps) {
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="absolute top-0 left-0 right-0 p-4 md:p-6"
+        className="absolute top-0 left-0 right-0 p-2 md:p-4"
       >
-        <h3 className="font-black text-base md:text-2xl text-white line-clamp-2 drop-shadow-xl text-center md:text-left">
+        <h3 className="font-black text-xs md:text-lg text-white line-clamp-2 drop-shadow-xl text-center md:text-left">
           {product.title || product.name}
         </h3>
       </motion.div>
@@ -45,15 +45,15 @@ export function FlipCard({ product, discount }: FlipCardProps) {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        className="absolute bottom-0 left-0 right-0 p-4 md:p-8 space-y-4"
+        className="absolute bottom-0 left-0 right-0 p-2 md:p-4 space-y-2"
       >
         {/* Main Container for Price and Badge */}
-        <div className="flex items-center justify-between gap-2 md:gap-4">
+        <div className="flex items-end justify-between gap-1.5 md:gap-3">
           {/* Price Section */}
-          <div className="flex flex-col gap-0.5 flex-1">
+          <div className="flex flex-col gap-0.5 flex-1 min-w-0">
             {/* Original Price (if discounted) */}
             {activeDiscount && (
-              <div className="text-white/70 line-through text-xs md:text-base font-semibold drop-shadow-lg">
+              <div className="text-white/70 line-through text-[10px] md:text-xs font-semibold drop-shadow-lg">
                 L.E {product.price.toFixed(2)}
               </div>
             )}
@@ -61,7 +61,7 @@ export function FlipCard({ product, discount }: FlipCardProps) {
             <motion.div
               animate={{ scale: [1, 1.08, 1] }}
               transition={{ duration: 2, repeat: Infinity }}
-              className="font-black text-3xl md:text-5xl bg-gradient-to-r from-yellow-300 via-yellow-200 to-yellow-100 bg-clip-text text-transparent drop-shadow-2xl leading-none"
+              className="font-black text-lg md:text-3xl bg-gradient-to-r from-yellow-300 via-yellow-200 to-yellow-100 bg-clip-text text-transparent drop-shadow-2xl leading-none"
             >
               L.E {discountedPrice.toFixed(2)}
             </motion.div>
@@ -72,7 +72,7 @@ export function FlipCard({ product, discount }: FlipCardProps) {
             <motion.div
               animate={{ scale: [1, 1.12, 1], rotate: [0, 5, -5, 0] }}
               transition={{ duration: 2.5, repeat: Infinity }}
-              className="bg-gradient-to-br from-red-500 to-red-700 text-white px-4 md:px-6 py-3 md:py-5 rounded-full text-2xl md:text-4xl font-black border-3 border-yellow-300 shadow-2xl drop-shadow-2xl flex-shrink-0"
+              className="bg-gradient-to-br from-red-500 to-red-700 text-white px-2 md:px-4 py-1.5 md:py-3 rounded-full text-sm md:text-2xl font-black border-2 md:border-3 border-yellow-300 shadow-lg drop-shadow-lg flex-shrink-0"
             >
               -{activeDiscount.discountPercentage}%
             </motion.div>

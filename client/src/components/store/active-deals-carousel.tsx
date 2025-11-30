@@ -54,29 +54,30 @@ export function ActiveDealsCarousel({ products, discounts }: ActiveDealsCarousel
       </div>
 
       {/* Single Large Card with Navigation */}
-      <div className="px-3 md:px-6 lg:px-8">
-        <div className="max-w-2xl md:max-w-3xl mx-auto relative">
-          {/* Card Container */}
-          <div className="aspect-[4/3] md:aspect-video">
-            <FlipCard product={currentProduct} discount={activeDiscount} />
-          </div>
-
+      <div className="px-3 md:px-6 lg:px-8 overflow-hidden">
+        <div className="max-w-2xl md:max-w-3xl mx-auto relative flex justify-center">
           {/* Navigation Buttons */}
           <button
             onClick={handlePrev}
-            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-12 md:-translate-x-16 bg-white hover:bg-gray-100 text-gray-800 rounded-full p-2 md:p-3 shadow-lg transition-all hover:shadow-xl"
+            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white hover:bg-gray-100 text-gray-800 rounded-full p-1.5 md:p-3 shadow-lg transition-all hover:shadow-xl flex-shrink-0"
             data-testid="button-deals-prev"
           >
-            <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" />
+            <ChevronLeft className="w-4 h-4 md:w-5 md:h-5" />
           </button>
+
+          {/* Card Container */}
+          <div className="aspect-video w-full max-w-md md:max-w-2xl">
+            <FlipCard product={currentProduct} discount={activeDiscount} />
+          </div>
 
           <button
             onClick={handleNext}
-            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-12 md:translate-x-16 bg-white hover:bg-gray-100 text-gray-800 rounded-full p-2 md:p-3 shadow-lg transition-all hover:shadow-xl"
+            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white hover:bg-gray-100 text-gray-800 rounded-full p-1.5 md:p-3 shadow-lg transition-all hover:shadow-xl flex-shrink-0"
             data-testid="button-deals-next"
           >
-            <ChevronRight className="w-5 h-5 md:w-6 md:h-6" />
+            <ChevronRight className="w-4 h-4 md:w-5 md:h-5" />
           </button>
+        </div>
 
           {/* Pagination Dots */}
           <div className="flex justify-center gap-1.5 mt-4 md:mt-6">
