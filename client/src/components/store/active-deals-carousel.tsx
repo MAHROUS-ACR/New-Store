@@ -201,12 +201,12 @@ export function ActiveDealsCarousel({ products, discounts }: ActiveDealsCarousel
                 className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
               />
               <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-transparent to-transparent p-2 lg:p-2.5 flex flex-col justify-between">
-                <h3 className="font-bold text-xs lg:text-sm line-clamp-2 drop-shadow-lg text-white">
-                  {product.title || product.name}
-                </h3>
-                
-                <div className="flex items-end justify-between gap-1">
-                  <div className="text-white drop-shadow-lg whitespace-nowrap">
+                <div className="flex items-start justify-between gap-1">
+                  <h3 className="font-bold text-xs lg:text-sm line-clamp-2 drop-shadow-lg text-white flex-1 pr-1">
+                    {product.title || product.name}
+                  </h3>
+                  
+                  <div className="text-white drop-shadow-lg whitespace-nowrap text-right">
                     <div className="text-[9px] lg:text-xs line-through opacity-70">
                       L.E {product.price.toFixed(2)}
                     </div>
@@ -218,7 +218,9 @@ export function ActiveDealsCarousel({ products, discounts }: ActiveDealsCarousel
                       ).toFixed(2)}
                     </div>
                   </div>
-
+                </div>
+                
+                <div className="flex items-end justify-start gap-1">
                   {(() => {
                     const activeDiscount = getActiveDiscount(String(product.id), discounts);
                     return activeDiscount ? (
@@ -227,8 +229,8 @@ export function ActiveDealsCarousel({ products, discounts }: ActiveDealsCarousel
                         transition={{ duration: 2, repeat: Infinity }}
                         className="relative flex-shrink-0">
                         <div className="absolute inset-0 bg-gradient-to-r from-red-500 via-red-600 to-orange-600 rounded-full blur opacity-50"></div>
-                        <div className="relative bg-gradient-to-br from-red-500 to-red-600 text-white px-1.5 py-0.5 lg:px-2 lg:py-1 rounded-full text-[8px] lg:text-xs font-black shadow-md border border-yellow-300">
-                          {activeDiscount.discountPercentage}%
+                        <div className="relative bg-gradient-to-br from-red-500 to-red-600 text-white px-2 lg:px-3 py-1 lg:py-1.5 rounded-full text-sm lg:text-base font-black shadow-md border border-yellow-300">
+                          -{activeDiscount.discountPercentage}%
                         </div>
                       </motion.div>
                     ) : null;
