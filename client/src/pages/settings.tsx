@@ -5,6 +5,7 @@ import { ArrowLeft, Database, Save, LogOut, Copy, Check, Upload } from "lucide-r
 import { useLocation } from "wouter";
 import { toast } from "sonner";
 import { saveFirebaseConfig, getFirebaseConfig, clearFirebaseConfig } from "@/lib/firebaseConfig";
+import { reloadFirebaseConfig } from "@/lib/firebaseOps";
 import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { setupFirebaseSettingsFromEnv } from "@/lib/setupFirebaseSettings";
@@ -179,15 +180,16 @@ export default function SettingsPage() {
         measurementId: firebaseMeasurementId,
       });
 
-      // Clear localStorage to ensure new config is loaded
+      // Clear localStorage and reload Firebase config cache
       localStorage.removeItem("firebase_client_config");
+      reloadFirebaseConfig();
       
-      toast.success("All settings saved successfully!");
+      toast.success("All settings saved successfully! Reloading app...");
 
       // Reload page to apply new Firebase config
       setTimeout(() => {
         window.location.reload();
-      }, 1000);
+      }, 800);
     } catch (error: any) {
       console.error("Save error:", error);
       toast.error(error.message || "Failed to save settings");

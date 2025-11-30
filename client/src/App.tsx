@@ -1,4 +1,5 @@
 import { Switch, Route, Router } from "wouter";
+import { useEffect } from "react";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "sonner";
@@ -6,6 +7,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { CartProvider } from "@/lib/cartContext";
 import { UserProvider } from "@/lib/userContext";
 import { LanguageProvider } from "@/lib/languageContext";
+import { loadFirebaseConfigFromFirestore } from "@/lib/firebaseOps";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 import ProfilePage from "@/pages/profile";
@@ -46,6 +48,11 @@ function AppRouter() {
 }
 
 function App() {
+  useEffect(() => {
+    // Load Firebase config from Firestore on app startup
+    loadFirebaseConfigFromFirestore();
+  }, []);
+
   return (
     <Router base="/storeshope">
       <QueryClientProvider client={queryClient}>

@@ -21,9 +21,28 @@ import {
 } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 
-// Get Firebase config - first from environment variables, can be overridden from Firestore
+// Demo/Fallback Firebase config (read-only, for demo purposes)
+const DEMO_CONFIG = {
+  apiKey: "demo_api_key",
+  authDomain: "demo.firebaseapp.com",
+  projectId: "demo_project",
+  storageBucket: "demo.appspot.com",
+  messagingSenderId: "demo_sender",
+  appId: "demo_app_id",
+};
+
+let cachedConfig: any = null;
+let isInitialized = false;
+
+// Get Firebase config synchronously (uses cached or env)
 function getFirebaseConfig() {
-  return {
+  // If cached, return it
+  if (cachedConfig) {
+    return cachedConfig;
+  }
+
+  // Fallback: Use environment variables
+  const envConfig = {
     apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
     authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
     projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
@@ -31,14 +50,61 @@ function getFirebaseConfig() {
     messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
     appId: import.meta.env.VITE_FIREBASE_APP_ID,
   };
+
+  // If env variables exist, use them
+  if (envConfig.apiKey && envConfig.projectId && envConfig.appId) {
+    cachedConfig = envConfig;
+    return envConfig;
+  }
+
+  // Last resort: Use demo config
+  cachedConfig = DEMO_CONFIG;
+  return DEMO_CONFIG;
+}
+
+// Load Firebase config from Firestore (async)
+export async function loadFirebaseConfigFromFirestore() {
+  try {
+    // First init with env variables to connect to Firestore
+    const tempDb = getFirestore();
+    const firebaseConfigRef = doc(tempDb, "settings", "firebase");
+    const firebaseConfigSnap = await getDoc(firebaseConfigRef);
+
+    if (firebaseConfigSnap.exists()) {
+      const serverConfig = firebaseConfigSnap.data();
+      cachedConfig = {
+        apiKey: serverConfig.firebaseApiKey || import.meta.env.VITE_FIREBASE_API_KEY || DEMO_CONFIG.apiKey,
+        authDomain: serverConfig.firebaseAuthDomain || import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || DEMO_CONFIG.authDomain,
+        projectId: serverConfig.firebaseProjectId || import.meta.env.VITE_FIREBASE_PROJECT_ID || DEMO_CONFIG.projectId,
+        storageBucket: serverConfig.firebaseStorageBucket || import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || DEMO_CONFIG.storageBucket,
+        messagingSenderId: serverConfig.firebaseMessagingSenderId || import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || DEMO_CONFIG.messagingSenderId,
+        appId: serverConfig.firebaseAppId || import.meta.env.VITE_FIREBASE_APP_ID || DEMO_CONFIG.appId,
+      };
+      isInitialized = true;
+      return;
+    }
+  } catch (error) {
+    // Firestore load failed, will use env variables
+  }
+  
+  // Use env as fallback
+  cachedConfig = getFirebaseConfig();
+  isInitialized = true;
 }
 
 function initDb() {
   const config = getFirebaseConfig();
+
   if (!getApps().length) {
     initializeApp(config);
   }
   return getFirestore();
+}
+
+// Function to reload config (call after settings are saved)
+export function reloadFirebaseConfig() {
+  cachedConfig = null;
+  isInitialized = false;
 }
 
 // ============= PRODUCTS =============
