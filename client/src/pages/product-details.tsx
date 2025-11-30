@@ -73,6 +73,22 @@ export default function ProductDetailsPage() {
       return;
     }
 
+    // Validate required selections
+    if (product.colors && product.colors.length > 0 && !selectedColor) {
+      toast.error(language === "ar" ? "يرجى اختيار لون" : "Please select a color");
+      return;
+    }
+
+    if (product.sizes && product.sizes.length > 0 && !selectedSize) {
+      toast.error(language === "ar" ? "يرجى اختيار مقاس" : "Please select a size");
+      return;
+    }
+
+    if (product.units && product.units.length > 0 && !selectedUnit) {
+      toast.error(language === "ar" ? "يرجى اختيار وحدة" : "Please select a unit");
+      return;
+    }
+
     setIsAdding(true);
 
     try {
