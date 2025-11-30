@@ -43,15 +43,15 @@ export function ActiveDealsCarousel({ products, discounts }: ActiveDealsCarousel
       </div>
 
       {/* Grid - Same for Mobile and Desktop */}
-      <div className="px-3 md:px-6 lg:px-8">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-3 lg:gap-4">
+      <div className="flex justify-center px-3 md:px-6 lg:px-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-3 lg:gap-4 max-w-2xl md:max-w-4xl lg:max-w-5xl w-full">
           {discountedProducts.map((product) => {
             const activeDiscount = getActiveDiscount(String(product.id), discounts);
             return (
               <div
                 key={product.id}
                 onClick={() => setLocation(`/product/${product.id}`)}
-                className="relative aspect-[3/2] rounded-lg overflow-hidden cursor-pointer shadow-sm hover:shadow-md transition-shadow bg-gray-100"
+                className="relative aspect-[16/9] rounded-lg overflow-hidden cursor-pointer shadow-sm hover:shadow-md transition-shadow bg-gray-100"
               >
                 {/* Image */}
                 <img
