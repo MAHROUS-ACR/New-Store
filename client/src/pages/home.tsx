@@ -62,7 +62,8 @@ export default function Home() {
   const [storeLogo, setStoreLogo] = useState<string>("");
   const [isInitialized, setIsInitialized] = useState(false);
   const [discounts, setDiscounts] = useState<Discount[]>([]);
-  const [isDemo, setIsDemo] = useState(true); // Show settings gear by default
+  const [isDemo, setIsDemo] = useState(false); // Only show gear if data is from demo
+  const [isDataFromDemo, setIsDataFromDemo] = useState(false); // Track if using fallback data
 
   const fetchStoreSettings = async (): Promise<void> => {
     try {
@@ -88,14 +89,21 @@ export default function Home() {
       if (firebaseProducts && firebaseProducts.length > 0) {
         setProducts(firebaseProducts);
         setError("");
+        setIsDataFromDemo(false); // Successfully loaded from Firebase
+        setIsDemo(false); // Hide gear icon
       } else {
+        // No products from Firebase, use demo
         setProducts(fallbackProducts);
         setError("");
+        setIsDataFromDemo(true); // Using fallback/demo data
+        setIsDemo(true); // Show gear icon
       }
     } catch (err) {
-
+      // Error loading from Firebase, use demo
       setProducts(fallbackProducts);
       setError("");
+      setIsDataFromDemo(true); // Using fallback/demo data
+      setIsDemo(true); // Show gear icon
     } finally {
       setIsLoading(false);
       setIsInitialized(true);
@@ -115,16 +123,7 @@ export default function Home() {
   useEffect(() => {
     // Load data only on component mount, not on location changes
     Promise.all([fetchProductsData(), fetchStoreSettings(), fetchDiscounts()]);
-    
-    // Hide settings gear after 10 seconds if successfully loaded from Firebase
-    const timer = setTimeout(() => {
-      if (products.length > 0) {
-        setIsDemo(false);
-      }
-    }, 10000);
-    
-    return () => clearTimeout(timer);
-  }, [products.length]);
+  }, []);
 
   // Extract unique categories from products
   const categories = ["All", ...Array.from(new Set(products
