@@ -77,14 +77,14 @@ export function ActiveDealsCarousel({ products, discounts }: ActiveDealsCarousel
   };
 
   return (
-    <div className="mb-2 md:mb-3 lg:mb-3 px-3 md:px-6 lg:px-8">
-      <div className="flex items-center gap-2 mb-1.5 md:mb-2 lg:mb-2">
+    <div className="mb-2 md:mb-3 lg:mb-3">
+      <div className="flex items-center gap-2 mb-1.5 md:mb-2 lg:mb-2 px-3 md:px-6 lg:px-8">
         <Zap className="w-4 md:w-4 lg:w-4 h-4 md:h-4 lg:h-4 text-yellow-500" />
         <h3 className="text-xs md:text-xs lg:text-xs font-semibold text-gray-900">{t("activeDeals", language)}</h3>
       </div>
 
       {/* Mobile: Carousel View */}
-      <div className="block md:hidden">
+      <div className="block md:hidden px-3">
         <div className="relative">
           <motion.div
             key={carouselIndex}
@@ -184,8 +184,7 @@ export function ActiveDealsCarousel({ products, discounts }: ActiveDealsCarousel
       </div>
 
       {/* Desktop: Grid View */}
-      <div className="hidden md:flex md:justify-center">
-        <div className="grid grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-5 max-w-full w-full px-0">
+      <div className="hidden md:grid grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-5 px-2 md:px-4 lg:px-6 justify-center">
           {discountedProducts.map((product, index) => (
             <motion.div
               key={product.id}
@@ -239,7 +238,6 @@ export function ActiveDealsCarousel({ products, discounts }: ActiveDealsCarousel
               </div>
             </motion.div>
           ))}
-        </div>
       </div>
     </div>
   );
