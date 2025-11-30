@@ -55,32 +55,34 @@ export function ActiveDealsCarousel({ products, discounts }: ActiveDealsCarousel
 
       {/* Single Large Card with Navigation */}
       <div className="px-3 md:px-6 lg:px-8 overflow-hidden">
-        <div className="max-w-2xl md:max-w-3xl mx-auto relative flex justify-center">
-          {/* Navigation Buttons */}
-          <button
-            onClick={handlePrev}
-            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white hover:bg-gray-100 text-gray-800 rounded-full p-1.5 md:p-3 shadow-lg transition-all hover:shadow-xl flex-shrink-0"
-            data-testid="button-deals-prev"
-          >
-            <ChevronLeft className="w-4 h-4 md:w-5 md:h-5" />
-          </button>
+        <div className="max-w-2xl md:max-w-3xl mx-auto">
+          {/* Card with Navigation Buttons */}
+          <div className="relative flex justify-center mb-4 md:mb-6">
+            {/* Navigation Buttons */}
+            <button
+              onClick={handlePrev}
+              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white hover:bg-gray-100 text-gray-800 rounded-full p-1.5 md:p-3 shadow-lg transition-all hover:shadow-xl flex-shrink-0"
+              data-testid="button-deals-prev"
+            >
+              <ChevronLeft className="w-4 h-4 md:w-5 md:h-5" />
+            </button>
 
-          {/* Card Container */}
-          <div className="aspect-video w-full max-w-md md:max-w-2xl">
-            <FlipCard product={currentProduct} discount={activeDiscount} />
+            {/* Card Container */}
+            <div className="aspect-video w-full max-w-md md:max-w-2xl">
+              <FlipCard product={currentProduct} discount={activeDiscount} />
+            </div>
+
+            <button
+              onClick={handleNext}
+              className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white hover:bg-gray-100 text-gray-800 rounded-full p-1.5 md:p-3 shadow-lg transition-all hover:shadow-xl flex-shrink-0"
+              data-testid="button-deals-next"
+            >
+              <ChevronRight className="w-4 h-4 md:w-5 md:h-5" />
+            </button>
           </div>
 
-          <button
-            onClick={handleNext}
-            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white hover:bg-gray-100 text-gray-800 rounded-full p-1.5 md:p-3 shadow-lg transition-all hover:shadow-xl flex-shrink-0"
-            data-testid="button-deals-next"
-          >
-            <ChevronRight className="w-4 h-4 md:w-5 md:h-5" />
-          </button>
-        </div>
-
           {/* Pagination Dots */}
-          <div className="flex justify-center gap-1.5 mt-4 md:mt-6">
+          <div className="flex justify-center gap-1.5">
             {discountedProducts.map((_, index) => (
               <button
                 key={index}
