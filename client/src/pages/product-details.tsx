@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useLocation, useRoute } from "wouter";
 import { MobileWrapper } from "@/components/mobile-wrapper";
 import { BottomNav } from "@/components/bottom-nav";
-import { ArrowLeft, ShoppingCart, Check, X, ChevronLeft, ChevronRight, Share2, Facebook, MessageCircle } from "lucide-react";
+import { ArrowLeft, ShoppingCart, Check, X, ChevronLeft, ChevronRight, Share2, Facebook, MessageCircle, Link as LinkIcon, Copy } from "lucide-react";
 import { useCart } from "@/lib/cartContext";
 import { useLanguage } from "@/lib/languageContext";
 import { t } from "@/lib/translations";
@@ -315,11 +315,24 @@ export default function ProductDetailsPage() {
                           shareProduct("twitter");
                           setShowShareMenu(false);
                         }}
-                        className="w-full px-4 py-3 text-left hover:bg-gray-50 text-sky-600 font-medium flex items-center gap-2"
+                        className="w-full px-4 py-3 text-left hover:bg-gray-50 text-sky-600 font-medium border-b border-gray-100 flex items-center gap-2"
                         data-testid="button-share-twitter"
                       >
                         <span className="text-lg">𝕏</span>
                         Twitter
+                      </button>
+                      <button
+                        onClick={() => {
+                          const shareUrl = `${window.location.origin}${window.location.pathname}`;
+                          navigator.clipboard.writeText(shareUrl);
+                          toast.success(language === "ar" ? "تم نسخ الرابط" : "Link copied!");
+                          setShowShareMenu(false);
+                        }}
+                        className="w-full px-4 py-3 text-left hover:bg-gray-50 text-gray-600 font-medium flex items-center gap-2"
+                        data-testid="button-copy-link"
+                      >
+                        <Copy className="w-4 h-4" />
+                        {language === "ar" ? "نسخ الرابط" : "Copy Link"}
                       </button>
                     </div>
                   )}
