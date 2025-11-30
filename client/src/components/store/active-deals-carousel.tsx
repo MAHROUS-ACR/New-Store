@@ -233,13 +233,11 @@ export function ActiveDealsCarousel({ products, discounts }: ActiveDealsCarousel
       </div>
 
       {/* Desktop Grid */}
-      <div className="hidden md:block px-3 md:px-6 lg:px-8">
-        <div className="flex justify-center">
-          <div className="grid grid-cols-3 gap-4 lg:gap-6 max-w-4xl">
-            {discountedProducts.map((product, index) => (
-              <ProductCard key={product.id} product={product} index={index} />
-            ))}
-          </div>
+      <div className="hidden md:flex justify-center w-full px-3 md:px-6 lg:px-8">
+        <div className="grid grid-cols-3 gap-4 lg:gap-6">
+          {discountedProducts.map((product, index) => (
+            <ProductCard key={product.id} product={product} index={index} />
+          ))}
         </div>
       </div>
     </div>
