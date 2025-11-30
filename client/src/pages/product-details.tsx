@@ -27,6 +27,7 @@ export default function ProductDetailsPage() {
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
   const [showShareMenu, setShowShareMenu] = useState(false);
+  const [validationError, setValidationError] = useState("");
 
   useEffect(() => {
     const loadProductAndDiscounts = async () => {
@@ -75,20 +76,21 @@ export default function ProductDetailsPage() {
 
     // Validate required selections
     if (product.colors && product.colors.length > 0 && !selectedColor) {
-      toast.error(language === "ar" ? "يرجى اختيار لون" : "Please select a color");
+      setValidationError(language === "ar" ? "يرجى اختيار لون" : "Please select a color");
       return;
     }
 
     if (product.sizes && product.sizes.length > 0 && !selectedSize) {
-      toast.error(language === "ar" ? "يرجى اختيار مقاس" : "Please select a size");
+      setValidationError(language === "ar" ? "يرجى اختيار مقاس" : "Please select a size");
       return;
     }
 
     if (product.units && product.units.length > 0 && !selectedUnit) {
-      toast.error(language === "ar" ? "يرجى اختيار وحدة" : "Please select a unit");
+      setValidationError(language === "ar" ? "يرجى اختيار وحدة" : "Please select a unit");
       return;
     }
 
+    setValidationError("");
     setIsAdding(true);
 
     try {
@@ -485,7 +487,10 @@ export default function ProductDetailsPage() {
                           return (
                             <button
                               key={colorName}
-                              onClick={() => setSelectedColor(color || '')}
+                              onClick={() => {
+                                setSelectedColor(color || '');
+                                setValidationError("");
+                              }}
                               className={`flex items-center gap-2 px-3 py-2 rounded-lg border-2 transition-all ${
                                 selectedColor === color
                                   ? 'border-gray-800 bg-gray-50'
@@ -509,7 +514,10 @@ export default function ProductDetailsPage() {
                       <p className="text-sm font-semibold mb-2">{t("selectSize", language)}</p>
                       <select
                         value={selectedSize}
-                        onChange={(e) => setSelectedSize(e.target.value)}
+                        onChange={(e) => {
+                          setSelectedSize(e.target.value);
+                          setValidationError("");
+                        }}
                         className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"
                         data-testid="select-size"
                       >
