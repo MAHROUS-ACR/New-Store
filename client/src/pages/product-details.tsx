@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useLocation, useRoute } from "wouter";
 import { MobileWrapper } from "@/components/mobile-wrapper";
 import { BottomNav } from "@/components/bottom-nav";
-import { ArrowLeft, ShoppingCart, Check, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft, ShoppingCart, Check, X, ChevronLeft, ChevronRight, Share2, Facebook, MessageCircle } from "lucide-react";
 import { useCart } from "@/lib/cartContext";
 import { useLanguage } from "@/lib/languageContext";
 import { t } from "@/lib/translations";
@@ -177,6 +177,21 @@ export default function ProductDetailsPage() {
     }
   };
 
+  const shareProduct = (platform: string) => {
+    const shareUrl = `${window.location.origin}${window.location.pathname}`;
+    const shareText = `Check out ${productTitle} - L.E ${discountedPrice.toFixed(2)}`;
+    
+    const urls: { [key: string]: string } = {
+      facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
+      whatsapp: `https://wa.me/?text=${encodeURIComponent(`${shareText} ${shareUrl}`)}`,
+      twitter: `https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`,
+    };
+    
+    if (urls[platform]) {
+      window.open(urls[platform], '_blank', 'width=600,height=400');
+    }
+  };
+
   return (
     <MobileWrapper>
       <div className="w-full flex-1 flex flex-col overflow-hidden">
@@ -194,14 +209,18 @@ export default function ProductDetailsPage() {
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto no-scrollbar pb-40 w-full">
-          <div className="w-full px-5 py-4 max-w-6xl mx-auto">
-            {/* Product Image Gallery */}
-            <div 
-              className="relative aspect-square md:aspect-[4/3] rounded-2xl overflow-hidden bg-gray-50 mb-4 group cursor-grab active:cursor-grabbing select-none max-w-md md:max-w-2xl"
-              onTouchStart={handleTouchStart}
-              onTouchEnd={handleTouchEnd}
-              data-testid="gallery-container"
-            >
+          <div className="w-full px-5 py-4 max-w-7xl mx-auto">
+            {/* Desktop: 2 Column Layout */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Left: Image Gallery (1 column on mobile, 1.5 on desktop) */}
+              <div className="md:col-span-1">
+                {/* Product Image Gallery */}
+                <div 
+                  className="relative aspect-square rounded-2xl overflow-hidden bg-gray-50 mb-4 group cursor-grab active:cursor-grabbing select-none"
+                  onTouchStart={handleTouchStart}
+                  onTouchEnd={handleTouchEnd}
+                  data-testid="gallery-container"
+                >
               <img 
                 src={currentImage} 
                 alt={`${productTitle} - ${currentImageIndex + 1}`}
@@ -255,6 +274,42 @@ export default function ProductDetailsPage() {
               )}
             </div>
 
+                {/* Share Buttons - Under Image */}
+                <div className="bg-gray-50 rounded-xl p-4 mb-4">
+                  <p className="text-xs font-semibold text-gray-600 mb-3 flex items-center gap-2">
+                    <Share2 className="w-4 h-4" />
+                    {language === "ar" ? "شارك المنتج" : "Share Product"}
+                  </p>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => shareProduct("facebook")}
+                      className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors"
+                      data-testid="button-share-facebook"
+                    >
+                      <Facebook className="w-4 h-4" />
+                      <span className="hidden sm:inline">Facebook</span>
+                    </button>
+                    <button
+                      onClick={() => shareProduct("whatsapp")}
+                      className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors"
+                      data-testid="button-share-whatsapp"
+                    >
+                      <MessageCircle className="w-4 h-4" />
+                      <span className="hidden sm:inline">WhatsApp</span>
+                    </button>
+                    <button
+                      onClick={() => shareProduct("twitter")}
+                      className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-sky-500 hover:bg-sky-600 text-white rounded-lg text-sm font-medium transition-colors"
+                      data-testid="button-share-twitter"
+                    >
+                      𝕏
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right: Product Info (1 column on mobile, 1.5 on desktop) */}
+              <div className="md:col-span-2">
             {/* Availability Status */}
             <div className="mb-4">
               {product.available ? (
