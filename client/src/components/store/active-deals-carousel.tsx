@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useLanguage } from "@/lib/languageContext";
 import { t } from "@/lib/translations";
 import { getActiveDiscount, type Discount } from "@/lib/discountUtils";
@@ -22,6 +22,7 @@ interface ActiveDealsCarouselProps {
 export function ActiveDealsCarousel({ products, discounts }: ActiveDealsCarouselProps) {
   const { language } = useLanguage();
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [shouldAutoPlay, setShouldAutoPlay] = useState(true);
 
   const discountedProducts = useMemo(() => {
     return products.filter(product => {
@@ -38,12 +39,36 @@ export function ActiveDealsCarousel({ products, discounts }: ActiveDealsCarousel
   const activeDiscount = getActiveDiscount(String(currentProduct.id), discounts);
 
   const handleNext = () => {
+    setShouldAutoPlay(false);
     setCurrentIndex((prev) => (prev + 1) % discountedProducts.length);
   };
 
   const handlePrev = () => {
+    setShouldAutoPlay(false);
     setCurrentIndex((prev) => (prev - 1 + discountedProducts.length) % discountedProducts.length);
   };
+
+  // Auto-play carousel
+  useEffect(() => {
+    if (!shouldAutoPlay || discountedProducts.length === 0) return;
+
+    const timer = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % discountedProducts.length);
+    }, 4000); // Change every 4 seconds
+
+    return () => clearInterval(timer);
+  }, [shouldAutoPlay, discountedProducts.length]);
+
+  // Resume auto-play after 5 seconds of user interaction
+  useEffect(() => {
+    if (shouldAutoPlay) return;
+
+    const timer = setTimeout(() => {
+      setShouldAutoPlay(true);
+    }, 5000);
+
+    return () => clearTimeout(timer);
+  }, [shouldAutoPlay]);
 
   return (
     <div className="mb-4 md:mb-6 lg:mb-6">
