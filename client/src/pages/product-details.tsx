@@ -455,9 +455,10 @@ export default function ProductDetailsPage() {
                 </button>
               </div>
             </div>
+              </div>
+            </div>
           </div>
         </div>
-
       </div>
 
       {/* Bottom Actions - Fixed positioning above BottomNav */}
