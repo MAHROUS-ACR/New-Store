@@ -146,7 +146,7 @@ export default function Home() {
 
   return (
     <MobileWrapper>
-      <div className="w-full flex-1 flex flex-col overflow-hidden bg-white">
+      <div className="w-full flex-1 flex flex-col overflow-x-hidden overflow-y-hidden bg-white">
         {/* Header */}
         <div className="px-3 md:px-6 lg:px-8 pt-2 pb-2 flex-shrink-0 border-b border-gray-100">
           <div className="flex items-center justify-between gap-2 mb-2">

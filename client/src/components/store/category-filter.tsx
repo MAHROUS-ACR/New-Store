@@ -13,7 +13,7 @@ export function CategoryFilter({ active, onChange, categories = ["All"] }: { act
   };
 
   return (
-    <div className="flex overflow-x-auto no-scrollbar gap-2 px-5 pb-4">
+    <div className="flex overflow-x-auto no-scrollbar gap-2 px-3 md:px-6 lg:px-8 pb-4">
       {categories.map((category) => (
         <button
           key={category}
