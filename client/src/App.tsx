@@ -54,7 +54,7 @@ function App() {
   }, []);
 
   return (
-    <Router base="/storeshope">
+    <Router base="/New-Store">
       <QueryClientProvider client={queryClient}>
         <LanguageProvider>
           <UserProvider>
