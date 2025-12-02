@@ -5,8 +5,7 @@ import path from "path";
 import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
 
 export default defineConfig({
-  base: '/storeshope/',
-  plugins: [
+base: process.env.CF_PAGES ? "/" : "/storeshope/",  plugins: [
     react(),
     runtimeErrorOverlay(),
     tailwindcss(),
