@@ -1,4 +1,4 @@
-name: Build and Deploy on Main
+name: Build and Deploy to Cloudflare
 
 on:
   push:
@@ -14,7 +14,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          persist-credentials: true  # ضروري عشان نقدر نعمل push
+          persist-credentials: true
 
       # 2️⃣ Setup Node.js
       - name: Setup Node.js
@@ -43,13 +43,8 @@ jobs:
       - name: Setup 404.html
         run: cp dist/public/index.html dist/public/404.html
 
-      # 6️⃣ Commit and push build to main
-      - name: Commit and Push dist/
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -f dist/                     # <--- force add لتجاهل .gitignore
-          git commit -m "🚀 Deploy build in dist/" || echo "No changes to commit"
-          git push origin main
+      # 6️⃣ Deploy to Cloudflare
+      - name: Deploy to Cloudflare
+        run: npx wrangler deploy
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
