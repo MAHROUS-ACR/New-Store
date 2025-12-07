@@ -1,4 +1,4 @@
-name: Build and Export .env for Netlify
+name: Build and Commit .env
 
 on:
   push:
@@ -8,9 +8,12 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       # 1️⃣ Checkout repo
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: true  # ضروري عشان نقدر نعمل push
 
       # 2️⃣ Setup Node.js
       - uses: actions/setup-node@v4
@@ -21,9 +24,9 @@ jobs:
       - run: npm ci
 
       # 4️⃣ Create .env file
-      - name: Create .env file for Netlify
+      - name: Create .env file
         run: |
-          echo "VITE_FIREBASE_API_KEY=${{ secrets.VITE_FIREBASE_API_KEY }}" >> .env
+          echo "VITE_FIREBASE_API_KEY=${{ secrets.VITE_FIREBASE_API_KEY }}" > .env
           echo "VITE_FIREBASE_PROJECT_ID=${{ secrets.VITE_FIREBASE_PROJECT_ID }}" >> .env
           echo "VITE_FIREBASE_APP_ID=${{ secrets.VITE_FIREBASE_APP_ID }}" >> .env
           echo "VITE_FIREBASE_AUTH_DOMAIN=${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}" >> .env
@@ -31,5 +34,14 @@ jobs:
           echo "VITE_FIREBASE_MESSAGING_SENDER_ID=${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}" >> .env
           echo "VITE_FIREBASE_MEASUREMENT_ID=${{ secrets.VITE_FIREBASE_MEASUREMENT_ID }}" >> .env
 
-      # 5️⃣ Build project
+      # 5️⃣ Commit .env
+      - name: Commit and Push .env
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .env
+          git commit -m "🔒 Add .env for build" || echo "No changes to commit"
+          git push origin main
+
+      # 6️⃣ Build project
       - run: npm run build
