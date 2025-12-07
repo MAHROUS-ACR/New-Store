@@ -8,22 +8,26 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    
+
     steps:
+      # 1️⃣ Checkout repository
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           persist-credentials: true  # ضروري عشان نقدر نعمل push
 
+      # 2️⃣ Setup Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
 
+      # 3️⃣ Install dependencies
       - name: Install dependencies
         run: npm ci
 
+      # 4️⃣ Build project
       - name: Build
         run: npm run build
         env:
@@ -35,15 +39,17 @@ jobs:
           VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}
           VITE_FIREBASE_MEASUREMENT_ID: ${{ secrets.VITE_FIREBASE_MEASUREMENT_ID }}
 
-      - name: Setup 404.html for SPA routing
+      # 5️⃣ Setup 404.html for SPA routing
+      - name: Setup 404.html
         run: cp dist/public/index.html dist/public/404.html
 
-   - name: Commit and Push build
-  run: |
-    git config user.name "github-actions[bot]"
-    git config user.email "github-actions[bot]@users.noreply.github.com"
-    git add -f dist/           # <-- force add عشان يتجاهل gitignore
-    git commit -m "🚀 Deploy build in dist/"
-    git push origin main
-  env:
-    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # 6️⃣ Commit and push build to main
+      - name: Commit and Push dist/
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -f dist/                     # <--- force add لتجاهل .gitignore
+          git commit -m "🚀 Deploy build in dist/" || echo "No changes to commit"
+          git push origin main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
