@@ -1,10 +1,11 @@
-name = "my-worker"                   # اسم الWorker
-compatibility_date = "2025-12-07"    # تاريخ التوافق مع Cloudflare
+# wrangler.toml
+name = "new-store"                   # اسم الـ Worker على Cloudflare
+compatibility_date = "2025-12-07"    # تاريخ التوافق للWorkers runtime
 
-# لو عندك worker script
-main = "src/index.ts"                # المسار للملف الرئيسي للWorker
+# المسار الرئيسي للWorker script (JS/TS)
+main = "src/index.ts"
 
-# لو عايزة ترفع مجلد build كـ static assets
+# إعدادات لنشر ملفات static من مجلد dist/
 [site]
 bucket = "./dist"                    # مجلد الـ build من Vite
 entry-point = "workers-site"
