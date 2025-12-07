@@ -2,4 +2,5 @@ name = "new-store"
 compatibility_date = "2025-12-07"
 
 # نشر مجلد dist/ كـ Worker Site
-main = "dist/public/index.html"   # Entry-point جديد للـ SPA
+[site]
+bucket= "./dist/public"   # Entry-point جديد للـ SPA
