@@ -38,12 +38,12 @@ jobs:
       - name: Setup 404.html for SPA routing
         run: cp dist/public/index.html dist/public/404.html
 
-      - name: Commit and Push build
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add dist/
-          git commit -m "🚀 Deploy build in dist/"
-          git push origin main
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+   - name: Commit and Push build
+  run: |
+    git config user.name "github-actions[bot]"
+    git config user.email "github-actions[bot]@users.noreply.github.com"
+    git add -f dist/           # <-- force add عشان يتجاهل gitignore
+    git commit -m "🚀 Deploy build in dist/"
+    git push origin main
+  env:
+    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
